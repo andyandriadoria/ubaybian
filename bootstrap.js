@@ -50,9 +50,9 @@ function installLogout(family){
 }
 
 async function start(){
- if(!backendEnabled){await import('./app.js?v=0.3.7');return;}
+ if(!backendEnabled){await import('./app-v037.js');return;}
  if(!getSessionToken()){showLogin();return;}
- try{const account=await api.me();installLogout(account.family);await import('./app.js?v=0.3.7');}
+ try{const account=await api.me();installLogout(account.family);await import('./app-v037.js');}
  catch(error){clearSessionToken();showLogin(error instanceof ApiError&&error.status===401?'Sesi sudah berakhir. Silakan masuk lagi.':'Tidak dapat memverifikasi sesi keluarga.');}
 }
 
