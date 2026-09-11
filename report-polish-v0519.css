@@ -1,0 +1,218 @@
+/* v0.5.19 — Report Data Polish
+   Final hierarchy/data-density polish layered on Adventure Report v0.5.18. */
+
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-header{
+  min-height:124px;
+  padding:21px 225px 21px 26px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-header h2{
+  font-size:24px;
+  line-height:1.08;
+  font-weight:800;
+  letter-spacing:.012em;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-header p{
+  font-size:13.5px;
+  line-height:1.35;
+  font-weight:600;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-hero-visual{
+  right:132px;
+  bottom:-3px;
+  width:106px;
+  height:116px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-hero-visual img{
+  width:100px;
+  height:108px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-badge{
+  right:24px;
+  padding:8px 13px;
+  font-size:11.5px;
+  font-weight:800;
+}
+
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-main-grid{
+  grid-template-columns:minmax(350px,.94fr) minmax(520px,1.26fr);
+  gap:16px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart,
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-table-wrap{
+  min-height:405px;
+  padding:18px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart{
+  background:
+    radial-gradient(circle at 12% 8%,rgba(255,255,255,.70),transparent 22%),
+    linear-gradient(145deg,rgba(225,248,255,.95),rgba(179,229,252,.83));
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-table-wrap{
+  background:
+    radial-gradient(circle at 88% 10%,rgba(214,244,255,.55),transparent 24%),
+    linear-gradient(145deg,rgba(249,253,255,.97),rgba(224,244,253,.91));
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart h3,
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-table-wrap h3{
+  font-size:17px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+/* Three real-data summary cards: sessions, average, best. */
+.report-card[data-adventure-report="1"] .report-insights{
+  position:relative;
+  z-index:3;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin:0 0 6px;
+}
+.report-card[data-adventure-report="1"] .report-insight{
+  min-width:0;
+  padding:8px 9px 7px;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.78);
+  background:rgba(255,255,255,.60);
+  box-shadow:0 5px 13px rgba(42,112,153,.08),inset 0 1px 0 rgba(255,255,255,.78);
+}
+.report-card[data-adventure-report="1"] .report-insight-label{
+  display:block;
+  margin-bottom:2px;
+  color:#68859a;
+  font-size:9.5px;
+  line-height:1.1;
+  font-weight:750;
+  text-transform:uppercase;
+  letter-spacing:.055em;
+}
+.report-card[data-adventure-report="1"] .report-insight-value{
+  display:block;
+  color:#173852;
+  font-size:17px;
+  line-height:1.05;
+  font-weight:850;
+}
+.report-card[data-adventure-report="1"] .report-insight.avg .report-insight-value{color:#e08a16}
+.report-card[data-adventure-report="1"] .report-insight.best .report-insight-value{color:#2f9b54}
+
+/* Integrate trophy as a watermark instead of a floating decoration. */
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart-decor{
+  right:13px;
+  top:auto;
+  bottom:15px;
+  opacity:.12;
+  transform:rotate(-8deg);
+  z-index:1;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart-decor .cup{
+  font-size:76px;
+  filter:none;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart-decor .spark{display:none}
+
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart-inner{
+  height:242px;
+  padding:28px 7px 4px;
+  gap:7px;
+  margin-top:2px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-chart-inner::after{
+  bottom:23px;
+  background:linear-gradient(90deg,transparent,rgba(49,105,143,.27) 7%,rgba(49,105,143,.27) 93%,transparent);
+}
+.report-card[data-adventure-report="1"] .report-benchmark{
+  position:absolute;
+  z-index:-1;
+  left:7px;
+  right:7px;
+  top:50%;
+  height:0;
+  border-top:1px dashed rgba(52,122,166,.22);
+  pointer-events:none;
+}
+.report-card[data-adventure-report="1"] .report-benchmark span{
+  position:absolute;
+  right:1px;
+  top:-14px;
+  padding:1px 4px;
+  border-radius:5px;
+  color:#6a879b;
+  background:rgba(224,246,255,.78);
+  font-size:8.5px;
+  font-weight:700;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-bar{
+  width:min(58px,79%);
+  min-width:26px;
+  max-width:58px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-bar-value{
+  font-size:11px;
+  font-weight:850;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-bar-label{
+  font-size:10px;
+  font-weight:600;
+}
+
+/* Table readability and conditional scrolling. */
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-table{
+  border-spacing:0 6px;
+  font-size:12px;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-table thead th{
+  padding:0 9px 5px;
+  font-size:11px;
+  font-weight:800;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-table tbody td{
+  padding:9px 9px;
+  font-weight:600;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-score-pill{
+  font-size:11.5px;
+  font-weight:850;
+}
+.report-card[data-adventure-report="1"].report-polish-v0519 .report-correct-pill{
+  font-size:11.5px;
+  font-weight:750;
+}
+.report-card[data-adventure-report="1"] .report-table-scroll.report-no-scroll{
+  max-height:none;
+  overflow:visible;
+  padding-right:0;
+}
+.report-card[data-adventure-report="1"] .report-table-scroll.report-has-scroll{
+  max-height:335px;
+  overflow:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(84,145,181,.36) transparent;
+}
+.report-card[data-adventure-report="1"] .report-table-scroll.report-has-scroll::-webkit-scrollbar{width:6px;height:6px}
+.report-card[data-adventure-report="1"] .report-table-scroll.report-has-scroll::-webkit-scrollbar-track{background:transparent}
+.report-card[data-adventure-report="1"] .report-table-scroll.report-has-scroll::-webkit-scrollbar-thumb{
+  background:rgba(84,145,181,.30);
+  border-radius:999px;
+}
+
+@media(max-width:1080px){
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-chart-inner{height:245px}
+}
+@media(max-width:720px){
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-header{
+    min-height:116px;
+    padding:19px 116px 19px 18px;
+  }
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-header h2{font-size:21px}
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-header p{font-size:12px}
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-hero-visual{right:15px;width:80px;height:90px}
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-hero-visual img{width:74px;height:82px}
+  .report-card[data-adventure-report="1"] .report-insights{gap:5px}
+  .report-card[data-adventure-report="1"] .report-insight{padding:7px}
+  .report-card[data-adventure-report="1"] .report-insight-label{font-size:8.5px}
+  .report-card[data-adventure-report="1"] .report-insight-value{font-size:15px}
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-chart-inner{height:218px;padding-top:24px}
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-table{font-size:10.8px}
+  .report-card[data-adventure-report="1"].report-polish-v0519 .report-table thead th{font-size:10px}
+}
