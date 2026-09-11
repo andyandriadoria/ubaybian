@@ -51,6 +51,16 @@ function installLogout(family){
  topbar.append(logout);
 }
 
+// A quiz runs inside the Home route. If Home is clicked while the URL is already
+// #/profile/home, nudge the hash with a harmless trailing slash so hashchange fires.
+document.addEventListener('click',(event)=>{
+ const trigger=event.target.closest('#nav-home,.brand,.result-actions .secondary');
+ if(!trigger||!document.querySelector('.result-panel'))return;
+ const profileId=document.body.dataset.profile;
+ if(!profileId)return;
+ queueMicrotask(()=>{if(document.querySelector('.result-panel'))location.hash=`/${profileId}/home/`;});
+});
+
 async function start(){
  if(!backendEnabled){await import('./app-v040.js?v=0.4.0');return;}
  if(!getSessionToken()){showLogin();return;}
