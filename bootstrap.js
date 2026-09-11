@@ -1,8 +1,9 @@
 import {apiBase,backendEnabled} from './config.js';
-import {ApiError,clearSessionToken,createApiClient,getSessionToken} from './api-v037.js';
+import {ApiError,clearSessionToken,createApiClient,getSessionToken} from './api-v040.js?v=0.4.0';
 
 const main=document.querySelector('#main');
 const switchButton=document.querySelector('#switch-profile');
+const profileNav=document.querySelector('#profile-nav');
 const api=backendEnabled?createApiClient(apiBase):null;
 
 function node(tag,attrs={},children=[]){
@@ -20,7 +21,8 @@ const text=(tag,value,cls)=>node(tag,{text:value,...(cls?{class:cls}:{})});
 
 function showLogin(message=''){
  document.body.dataset.profile='';
- switchButton.hidden=true;
+ if(switchButton)switchButton.hidden=true;
+ if(profileNav)profileNav.hidden=true;
  main.replaceChildren();
  const card=node('section',{class:'login-card','aria-labelledby':'login-title'});
  card.append(text('span','🔐','login-icon'),text('p','UBAYBIAN FAMILY','eyebrow'),node('h1',{id:'login-title',text:'Masuk ke ruang belajar'}),text('p','Login keluarga menjaga bank soal dan progres Ubay & Bian tetap privat.','intro'));
@@ -50,9 +52,9 @@ function installLogout(family){
 }
 
 async function start(){
- if(!backendEnabled){await import('./app-v037.js');return;}
+ if(!backendEnabled){await import('./app-v040.js?v=0.4.0');return;}
  if(!getSessionToken()){showLogin();return;}
- try{const account=await api.me();installLogout(account.family);await import('./app-v037.js');}
+ try{const account=await api.me();installLogout(account.family);await import('./app-v040.js?v=0.4.0');}
  catch(error){clearSessionToken();showLogin(error instanceof ApiError&&error.status===401?'Sesi sudah berakhir. Silakan masuk lagi.':'Tidak dapat memverifikasi sesi keluarga.');}
 }
 
