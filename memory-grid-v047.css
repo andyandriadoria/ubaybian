@@ -1,0 +1,179 @@
+/* UbayBian Neural Grid v2.1 · compact + unified palette */
+.neural-overlay{
+  padding:clamp(10px,2vw,22px);
+  background:
+    radial-gradient(circle at 12% 12%,rgba(19,143,209,.24),transparent 34%),
+    radial-gradient(circle at 88% 84%,rgba(245,185,60,.15),transparent 28%),
+    rgba(5,31,56,.90);
+}
+.neural-shell{
+  --ng-ink:#17354d;
+  --ng-muted:#678398;
+  --ng-blue:#138fd1;
+  --ng-cyan:#1fa8e8;
+  --ng-orange:#ff6b32;
+  --ng-gold:#f5b93c;
+  --ng-mint:#17a673;
+  --ng-coral:#e95662;
+  width:min(1000px,94vw);
+  height:min(820px,calc(100vh - 32px));
+  min-height:0;
+  max-height:none;
+  overflow:hidden;
+  border-radius:32px;
+  background:radial-gradient(circle at 50% 34%,#fff 0%,#f7fbfd 46%,#edf7fc 100%);
+  box-shadow:0 30px 88px rgba(0,28,61,.42),inset 0 1px 0 rgba(255,255,255,.96);
+}
+.neural-shell:before{
+  opacity:.34;
+  background-image:
+    linear-gradient(rgba(19,143,209,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(19,143,209,.035) 1px,transparent 1px),
+    radial-gradient(circle at 73% 36%,rgba(31,168,232,.09),transparent 28%),
+    radial-gradient(circle at 28% 76%,rgba(245,185,60,.06),transparent 28%);
+}
+.neural-top{padding:22px 28px 8px;}
+.neural-icon{
+  width:58px;height:58px;border-radius:19px;
+  background:linear-gradient(145deg,#e7f7ff,#fff5dc);
+  box-shadow:inset 0 0 0 1px rgba(19,143,209,.10),0 10px 24px rgba(16,92,139,.10);
+}
+.neural-kicker{color:#467a9a;}
+.neural-title{font-size:clamp(30px,3vw,40px);}
+.neural-subtitle{color:var(--ng-muted);}
+.neural-stage{height:calc(100% - 88px);padding:4px 28px 24px;}
+.neural-view{height:100%;min-height:0;}
+
+/* Ready */
+.neural-ready{max-width:680px;}
+.neural-orb{
+  width:92px;height:92px;margin-bottom:14px;border-radius:28px;font-size:40px;
+  background:linear-gradient(145deg,#e7f7ff,#fff4dd);
+  box-shadow:0 14px 36px rgba(19,143,209,.13),0 0 28px rgba(31,168,232,.08),inset 0 0 0 1px rgba(255,255,255,.92);
+}
+.neural-orb:after{inset:-8px;border-color:rgba(19,143,209,.18);}
+.neural-ready h3{font-size:clamp(42px,4vw,50px);}
+.neural-ready-copy{max-width:560px;margin:13px auto 20px;font-size:17px;line-height:1.5;color:var(--ng-muted);}
+.neural-chips{gap:8px;margin-bottom:20px;}
+.neural-chip{
+  padding:8px 13px;background:#f3f9fc;color:#175f88;
+  box-shadow:inset 0 0 0 1px #cae6f3;font-size:13px;
+}
+.neural-xp-card{width:min(560px,100%);margin-bottom:22px;padding:14px 17px;border-color:#d5e8f2;}
+.neural-xp-track{background:#ddecf4;}
+.neural-xp-fill{background:linear-gradient(90deg,var(--ng-blue),var(--ng-cyan));box-shadow:0 0 14px rgba(31,168,232,.24);}
+.neural-main-btn{
+  background:linear-gradient(135deg,#ff8437,var(--ng-orange));
+  box-shadow:0 13px 30px rgba(255,107,50,.25);
+}
+.neural-main-btn:hover{box-shadow:0 17px 36px rgba(255,107,50,.32);}
+.neural-note{color:#6c8799;}
+
+/* Gameplay */
+.neural-play{max-width:760px;justify-content:flex-start;padding-top:2px;}
+.neural-hud{width:min(480px,100%);grid-template-columns:110px 150px 110px;justify-content:center;gap:12px;margin:0 auto 10px;}
+.neural-stat{
+  min-width:0;height:82px;padding:11px 14px;border-radius:20px;
+  background:#f7fbfd;border-color:#d5e8f2;box-shadow:0 8px 22px rgba(27,78,113,.06);
+}
+.neural-stat:first-child{border-color:#b8e4f6;background:linear-gradient(145deg,#f3fbff,#eaf8ff);}
+.neural-stat.right{border-color:#f0d895;background:linear-gradient(145deg,#fffaf0,#fff5d9);}
+.neural-stat-label{font-size:10px;color:#69869a;}
+.neural-stat-value{font-size:32px;}
+.neural-round{
+  min-width:150px;padding:11px 16px;
+  background:#f3f9fc;border:1px solid #cae6f3;color:#17688f;font-size:13px;
+}
+.neural-phase{min-height:22px;margin:0 0 8px;font-size:12px;color:#176d98;letter-spacing:.11em;}
+.neural-board{
+  width:min(400px,68vw);padding:12px;gap:12px;margin:0 auto 14px;border-radius:28px;
+  background:linear-gradient(145deg,#17354d,#13506f);
+  box-shadow:0 18px 42px rgba(18,56,85,.22),inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.neural-cell{
+  border-radius:22px;border-color:rgba(92,199,236,.22);
+  background:linear-gradient(145deg,#214d72,#1d5877);
+  font-size:clamp(46px,5.3vw,58px);
+}
+.neural-cell:before{opacity:.32;background:radial-gradient(circle at 30% 22%,rgba(92,199,236,.18),transparent 34%);}
+.neural-cell.is-hidden{background:linear-gradient(145deg,#214d72,#1c4f6d);}
+.neural-cell.is-hidden:after{color:#aeebff;font-size:clamp(42px,5vw,54px);}
+.neural-cell.is-target{
+  border-color:#55c9f2;
+  box-shadow:0 0 0 4px rgba(31,168,232,.15),0 0 26px rgba(31,168,232,.28);
+}
+.neural-cell.is-correct{border-color:#63d2ae;background:linear-gradient(145deg,#176b63,#1a7b6d);}
+.neural-countdown{
+  width:72px;height:72px;font-size:32px;background:rgba(11,40,62,.82);
+  box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 0 5px rgba(31,168,232,.12);
+}
+.neural-prompt{margin:3px auto 11px;font-size:clamp(22px,2.2vw,26px);}
+.neural-options{width:min(600px,100%);gap:10px;}
+.neural-option{
+  min-height:54px;padding:12px 10px;border-radius:16px;border-color:#d2e5ef;
+  color:#173f59;font:700 18px/1 inherit;background:#fff;
+}
+.neural-option:hover:not(:disabled){border-color:#9bd5ee;background:#f3fbff;box-shadow:0 10px 24px rgba(19,143,209,.10);}
+.neural-option.correct{color:#087d5a;background:#dff8ef;border-color:#a8e7d3;}
+.neural-option.wrong{color:#b93449;background:#ffe7ea;border-color:#ffc2ca;}
+.neural-feedback{min-height:22px;margin-top:9px;}
+.neural-next{
+  margin-top:9px;padding:12px 20px;border-radius:15px;color:#fff;
+  background:linear-gradient(135deg,#ff8437,var(--ng-orange));
+  box-shadow:0 9px 22px rgba(255,107,50,.18);
+}
+
+/* Result */
+.neural-result{max-width:660px;}
+.neural-complete{margin-bottom:9px;background:#e7f6fd;color:#166b95;}
+.neural-result h3{font-size:clamp(34px,3.6vw,44px);}
+.neural-score-ring{
+  width:140px;height:140px;margin:15px auto 8px;
+  box-shadow:0 0 0 8px rgba(31,168,232,.07),0 18px 38px rgba(22,87,130,.13),0 0 38px rgba(245,185,60,.07);
+}
+.neural-result-grid{margin:20px auto 18px;}
+.neural-result-card:nth-child(1){background:linear-gradient(145deg,#fff9e8,#fff4cf);border-color:#f1d78b;}
+.neural-result-card:nth-child(2){background:linear-gradient(145deg,#ecf8ff,#dcf3ff);border-color:#b8e3f6;}
+.neural-result-card:nth-child(3){background:linear-gradient(145deg,#f2faff,#e8f6fc);border-color:#c8e5f1;}
+.neural-ghost-btn{background:#fff;color:#4d6c82;}
+
+@media (max-height:799px) and (min-width:721px){
+  .neural-shell{height:calc(100vh - 20px);}
+  .neural-top{padding-top:14px;padding-bottom:4px;}
+  .neural-icon{width:50px;height:50px;border-radius:16px;font-size:25px;}
+  .neural-title{font-size:32px;}.neural-subtitle{margin-top:3px;font-size:13px;}
+  .neural-stage{height:calc(100% - 68px);padding:0 24px 14px;}
+  .neural-hud{height:70px;margin-bottom:6px;grid-template-columns:100px 140px 100px;}
+  .neural-stat{height:70px;padding:8px 12px}.neural-stat-value{font-size:27px;}
+  .neural-round{padding:9px 13px;}
+  .neural-phase{margin-bottom:5px;min-height:19px;font-size:11px;}
+  .neural-board{width:min(320px,58vh);padding:10px;gap:10px;margin-bottom:8px;border-radius:24px;}
+  .neural-cell{border-radius:18px;font-size:42px;}
+  .neural-prompt{font-size:21px;margin:1px auto 7px;}
+  .neural-option{min-height:45px;padding:9px;font-size:16px;}
+  .neural-feedback{margin-top:5px;min-height:18px;font-size:12px;}
+  .neural-next{margin-top:5px;padding:10px 18px;}
+  .neural-ready .neural-orb{width:76px;height:76px;font-size:34px;margin-bottom:9px;}
+  .neural-ready h3{font-size:40px}.neural-ready-copy{margin:9px auto 13px;font-size:15px;}
+  .neural-chips{margin-bottom:13px}.neural-xp-card{margin-bottom:14px;padding:11px 15px;}
+  .neural-result-grid{margin:14px auto 13px}.neural-score-ring{width:118px;height:118px;margin:10px auto 5px}.neural-score-ring strong{font-size:52px;}
+}
+
+@media (max-width:720px){
+  .neural-overlay{padding:0;}
+  .neural-shell{width:100vw;height:100dvh;max-height:none;border-radius:0;}
+  .neural-top{padding:16px 16px 6px;}
+  .neural-icon{width:48px;height:48px;border-radius:16px;font-size:24px;}
+  .neural-title{font-size:28px}.neural-subtitle{font-size:12px;}
+  .neural-close{width:42px;height:42px;}
+  .neural-stage{height:calc(100% - 70px);padding:0 16px 16px;}
+  .neural-ready-copy{font-size:15px;}
+  .neural-hud{grid-template-columns:1fr auto 1fr;width:100%;gap:8px;}
+  .neural-stat{height:68px;padding:8px 10px}.neural-stat-value{font-size:26px}.neural-round{min-width:120px;padding:9px 11px;font-size:12px;}
+  .neural-board{width:min(360px,88vw);padding:10px;gap:10px;border-radius:24px;}
+  .neural-cell{border-radius:18px;font-size:42px;}
+  .neural-prompt{font-size:20px;}
+  .neural-options{grid-template-columns:repeat(2,1fr);max-width:360px;}
+  .neural-option{min-height:50px;font-size:17px;}
+  .neural-result-grid{gap:8px;}.neural-result-card{padding:13px 8px;}.neural-result-card strong{font-size:23px;}
+}
