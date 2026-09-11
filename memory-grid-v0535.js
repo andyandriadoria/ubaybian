@@ -1,21 +1,34 @@
-/* UbayBian v0.5.36 · Memory Grid Neural Chamber Clarity Pass
+/* UbayBian v0.5.37 · Memory Grid Chamber Lock Polish
    Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid-v046.js.
-   This file also loads the v0.5.36 clarity stylesheet so the release can layer cleanly over v0.5.35. */
+   Loads the v0.5.36 clarity layer followed by the v0.5.37 lock polish. */
 (() => {
   const SELECTOR = '.neural-shell';
 
-  function loadClarityCSS(){
-    if(document.querySelector('link[data-memory-grid-v0536]')) return;
+  function appendCSS({selector,href,dataKey}){
+    if(document.querySelector(selector)) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'memory-grid-v0536.css?v=0.5.36';
-    link.dataset.memoryGridV0536 = '1';
+    link.href = href;
+    link.dataset[dataKey] = '1';
     document.head.append(link);
+  }
+
+  function loadClarityCSS(){
+    appendCSS({
+      selector:'link[data-memory-grid-v0536]',
+      href:'memory-grid-v0536.css?v=0.5.37',
+      dataKey:'memoryGridV0536'
+    });
+    appendCSS({
+      selector:'link[data-memory-grid-v0537]',
+      href:'memory-grid-v0537.css?v=0.5.37',
+      dataKey:'memoryGridV0537'
+    });
   }
 
   function syncVersionLabel(){
     const version = document.querySelector('.version');
-    if(version) version.textContent = 'v0.5.36 · family';
+    if(version) version.textContent = 'v0.5.37 · family';
   }
 
   function addWorldDepth(overlay){
@@ -58,7 +71,7 @@
       <div class="ng35-data-rail"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="ng35-grid-dock"><span></span><b></b></div>
       <div class="ng35-mascot-pad"><span></span></div>
-      <div class="ng35-energy-dock"><i></i><i></i><span>CORE</span></div>
+      <div class="ng35-energy-dock"><i></i><i></i><span>MEMORY CORE</span></div>
       <div class="ng35-stage-plinth"><i></i><i></i><i></i></div>
     `;
     fx.append(kit);
@@ -84,16 +97,17 @@
     if(!shell || shell.dataset.ng0535 === '1') return;
     shell.dataset.ng0535 = '1';
     shell.dataset.ng0536 = '1';
+    shell.dataset.ng0537 = '1';
     const overlay = shell.closest('.neural-overlay');
     addWorldDepth(overlay);
     addChamberDepth(shell);
     addClarityKit(shell);
 
-    const feedback = shell.querySelector('.neural-feedback');
-    const resultScore = shell.querySelector('.neural-score-ring strong');
-    const mascotBubble = shell.querySelector('.neural-lab-bubble');
-
     const syncOutcome = () => {
+      const feedback = shell.querySelector('.neural-feedback');
+      const resultScore = shell.querySelector('.neural-score-ring strong');
+      const mascotBubble = shell.querySelector('.neural-lab-bubble');
+
       let outcome = '';
       if(feedback?.classList.contains('success')) outcome = 'success';
       else if(feedback?.classList.contains('error')) outcome = 'error';
@@ -108,8 +122,15 @@
       }
 
       if(mascotBubble){
+        const state = shell.dataset.neuralState || '';
         if(outcome === 'success') mascotBubble.textContent = 'Yes! Ketemu! ✨';
-        else if(outcome === 'error') mascotBubble.textContent = 'Hampir! Ingat lagi ya.';
+        else if(outcome === 'error') mascotBubble.textContent = 'Hampir! Coba ingat lagi.';
+        else if(state === 'ready') mascotBubble.textContent = 'Siap melatih ingatan?';
+        else if(state === 'scan') mascotBubble.textContent = 'Ingat posisinya!';
+        else if(state === 'recall') mascotBubble.textContent = 'Kotak yang mana tadi?';
+        else if(state === 'result' && score === 5) mascotBubble.textContent = 'Hebat! Semua ketemu! 🌟';
+        else if(state === 'result' && score >= 4) mascotBubble.textContent = 'Mantap! Ingatanmu tajam! ✨';
+        else if(state === 'result') mascotBubble.textContent = 'Kita coba lagi, ya!';
       }
     };
 
