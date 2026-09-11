@@ -1,0 +1,9 @@
+body[data-profile="bian"] .question-text{font-size:20px;line-height:1.45}
+body[data-profile="bian"] .option-btn{padding:13px 14px;font-size:14px;min-height:58px}
+body[data-profile="bian"] .option-label{width:34px;height:34px;font-size:14px}
+body[data-profile="bian"] .text-answer{font-size:16px;padding:13px 14px}
+body[data-profile="bian"] .check-btn{font-size:13px;padding:10px 16px}
+body[data-profile="bian"] .feedback{font-size:13px;line-height:1.45}
+body[data-profile="bian"] .hero-text h1{font-size:29px}
+body[data-profile="bian"] .hero-text p{font-size:13px}
+@media(max-width:640px){body[data-profile="bian"] .question-text{font-size:19px}body[data-profile="bian"] .option-btn{font-size:14px}}
