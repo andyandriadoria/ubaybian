@@ -1,4 +1,4 @@
-import {normalizeSession,normalizeAnswerResult} from './quiz.js';
+import {normalizeSession,normalizeAnswerResult} from './quiz.js?v=0.4.0';
 
 const SESSION_KEY='ubaybian:family-session:v1';
 
