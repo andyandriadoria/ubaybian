@@ -1,0 +1,23 @@
+/* UbayBian v0.5.10 · Simpler Profile Select
+   Removes explanatory helper copy that children do not need.
+   Visual-only change for the logged-in profile chooser. */
+
+body[data-profile=""]:not(.login-gateway) .profile-intro .intro,
+body[data-profile=""]:not(.login-gateway) .hint{
+  display:none !important;
+}
+
+/* Rebalance spacing now that the two helper sentences are gone. */
+body[data-profile=""]:not(.login-gateway) .profile-intro{
+  margin-bottom:22px;
+}
+body[data-profile=""]:not(.login-gateway) .profile-intro h1{
+  margin-bottom:0;
+}
+body[data-profile=""]:not(.login-gateway) .profile-grid{
+  margin-top:0;
+}
+
+@media (max-height:780px) and (min-width:801px){
+  body[data-profile=""]:not(.login-gateway) .profile-intro{margin-bottom:16px;}
+}
