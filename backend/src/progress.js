@@ -106,10 +106,11 @@ export async function dashboardForProfile(env, familyId, profile) {
   const totalCorrect = answersDesc.reduce((sum, row) => sum + (Number(row.correct) === 1 ? 1 : 0), 0);
   const totalAnswered = answersDesc.length;
   const perfectSessions = sessions.filter((row) => scoreForSession(row) === 100).length;
-  const xp = (totalCorrect * 10) + (sessions.length * 20);
+  const streak = streakInfo(sessions.map((row) => row.completed_at));
+  const streakXpBonus = (streak.longest >= 3 ? 30 : 0) + (streak.longest >= 7 ? 70 : 0);
+  const xp = (totalCorrect * 10) + (sessions.length * 20) + streakXpBonus;
   const coins = (totalCorrect * 50) + (perfectSessions * 100);
   const level = levelForXp(xp);
-  const streak = streakInfo(sessions.map((row) => row.completed_at));
 
   const subjectStats = new Map();
   for (const row of answersDesc) {
@@ -151,6 +152,7 @@ export async function dashboardForProfile(env, familyId, profile) {
   if (perfectSessions >= 5) badges.push(badge('perfect-5', 'Perfect Score x5', 'Mendapat nilai 100% dalam 5 sesi.', '🌟🌟🌟'));
   if (perfectSessions >= 10) badges.push(badge('perfect-10', 'Perfect Score x10', 'Mendapat nilai 100% dalam 10 sesi.', '👑'));
   if (streak.longest >= 3) badges.push(badge('on-fire', 'On Fire', 'Belajar pada 3 hari berturut-turut.', '🔥'));
+  if (streak.longest >= 14) badges.push(badge('steady-14', 'Steady Learner', 'Menjaga kebiasaan belajar selama 14 hari berturut-turut.', '🗓️'));
   if (sessions.length >= 10) badges.push(badge('study-habit', 'Study Habit', 'Menyelesaikan 10 sesi latihan.', '📚'));
   if (totalAnswered >= 100) badges.push(badge('hundred-questions', '100 Questions', 'Menjawab 100 soal latihan.', '🧠'));
   if (sessions.some((row) => Number(row.total_questions) >= 15)) badges.push(badge('challenge-accepted', 'Challenge Accepted', 'Menyelesaikan sesi 15 soal.', '🚀'));
@@ -179,6 +181,7 @@ export async function dashboardForProfile(env, familyId, profile) {
       coins,
       level,
       streak,
+      streakXpBonus,
       totalSessions: sessions.length,
       totalAnswered,
       totalCorrect,
@@ -193,6 +196,8 @@ export async function dashboardForProfile(env, familyId, profile) {
       correctCoins: 50,
       completionXp: 20,
       perfectCoins: 100,
+      streak3Xp: 30,
+      streak7Xp: 70,
     },
   };
 }
