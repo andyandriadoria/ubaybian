@@ -1,10 +1,10 @@
 {
   "name":"ubaybian",
-  "version":"0.5.11",
+  "version":"0.5.12",
   "private":true,
   "type":"module",
   "scripts":{
     "test":"node --test tests/*.test.js",
-    "check":"node --check app-v040.js && node --check bootstrap.js && node --check api-v040.js && node --check extras-v042.js && node --check brain-games-v043.js && node --check memory-grid-v046.js && node --check adventure-v050.js && node --check adventure-v051.js && node --check adventure-v052.js && node --check profiles.js && node --check config.js && node --check quiz.js"
+    "check":"node --check app-v040.js && node --check bootstrap.js && node --check api-v040.js && node --check extras-v042.js && node --check brain-games-v043.js && node --check memory-grid-v046.js && node --check adventure-v050.js && node --check adventure-v051.js && node --check adventure-v052.js && node --check quiz-adventure-v0512.js && node --check profiles.js && node --check config.js && node --check quiz.js"
   }
 }
