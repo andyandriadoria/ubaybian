@@ -27,14 +27,46 @@ export function normalizeSession(input){
  const data=requireObject(input,'Sesi');const sessionId=text(data.sessionId,160);
  if(!sessionId)throw new Error('Session ID tidak tersedia.');
  const current=Number(data.progress?.current??1);const total=Number(data.progress?.total??0);
- return Object.freeze({sessionId,question:normalizeQuestion(data.question),progress:{current:Number.isFinite(current)?current:1,total:Number.isFinite(total)?total:0}});
+ return Object.freeze({
+   sessionId,
+   subjectId:text(data.subjectId,80),
+   mode:text(data.mode,30)||'normal',
+   question:normalizeQuestion(data.question),
+   progress:{current:Number.isFinite(current)?current:1,total:Number.isFinite(total)?total:0},
+ });
+}
+
+function normalizeSummary(value){
+ if(!value||typeof value!=='object'||Array.isArray(value))return null;
+ return Object.freeze({
+   score:Math.max(0,Math.min(100,Number(value.score)||0)),
+   correct:Math.max(0,Number(value.correct)||0),
+   wrong:Math.max(0,Number(value.wrong)||0),
+   skipped:Math.max(0,Number(value.skipped)||0),
+   total:Math.max(0,Number(value.total)||0),
+   xpEarned:Math.max(0,Number(value.xpEarned)||0),
+   coinsEarned:Math.max(0,Number(value.coinsEarned)||0),
+   completionXp:Math.max(0,Number(value.completionXp)||0),
+   perfectBonusCoins:Math.max(0,Number(value.perfectBonusCoins)||0),
+ });
 }
 
 export function normalizeAnswerResult(input){
  const data=requireObject(input,'Hasil jawaban');
  if(typeof data.correct!=='boolean')throw new Error('Status jawaban tidak valid.');
  const nextQuestion=data.nextQuestion?normalizeQuestion(data.nextQuestion):null;
- return Object.freeze({correct:data.correct,explanation:text(data.explanation,4000),xpEarned:Math.max(0,Number(data.xpEarned)||0),sessionComplete:Boolean(data.sessionComplete),nextQuestion,progress:{current:Number(data.progress?.current)||0,total:Number(data.progress?.total)||0}});
+ return Object.freeze({
+   correct:data.correct,
+   skipped:Boolean(data.skipped),
+   correctAnswer:text(data.correctAnswer,1000),
+   explanation:text(data.explanation,4000),
+   xpEarned:Math.max(0,Number(data.xpEarned)||0),
+   coinEarned:Math.max(0,Number(data.coinEarned)||0),
+   sessionComplete:Boolean(data.sessionComplete),
+   summary:normalizeSummary(data.summary),
+   nextQuestion,
+   progress:{current:Number(data.progress?.current)||0,total:Number(data.progress?.total)||0},
+ });
 }
 
 export function newIdempotencyKey(){
