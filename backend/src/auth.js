@@ -14,16 +14,48 @@ function validatePassword(value) {
   return password;
 }
 
+async function ensureDefaultProfiles(env, familyId) {
+  await env.DB.batch([
+    env.DB.prepare(`INSERT OR IGNORE INTO profiles (family_id, slug, display_name, grade, level)
+                    VALUES (?, 'ubay', 'Ubay', 7, 'Junior High')`).bind(familyId),
+    env.DB.prepare(`INSERT OR IGNORE INTO profiles (family_id, slug, display_name, grade, level)
+                    VALUES (?, 'bian', 'Bian', 2, 'Primary')`).bind(familyId),
+  ]);
+}
+
 export async function setupFamily(env, body, setupToken) {
   if (!env.SETUP_TOKEN || setupToken !== env.SETUP_TOKEN) throw new HttpError(403, 'SETUP_FORBIDDEN', 'Setup token tidak valid.');
-  const existing = await env.DB.prepare('SELECT COUNT(*) AS count FROM family_accounts').first();
-  if (Number(existing?.count || 0) > 0) throw new HttpError(409, 'ALREADY_SETUP', 'Akun keluarga sudah dibuat.');
 
   const username = normalizeUsername(body?.username);
   const displayName = String(body?.displayName ?? 'Keluarga UbayBian').trim().slice(0, 80) || 'Keluarga UbayBian';
   const password = validatePassword(body?.password);
   const passwordData = await hashPassword(password);
   const now = Date.now();
+
+  const accounts = await env.DB.prepare('SELECT id, username FROM family_accounts ORDER BY id').all();
+  const existing = Array.isArray(accounts.results) ? accounts.results : [];
+
+  if (existing.length > 1) throw new HttpError(409, 'ALREADY_SETUP', 'Akun keluarga sudah dibuat.');
+
+  if (existing.length === 1) {
+    const account = existing[0];
+    if (String(account.username).toLowerCase() !== username) throw new HttpError(409, 'ALREADY_SETUP', 'Akun keluarga sudah dibuat.');
+
+    const profileCount = await env.DB.prepare('SELECT COUNT(*) AS count FROM profiles WHERE family_id = ?').bind(account.id).first();
+    if (Number(profileCount?.count || 0) >= 2) throw new HttpError(409, 'ALREADY_SETUP', 'Akun keluarga sudah dibuat.');
+
+    try {
+      await env.DB.prepare(`UPDATE family_accounts
+                            SET display_name = ?, password_salt = ?, password_hash = ?, password_iterations = ?
+                            WHERE id = ?`)
+        .bind(displayName, passwordData.salt, passwordData.hash, passwordData.iterations, account.id).run();
+      await ensureDefaultProfiles(env, Number(account.id));
+      return { familyId: Number(account.id), username, displayName, repaired: true };
+    } catch (error) {
+      console.error('SETUP_REPAIR_FAILED', error);
+      throw new HttpError(500, 'SETUP_REPAIR_FAILED', 'Setup sebelumnya belum dapat dipulihkan. Periksa log Worker untuk detail teknis.');
+    }
+  }
 
   try {
     await env.DB.prepare(`
@@ -35,19 +67,14 @@ export async function setupFamily(env, body, setupToken) {
     const familyId = Number(account?.id || 0);
     if (!familyId) throw new Error('Family account ID tidak ditemukan setelah insert.');
 
-    await env.DB.batch([
-      env.DB.prepare('INSERT INTO profiles (family_id, slug, display_name, grade, level) VALUES (?, ?, ?, ?, ?)').bind(familyId, 'ubay', 'Ubay', 7, 'Junior High'),
-      env.DB.prepare('INSERT INTO profiles (family_id, slug, display_name, grade, level) VALUES (?, ?, ?, ?, ?)').bind(familyId, 'bian', 'Bian', 2, 'Primary'),
-    ]);
-
-    return { familyId, username, displayName };
+    await ensureDefaultProfiles(env, familyId);
+    return { familyId, username, displayName, repaired: false };
   } catch (error) {
     try {
       await env.DB.prepare('DELETE FROM family_accounts WHERE username = ? COLLATE NOCASE').bind(username).run();
     } catch (cleanupError) {
       console.error('SETUP_CLEANUP_FAILED', cleanupError);
     }
-    if (error instanceof HttpError) throw error;
     const message = String(error?.message || '');
     if (/no such table/i.test(message)) throw new HttpError(503, 'DB_SCHEMA_MISSING', 'Struktur database belum lengkap.');
     if (/unique constraint/i.test(message)) throw new HttpError(409, 'ACCOUNT_EXISTS', 'Akun keluarga sudah ada.');
