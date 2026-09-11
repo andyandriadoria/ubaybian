@@ -15,8 +15,8 @@ async function dbQuestion(env, sessionId, position) {
 }
 
 export async function startQuiz(env, familyId, profile, subjectId, requestedLimit) {
-  const { spreadsheetId, sheetName } = sheetConfig(env, profile.slug, subjectId);
-  const rows = await readSheetValues(env, spreadsheetId, sheetName);
+  const { profileSlug, sheetName } = sheetConfig(profile.slug, subjectId);
+  const rows = await readSheetValues(env, profileSlug, sheetName);
   const available = parsePublishedQuestions(rows);
   if (!available.length) throw new HttpError(422, 'NO_PUBLISHED_QUESTIONS', 'Belum ada soal Published yang siap untuk pelajaran ini.');
   const limit = Math.min(20, Math.max(1, Number(requestedLimit) || 10));
