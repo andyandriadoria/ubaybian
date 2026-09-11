@@ -1,13 +1,13 @@
 import { familyProfiles, login, logout, requireProfile, requireSession, setupFamily } from './auth.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
-import { progressForFamily } from './progress.js';
+import { dashboardForProfile, progressForFamily } from './progress.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
 
 async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.3.5',
+    version: '0.4.0',
     db: { bound: Boolean(env.DB), schemaReady: false },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
@@ -33,7 +33,8 @@ async function health(env) {
 }
 
 async function handler(request, env) {
-  const url = new URL(request.url); const path = url.pathname.replace(/\/+$/, '') || '/';
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/\/+$/, '') || '/';
   if (request.method === 'GET' && path === '/v1/health') return json(await health(env));
 
   if (request.method === 'POST' && path === '/v1/setup') {
@@ -47,7 +48,8 @@ async function handler(request, env) {
     return json({ token: result.token, expiresAt: result.expiresAt, family: result.family, profiles });
   }
   if (request.method === 'POST' && path === '/v1/auth/logout') {
-    await logout(request, env); return json({ ok: true });
+    await logout(request, env);
+    return json({ ok: true });
   }
   if (request.method === 'GET' && path === '/v1/auth/me') {
     const session = await requireSession(request, env);
@@ -57,19 +59,37 @@ async function handler(request, env) {
     const session = await requireSession(request, env);
     return json({ items: await progressForFamily(env, session.familyId) });
   }
+
+  const dashboardParams = routeMatch(path, '/v1/dashboard/:profileId');
+  if (request.method === 'GET' && dashboardParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, dashboardParams.profileId);
+    return json(await dashboardForProfile(env, session.familyId, profile));
+  }
+
   const progressParams = routeMatch(path, '/v1/progress/:profileId');
   if (request.method === 'GET' && progressParams) {
-    const session = await requireSession(request, env); const profile = await requireProfile(env, session.familyId, progressParams.profileId);
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, progressParams.profileId);
     return json({ items: await progressForFamily(env, session.familyId, profile.id) });
   }
   if (request.method === 'POST' && path === '/v1/quiz/sessions') {
-    const session = await requireSession(request, env); const body = await readJson(request);
+    const session = await requireSession(request, env);
+    const body = await readJson(request);
     const profile = await requireProfile(env, session.familyId, String(body?.profileId || ''));
-    return json(await startQuiz(env, session.familyId, profile, String(body?.subjectId || ''), body?.limit), 201);
+    return json(await startQuiz(
+      env,
+      session.familyId,
+      profile,
+      String(body?.subjectId || ''),
+      body?.limit,
+      body?.mode,
+    ), 201);
   }
   const answerParams = routeMatch(path, '/v1/quiz/sessions/:sessionId/answers');
   if (request.method === 'POST' && answerParams) {
-    const session = await requireSession(request, env); const body = await readJson(request);
+    const session = await requireSession(request, env);
+    const body = await readJson(request);
     return json(await submitAnswer(env, session.familyId, answerParams.sessionId, body, request.headers.get('Idempotency-Key') || ''));
   }
   throw new HttpError(404, 'NOT_FOUND', 'Endpoint tidak ditemukan.');
