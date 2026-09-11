@@ -1,5 +1,5 @@
-// UbayBian v0.5.15 — Unified Adventure Shell
-// Keeps the Home visual world active on Quiz/Result/Report/Robot Lab style screens.
+// UbayBian v0.5.16 — Unified Adventure Shell
+// Keeps the Home visual world active on Quiz/Result/Report/Robot Lab and loading transitions.
 (() => {
   const main = document.querySelector('#main');
   if (!main) return;
@@ -19,12 +19,16 @@
     scheduled = false;
     const hasSidebar = Boolean(main.querySelector('.app-main-grid .side-menu'));
     const hasMainColumn = Boolean(main.querySelector('.app-main-grid .main-col'));
-    const hasAdventureShell = hasSidebar && hasMainColumn;
+    const hasInternalScreen = hasSidebar && hasMainColumn;
+    const hasLoadingTransition = Boolean(
+      document.body.dataset.profile && main.querySelector('.loading-card:not(.error-state)')
+    );
+    const hasAdventureShell = hasInternalScreen || hasLoadingTransition;
 
     document.body.classList.toggle('adventure-shell', hasAdventureShell);
-    if (!hasAdventureShell) return;
+    document.body.classList.toggle('adventure-transition-shell', hasLoadingTransition);
 
-    classifyTiles();
+    if (hasInternalScreen) classifyTiles();
   }
 
   function schedule(){
