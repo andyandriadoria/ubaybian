@@ -1,0 +1,146 @@
+/* UbayBian v0.5.16 — Unified Adventure Transition
+   Loading is no longer a separate legacy world. It inherits the Home master shell. */
+
+body.adventure-transition-shell{
+  background:
+    radial-gradient(circle at 11% 8%,rgba(255,255,255,.95) 0 2px,transparent 3px),
+    radial-gradient(circle at 29% 14%,rgba(255,244,155,.92) 0 2px,transparent 3px),
+    radial-gradient(circle at 66% 9%,rgba(255,255,255,.90) 0 2px,transparent 3px),
+    radial-gradient(circle at 83% 19%,rgba(255,247,176,.90) 0 3px,transparent 4px),
+    linear-gradient(145deg,#2cbdf5 0%,#24a9ed 45%,#188bd1 100%);
+}
+
+/* Keep the exact Home shell during the handoff. */
+body.adventure-transition-shell .shell{
+  width:100%;
+  max-width:none;
+  min-height:100vh;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible;
+}
+body.adventure-transition-shell .topbar{
+  min-height:76px;
+  padding:13px 42px;
+  gap:20px;
+  color:#fff;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+body.adventure-transition-shell .brand{
+  font-size:22px;
+  font-weight:900;
+  text-shadow:0 2px 6px rgba(8,75,124,.28);
+}
+body.adventure-transition-shell .brand-wordmark{color:#fff;}
+body.adventure-transition-shell .brand-wordmark span{color:#fff0a6;}
+body.adventure-transition-shell .brand-icon{font-size:28px;filter:drop-shadow(0 4px 6px rgba(7,79,126,.24));}
+body.adventure-transition-shell .top-nav{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  gap:2px;
+  padding:6px;
+  border:1px solid rgba(255,255,255,.58);
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(226,246,255,.57));
+  box-shadow:0 10px 22px rgba(18,103,158,.18),inset 0 1px 0 rgba(255,255,255,.86);
+  backdrop-filter:blur(12px);
+}
+body.adventure-transition-shell .top-nav button{
+  color:#17354d;
+  opacity:1;
+  font-size:13px;
+  font-weight:800;
+  padding:9px 15px;
+}
+body.adventure-transition-shell .top-nav button.active,
+body.adventure-transition-shell .top-nav button:hover{
+  color:#17354d;
+  background:rgba(255,255,255,.84);
+  box-shadow:0 5px 12px rgba(20,93,142,.13);
+}
+body.adventure-transition-shell .version{
+  margin-left:auto;
+  color:#17354d;
+  border:1px solid rgba(255,255,255,.70);
+  background:rgba(236,249,255,.68);
+  font-size:10px;
+  font-weight:700;
+  padding:5px 9px;
+  box-shadow:0 5px 14px rgba(13,87,137,.13);
+  backdrop-filter:blur(8px);
+}
+body.adventure-transition-shell .quiet,
+body.adventure-transition-shell .family-logout{
+  min-height:37px;
+  padding:8px 14px;
+  border:1px solid rgba(255,255,255,.72);
+  color:#17354d;
+  background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(226,245,255,.72));
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:0 5px 14px rgba(12,83,132,.14),inset 0 1px 0 #fff;
+}
+
+/* The transition is content inside Home, not a full-page blue replacement. */
+body.adventure-transition-shell main{
+  position:relative;
+  display:grid;
+  place-items:center;
+  min-height:calc(100vh - 76px)!important;
+  padding:6px 38px 30px!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+body.adventure-transition-shell main::before,
+body.adventure-transition-shell main::after{
+  content:none!important;
+  display:none!important;
+}
+body.adventure-transition-shell footer{display:none!important;}
+
+/* Loading card now uses the same frosted surface language as Home controls/cards. */
+body.adventure-transition-shell .loading-card:not(.error-state){
+  width:min(470px,calc(100vw - 48px));
+  padding:27px 32px 25px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.72);
+  background:
+    radial-gradient(circle at 50% -14%,rgba(255,235,167,.19),transparent 38%),
+    linear-gradient(145deg,rgba(255,255,255,.88),rgba(219,244,255,.77));
+  box-shadow:0 16px 34px rgba(15,91,143,.19),inset 0 1px 0 rgba(255,255,255,.96);
+  backdrop-filter:blur(14px);
+}
+body.adventure-transition-shell .loading-card:not(.error-state)::before{
+  color:#2a82b4;
+  font-size:9.5px;
+  letter-spacing:.14em;
+  margin-bottom:12px;
+}
+body.adventure-transition-shell .loading-icon{
+  width:94px;
+  height:94px;
+  border-radius:28px;
+  margin-bottom:13px;
+  box-shadow:0 11px 23px rgba(36,128,177,.14),inset 0 1px 0 rgba(255,255,255,.96);
+}
+body.adventure-transition-shell .loading-icon::before{width:78px;height:78px;}
+body.adventure-transition-shell .loading-card strong{font-size:19px;}
+body.adventure-transition-shell .loading-card p{font-size:12.5px;}
+body.adventure-transition-shell .loading-card p::after{width:132px;height:5px;margin-top:16px;}
+
+@media (max-width:900px){
+  body.adventure-transition-shell .topbar{padding:12px 18px;flex-wrap:wrap;}
+  body.adventure-transition-shell .top-nav{position:static;transform:none;order:3;width:100%;justify-content:center;}
+  body.adventure-transition-shell main{padding:8px 16px 24px!important;}
+}
+
+@media (max-width:640px){
+  body.adventure-transition-shell .loading-card:not(.error-state){width:min(420px,100%);padding:24px 20px 22px;border-radius:22px;}
+}
