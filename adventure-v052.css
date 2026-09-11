@@ -1,0 +1,155 @@
+/* UbayBian Home v0.5.2 · final polish */
+
+/* Header: slightly quieter secondary actions so the learning nav stays central. */
+body.adventure-home .quiet,
+body.adventure-home .family-logout{
+  min-height:37px;
+  padding:8px 14px;
+  font-size:12px;
+  box-shadow:0 5px 14px rgba(12,83,132,.14),inset 0 1px 0 #fff;
+}
+body.adventure-home .version{font-size:10px;padding:5px 9px;}
+
+/* Profile: keep the star motif, but stop it competing with the child's name. */
+body.adventure-home .side-profile{
+  min-height:101px;
+  padding-left:82px;
+}
+body.adventure-home .side-profile:before{
+  left:-3px;top:-7px;width:78px;height:78px;font-size:69px;
+  filter:drop-shadow(0 6px 8px rgba(175,105,6,.18));
+}
+body.adventure-home .profile-avatar{
+  left:18px;top:25px;width:51px;height:51px;font-size:31px;
+}
+body.adventure-home .profile-info h2{font-size:19px;}
+
+/* Locked badge shelf: decorative slots are visibly unavailable until earned. */
+body.adventure-home .adventure-badge-rack.is-locked span{
+  filter:grayscale(1);
+  opacity:.43;
+  background:linear-gradient(145deg,#edf4f7,#e6eef2);
+  border-color:#d7e4ea;
+  box-shadow:none;
+}
+body.adventure-home .adventure-badge-rack.is-locked span:last-child{opacity:.62;}
+body.adventure-home .badge-title{font-size:12.5px;}
+body.adventure-home .badge-empty{color:#496d83;}
+
+/* Side features: same family, slightly calmer saturation and clearer text. */
+body.adventure-home .side-tile.adventure-memory{
+  background:linear-gradient(135deg,#7188bf 0%,#7178bb 58%,#807dc6 100%);
+}
+body.adventure-home .side-tile-sub{color:#31556d;opacity:.92;}
+body.adventure-home .side-tile.adventure-memory .side-tile-sub{color:rgba(255,255,255,.82);}
+body.adventure-home .side-tile.review-tile:after,
+body.adventure-home .side-tile.adventure-brain:after,
+body.adventure-home .side-tile.adventure-memory:after,
+body.adventure-home .side-tile.adventure-reward:after{opacity:.68;}
+
+/* Hero: a slightly stronger trophy anchor, without adding more decoration. */
+body.adventure-home .hero-trophy{font-size:62px;transform:translateY(3px) rotate(2deg);}
+body.adventure-home .hero-text p{color:#543d34;}
+body.adventure-home .hero-meta{color:#6e402d;}
+
+/* Learning map: smaller than the actions, but now reads as an actual route. */
+body.adventure-home .adventure-map{
+  right:20px;top:17px;width:30%;height:82px;opacity:.84;transform:none;
+}
+body.adventure-home .adventure-map-road{
+  left:7%;right:7%;top:25px;height:38px;
+  border-width:5px;
+  border-radius:52% 42% 48% 38%;
+  background:linear-gradient(180deg,#efd39a,#e7c480);
+  box-shadow:0 4px 0 rgba(67,112,132,.13),inset 0 2px 0 rgba(255,255,255,.35);
+}
+body.adventure-home .adventure-map-scenery{
+  top:0;font-size:12px;letter-spacing:24px;opacity:.55;
+}
+body.adventure-home .adventure-map-checkpoints{position:absolute;inset:0;z-index:3;pointer-events:none;}
+body.adventure-home .adventure-map-checkpoints .map-point{
+  position:absolute;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;
+  color:#fff;font-size:9px;font-weight:900;
+  background:#fff;border:3px solid #55a9d4;box-shadow:0 3px 7px rgba(18,86,130,.17);
+}
+body.adventure-home .adventure-map-checkpoints .map-point.start,
+body.adventure-home .adventure-map-checkpoints .map-point.goal{
+  width:26px;height:26px;border:0;font-size:16px;background:rgba(255,255,255,.86);
+}
+body.adventure-home .adventure-map-checkpoints .p0{left:4%;top:39px;}
+body.adventure-home .adventure-map-checkpoints .p1{left:28%;top:31px;}
+body.adventure-home .adventure-map-checkpoints .p2{left:49%;top:46px;}
+body.adventure-home .adventure-map-checkpoints .p3{left:70%;top:29px;}
+body.adventure-home .adventure-map-checkpoints .p4{right:2%;top:35px;}
+body.adventure-home .adventure-map-checkpoints .p1,
+body.adventure-home .adventure-map-checkpoints .p2,
+body.adventure-home .adventure-map-checkpoints .p3{background:#eef9ff;}
+
+/* TODAY MISSION: compact dashboard, not a second hero. */
+body.adventure-home .today-summary.today-mission{
+  min-height:158px;
+  grid-template-columns:minmax(0,1fr) 170px;
+  grid-template-rows:auto 1fr;
+  column-gap:14px;
+  row-gap:9px;
+  padding:15px 18px;
+  background:
+    radial-gradient(circle at 87% 21%,rgba(255,229,130,.12),transparent 23%),
+    linear-gradient(135deg,rgba(248,253,255,.80),rgba(212,242,255,.70));
+}
+body.adventure-home .mission-heading{gap:12px;}
+body.adventure-home .mission-heading-copy{gap:9px;}
+body.adventure-home .mission-heading-icon{
+  width:41px;height:41px;border-radius:13px;font-size:23px;
+  box-shadow:0 4px 9px rgba(18,94,145,.09);
+}
+body.adventure-home .mission-heading .eyebrow{font-size:9px;}
+body.adventure-home .mission-heading h3{font-size:18px;}
+body.adventure-home .mission-heading p{font-size:10px;margin-top:2px;color:#4f7288;}
+body.adventure-home .mission-focus{padding:6px 10px;font-size:9.5px;}
+body.adventure-home .mission-left{gap:8px;}
+body.adventure-home .mission-stats{gap:7px;}
+body.adventure-home .mission-stat{
+  padding:8px 9px;border-radius:13px;box-shadow:0 3px 8px rgba(19,91,139,.055);
+}
+body.adventure-home .mission-stat .icon{font-size:14px;}
+body.adventure-home .mission-stat .label{font-size:8.5px;color:#5f7f93;}
+body.adventure-home .mission-stat strong{margin-top:3px;font-size:16px;}
+body.adventure-home .mission-stat small{margin-top:3px;font-size:8.8px;color:#5b7d91;}
+body.adventure-home .mission-progress-card{padding:8px 10px;border-radius:13px;}
+body.adventure-home .mission-progress-head{font-size:9.5px;}
+body.adventure-home .mission-progress-head strong{font-size:10.5px;}
+body.adventure-home .mission-progress{margin-top:5px;height:7px;}
+body.adventure-home .mission-tip{margin-top:5px;font-size:9px;color:#56788e;}
+body.adventure-home .mission-visual{
+  min-height:120px;border-radius:16px;
+  padding:9px 8px 8px;
+  align-content:center;
+  background:linear-gradient(145deg,rgba(184,233,250,.48),rgba(242,251,255,.72));
+}
+body.adventure-home .mission-visual:before{width:108px;height:108px;}
+body.adventure-home .mission-visual:after{width:72px;height:72px;}
+body.adventure-home .mission-robot{font-size:55px;transform:translateY(-6px);}
+body.adventure-home .mission-planet{font-size:14px;opacity:.4;}
+body.adventure-home .mission-planet.one{top:9px;right:14px;}
+body.adventure-home .mission-planet.two{bottom:8px;left:14px;}
+body.adventure-home .mission-companion-copy{
+  position:absolute;left:9px;right:9px;bottom:7px;z-index:3;text-align:center;
+  padding:5px 7px;border-radius:10px;
+  background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.86);
+  box-shadow:0 3px 8px rgba(20,90,134,.06);
+}
+body.adventure-home .mission-companion-copy strong{display:block;font-size:9.5px;color:#17354d;line-height:1.2;}
+body.adventure-home .mission-companion-copy small{display:block;margin-top:1px;font-size:8px;color:#5d7d91;line-height:1.2;}
+
+/* Tiny readability pass. */
+body.adventure-home .review-info,
+body.adventure-home .start-status{color:#355b73;}
+body.adventure-home .rules-strip span{font-weight:800;}
+
+@media (max-width:1100px){
+  body.adventure-home .today-summary.today-mission{grid-template-columns:1fr 145px;}
+}
+@media (max-width:820px){
+  body.adventure-home .today-summary.today-mission{grid-template-columns:1fr;min-height:0;}
+}
