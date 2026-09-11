@@ -1,0 +1,182 @@
+/* UbayBian v0.5.5 · Family Gateway final polish
+   Scoped to the pre-login state only. Home v0.5.3 remains the locked baseline. */
+
+body.login-gateway{
+  background:
+    radial-gradient(circle at 50% 42%,rgba(222,248,255,.28),transparent 28%),
+    radial-gradient(circle at 14% 18%,rgba(255,255,255,.16),transparent 24%),
+    radial-gradient(circle at 84% 28%,rgba(63,205,255,.18),transparent 29%),
+    linear-gradient(145deg,#1599d8 0%,#24b7ed 48%,#087ab6 100%);
+}
+
+/* Floating gateway shell/header */
+body.login-gateway .shell{
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible;
+  grid-template-rows:auto 1fr auto;
+}
+body.login-gateway .topbar{
+  margin:2px 4px 0;
+  min-height:62px;
+  padding:10px 22px;
+  border:1px solid rgba(214,239,249,.20);
+  border-radius:22px;
+  background:linear-gradient(180deg,rgba(18,49,70,.94),rgba(17,48,69,.89));
+  box-shadow:0 14px 34px rgba(5,61,96,.22),inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(20px);
+}
+body.login-gateway .brand{font-size:19px;gap:8px;}
+body.login-gateway .brand-icon{font-size:27px;}
+body.login-gateway .version{
+  font-size:9.5px;
+  padding:4px 9px;
+  color:#dcebf2;
+  background:rgba(255,255,255,.045);
+  border-color:rgba(211,235,245,.24);
+}
+
+/* More depth, less visual noise */
+body.login-gateway main{
+  margin-top:8px;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 44%,rgba(235,251,255,.20),transparent 23%),
+    radial-gradient(circle at 50% 52%,rgba(6,97,151,.12),transparent 42%),
+    linear-gradient(145deg,rgba(31,183,236,.63),rgba(5,128,193,.57));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+body.login-gateway main:before{opacity:.74;}
+body.login-gateway main:after{opacity:.62;}
+.login-decor span{opacity:.105;filter:saturate(.56) blur(.45px);}
+.login-decor .d5,.login-decor .d6{opacity:.06;}
+
+/* Cleaner, lighter glass card */
+body.login-gateway .login-card{
+  width:min(452px,calc(100vw - 52px));
+  padding:29px 32px 30px;
+  border-radius:27px;
+  background:linear-gradient(145deg,rgba(247,253,255,.84),rgba(224,244,251,.76));
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:
+    0 23px 52px rgba(7,70,111,.22),
+    0 0 0 5px rgba(208,244,255,.10),
+    inset 0 1px 0 rgba(255,255,255,.92);
+  backdrop-filter:blur(24px);
+}
+body.login-gateway .login-card:before{
+  inset:1px;
+  border-radius:26px;
+  border:1px solid rgba(255,255,255,.25);
+}
+
+/* Security badge */
+body.login-gateway .login-icon{
+  width:60px;height:60px;margin-bottom:17px;
+  border-radius:18px;font-size:32px;
+  background:linear-gradient(145deg,#fff4c7,#ffd66f);
+  border-color:rgba(225,169,57,.27);
+  box-shadow:0 8px 18px rgba(148,96,27,.14),inset 0 1px 0 rgba(255,255,255,.94);
+}
+body.login-gateway .login-card .eyebrow{
+  margin-bottom:10px;
+  font-size:10.5px;
+  font-weight:900;
+  letter-spacing:.14em;
+  color:#466a7c;
+}
+body.login-gateway .login-card h1{
+  margin-bottom:7px;
+  font-size:29px;
+  letter-spacing:-.022em;
+}
+body.login-gateway .login-card .intro{
+  margin-bottom:20px;
+  font-size:13.5px;
+  line-height:1.48;
+  color:#4a6a7c;
+}
+
+/* Inputs */
+body.login-gateway .login-form{gap:8px;}
+body.login-gateway .field-label{
+  margin-top:3px;
+  font-size:11px;
+  color:#294d61;
+}
+.login-input-icon{
+  left:13px;
+  width:24px;height:24px;
+  font-size:15px;
+  color:#3e6579;
+  opacity:.88;
+}
+body.login-gateway .login-input-wrap .text-answer{
+  height:46px;
+  padding-left:43px;
+  border-radius:13px;
+  background:rgba(244,250,253,.68);
+  border-color:rgba(83,143,173,.33);
+  font-size:13px;
+}
+body.login-gateway .login-input-wrap .text-answer:focus{
+  border-color:#149edc;
+  box-shadow:0 0 0 3px rgba(20,158,220,.12),inset 0 1px 2px rgba(31,88,119,.035);
+}
+body.login-gateway .login-form .primary{
+  height:45px;
+  margin-top:9px;
+  border-radius:13px;
+  background:linear-gradient(180deg,#ff8150,#f15e34);
+  box-shadow:0 7px 15px rgba(204,76,36,.22),inset 0 1px 0 rgba(255,255,255,.25);
+}
+body.login-gateway .login-form .primary:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 10px 19px rgba(204,76,36,.26),inset 0 1px 0 rgba(255,255,255,.25);
+}
+
+/* Welcome bot now belongs below the card, not on its edge */
+.login-welcome-bot{
+  bottom:-31px;
+  width:78px;height:62px;
+  font-size:52px;
+  filter:drop-shadow(0 9px 12px rgba(5,69,106,.19));
+}
+.login-welcome-bot:after{bottom:-1px;width:58px;opacity:.72;}
+
+/* Footer becomes a quiet glass caption rather than a heavy bar */
+body.login-gateway footer{
+  margin-top:8px;
+  min-height:32px;
+  padding:7px 18px;
+  border:0;
+  border-radius:16px;
+  background:rgba(13,68,98,.30);
+  color:rgba(239,250,255,.90);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(10px);
+}
+
+@media (max-height:760px) and (min-width:681px){
+  body.login-gateway .topbar{min-height:58px;}
+  body.login-gateway main{margin-top:6px;padding-top:17px;padding-bottom:26px;}
+  .login-scene{min-height:474px;}
+  body.login-gateway .login-card{width:min(438px,calc(100vw - 52px));padding:23px 29px 24px;}
+  body.login-gateway .login-icon{width:54px;height:54px;font-size:29px;margin-bottom:12px;}
+  body.login-gateway .login-card h1{font-size:27px;}
+  body.login-gateway .login-card .intro{margin-bottom:15px;font-size:13px;}
+  .login-welcome-bot{bottom:-27px;font-size:46px;height:54px;}
+}
+
+@media (max-width:680px){
+  body.login-gateway .topbar{margin:8px 9px 0;border-radius:18px;}
+  body.login-gateway main{margin:8px 0 0;border-radius:22px;padding:22px 14px 42px;}
+  .login-scene{min-height:510px;}
+  body.login-gateway .login-card{width:min(420px,100%);padding:25px 22px 27px;border-radius:24px;}
+  body.login-gateway .login-card:before{border-radius:23px;}
+  body.login-gateway .login-card h1{font-size:26px;}
+  body.login-gateway .field-label{font-size:10.5px;}
+  .login-welcome-bot{bottom:-29px;font-size:47px;}
+  body.login-gateway footer{margin:7px 9px 9px;border-radius:14px;}
+}
