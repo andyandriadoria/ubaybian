@@ -1,7 +1,22 @@
-/* UbayBian v0.5.35 · Memory Grid Neural Chamber Depth
-   Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid-v046.js. */
+/* UbayBian v0.5.36 · Memory Grid Neural Chamber Clarity Pass
+   Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid-v046.js.
+   This file also loads the v0.5.36 clarity stylesheet so the release can layer cleanly over v0.5.35. */
 (() => {
   const SELECTOR = '.neural-shell';
+
+  function loadClarityCSS(){
+    if(document.querySelector('link[data-memory-grid-v0536]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'memory-grid-v0536.css?v=0.5.36';
+    link.dataset.memoryGridV0536 = '1';
+    document.head.append(link);
+  }
+
+  function syncVersionLabel(){
+    const version = document.querySelector('.version');
+    if(version) version.textContent = 'v0.5.36 · family';
+  }
 
   function addWorldDepth(overlay){
     const world = overlay?.querySelector(':scope > .ng-chamber-world');
@@ -49,15 +64,34 @@
     fx.append(kit);
   }
 
+  function addClarityKit(shell){
+    const fx = shell.querySelector(':scope > .ng-chamber-fx');
+    if(!fx || fx.querySelector('.ng36-clarity-kit')) return;
+    const kit = document.createElement('div');
+    kit.className = 'ng36-clarity-kit';
+    kit.setAttribute('aria-hidden','true');
+    kit.innerHTML = `
+      <div class="ng36-focus-field"></div>
+      <div class="ng36-link left"><i></i><i></i><i></i></div>
+      <div class="ng36-link right"><i></i><i></i><i></i></div>
+      <div class="ng36-stage-rim"></div>
+      <div class="ng36-celebration"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    `;
+    fx.append(kit);
+  }
+
   function decorate(shell){
     if(!shell || shell.dataset.ng0535 === '1') return;
     shell.dataset.ng0535 = '1';
+    shell.dataset.ng0536 = '1';
     const overlay = shell.closest('.neural-overlay');
     addWorldDepth(overlay);
     addChamberDepth(shell);
+    addClarityKit(shell);
 
     const feedback = shell.querySelector('.neural-feedback');
     const resultScore = shell.querySelector('.neural-score-ring strong');
+    const mascotBubble = shell.querySelector('.neural-lab-bubble');
 
     const syncOutcome = () => {
       let outcome = '';
@@ -71,6 +105,11 @@
       if(shell.dataset.neuralState === 'result'){
         const grade = score === 5 ? 'perfect' : score >= 4 ? 'great' : 'complete';
         if(shell.dataset.resultGrade !== grade) shell.dataset.resultGrade = grade;
+      }
+
+      if(mascotBubble){
+        if(outcome === 'success') mascotBubble.textContent = 'Yes! Ketemu! ✨';
+        else if(outcome === 'error') mascotBubble.textContent = 'Hampir! Ingat lagi ya.';
       }
     };
 
@@ -109,6 +148,8 @@
   });
 
   function boot(){
+    loadClarityCSS();
+    syncVersionLabel();
     scan();
     if(document.body) rootObserver.observe(document.body,{childList:true,subtree:true});
   }
