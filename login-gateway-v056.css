@@ -1,0 +1,62 @@
+/* UbayBian v0.5.6 · Password-only Family Gateway */
+
+/* Wordmark must read as one product name: UbayBian */
+.brand>.brand-wordmark{
+  display:inline-flex;
+  align-items:baseline;
+  gap:0;
+  color:inherit!important;
+  white-space:nowrap;
+}
+.brand>.brand-wordmark>span{color:#ffd449;}
+
+/* The password-only card can be calmer and more compact. */
+body.login-gateway .login-card{
+  width:min(430px,calc(100vw - 52px));
+  padding:30px 34px 31px;
+}
+body.login-gateway .login-icon{margin-bottom:18px;}
+body.login-gateway .login-card .eyebrow{margin-bottom:11px;}
+body.login-gateway .login-card h1{
+  margin-bottom:25px;
+  font-size:29px;
+}
+body.login-gateway .login-form{gap:9px;}
+body.login-gateway .field-label{
+  margin-top:0;
+  font-size:11.5px;
+}
+body.login-gateway .login-input-wrap .text-answer{
+  height:49px;
+  font-size:14px;
+}
+body.login-gateway .login-form .primary{
+  height:47px;
+  margin-top:10px;
+  font-size:13.5px;
+}
+body.login-gateway .login-status{margin-top:5px;}
+
+/* With fewer fields, bring the gateway composition inward rather than leaving dead space. */
+.login-scene{min-height:515px;}
+.login-welcome-bot{bottom:-33px;}
+
+@media (max-height:760px) and (min-width:681px){
+  .login-scene{min-height:430px;}
+  body.login-gateway .login-card{
+    width:min(416px,calc(100vw - 52px));
+    padding:24px 29px 25px;
+  }
+  body.login-gateway .login-card h1{margin-bottom:20px;font-size:27px;}
+  body.login-gateway .login-input-wrap .text-answer{height:46px;}
+  body.login-gateway .login-form .primary{height:44px;}
+}
+
+@media (max-width:680px){
+  .login-scene{min-height:460px;}
+  body.login-gateway .login-card{
+    width:min(400px,100%);
+    padding:26px 23px 28px;
+  }
+  body.login-gateway .login-card h1{margin-bottom:22px;font-size:26px;}
+}
