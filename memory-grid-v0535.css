@@ -1,0 +1,307 @@
+/* UbayBian v0.5.35 · Memory Grid Neural Chamber Depth
+   Less white-modal, more real lab depth: holographic console, spatial bays,
+   integrated grid pedestal, mascot platform, energy dock, and stronger state lighting. */
+
+.neural-overlay{
+  background:
+    linear-gradient(180deg,rgba(3,11,29,.06),rgba(2,12,31,.30)),
+    url('assets/memory-neural-chamber-v0534.svg') center/cover no-repeat,
+    radial-gradient(circle at 50% 4%,rgba(82,218,240,.18),transparent 24%),
+    linear-gradient(135deg,#061a37 0%,#11244f 58%,#30275a 100%);
+}
+.neural-overlay:before{
+  background:
+    radial-gradient(circle at 50% 8%,var(--ng-state-glow),transparent 25%),
+    linear-gradient(90deg,rgba(3,18,43,.32),transparent 20%,transparent 80%,rgba(11,17,52,.32)),
+    linear-gradient(180deg,rgba(2,10,27,.02),rgba(3,13,34,.24));
+}
+
+/* -------- WORLD: real front/mid/back layers -------- */
+.ng35-world-depth{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.ng35-ceiling-rig{
+  position:absolute;left:50%;top:-112px;width:640px;height:250px;transform:translateX(-50%);
+  border-radius:0 0 48% 48%;
+  border:3px solid rgba(117,215,247,.13);
+  background:
+    radial-gradient(ellipse at 50% 80%,rgba(102,239,217,.14),transparent 39%),
+    linear-gradient(180deg,rgba(11,24,59,.86),rgba(19,37,83,.54));
+  box-shadow:0 34px 90px rgba(59,201,241,.08),inset 0 -20px 60px rgba(106,203,255,.05);
+}
+.ng35-ceiling-rig:before,.ng35-ceiling-rig:after{
+  content:"";position:absolute;top:107px;width:182px;height:18px;border-radius:999px;
+  background:linear-gradient(90deg,transparent,var(--ng-state-c),rgba(255,255,255,.9),var(--ng-state-a),transparent);
+  filter:blur(.2px);box-shadow:0 0 22px var(--ng-state-glow);opacity:.62;
+}
+.ng35-ceiling-rig:before{left:68px;transform:rotate(20deg)}
+.ng35-ceiling-rig:after{right:68px;transform:rotate(-20deg)}
+.ng35-ceiling-rig i{
+  position:absolute;left:50%;top:132px;width:13px;height:13px;border-radius:50%;
+  background:var(--ng-state-a);box-shadow:0 0 24px var(--ng-state-a);transform:translateX(-50%);
+}
+.ng35-ceiling-rig i:nth-child(2){top:159px;width:8px;height:8px;background:var(--ng-state-c)}
+.ng35-ceiling-rig i:nth-child(3){top:185px;width:5px;height:5px;background:#fff}
+
+.ng35-wall-bay{
+  position:absolute;top:13%;width:260px;height:58%;border-radius:34px;
+  border:1px solid rgba(124,203,240,.13);
+  background:
+    linear-gradient(180deg,rgba(31,54,105,.55),rgba(8,28,60,.66)),
+    radial-gradient(circle at 50% 30%,rgba(82,229,213,.08),transparent 55%);
+  box-shadow:inset 0 0 60px rgba(85,160,227,.04),0 22px 70px rgba(0,10,31,.20);
+  opacity:.82;
+}
+.ng35-wall-bay.bay-left{left:-78px;transform:perspective(700px) rotateY(12deg) rotateZ(-1deg)}
+.ng35-wall-bay.bay-right{right:-78px;transform:perspective(700px) rotateY(-12deg) rotateZ(1deg)}
+.ng35-wall-screen{
+  position:absolute;left:28px;right:28px;top:70px;height:105px;border-radius:22px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;
+  border:1px solid rgba(120,224,245,.14);
+  background:linear-gradient(145deg,rgba(15,49,88,.80),rgba(29,33,83,.72));
+  box-shadow:inset 0 0 26px rgba(67,223,222,.05),0 0 28px rgba(34,179,220,.05);
+  color:rgba(202,247,255,.54);
+}
+.ng35-wall-screen span{font-size:10px;font-weight:900;letter-spacing:.18em}
+.ng35-wall-screen b{font-size:35px;color:var(--ng-state-a);font-weight:600;text-shadow:0 0 18px var(--ng-state-glow)}
+.ng35-wall-slots{position:absolute;left:40px;right:40px;bottom:56px;display:flex;gap:12px;align-items:flex-end;justify-content:center}
+.ng35-wall-slots i{display:block;width:36px;height:74px;border-radius:15px;background:linear-gradient(180deg,rgba(105,240,215,.28),rgba(65,107,180,.10));box-shadow:0 0 16px rgba(93,228,221,.05)}
+.ng35-wall-slots i:nth-child(2){height:50px;background:linear-gradient(180deg,rgba(156,139,255,.30),rgba(65,107,180,.08))}
+.ng35-wall-slots i:nth-child(3){height:92px;background:linear-gradient(180deg,rgba(255,166,211,.23),rgba(65,107,180,.09))}
+
+.ng35-foreground{
+  position:absolute;bottom:-30px;width:300px;height:195px;z-index:3;
+  border:1px solid rgba(148,222,244,.15);
+  background:linear-gradient(180deg,rgba(25,55,91,.72),rgba(4,21,47,.94));
+  box-shadow:0 -12px 55px rgba(44,189,221,.05),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.ng35-foreground.fg-left{left:-42px;border-radius:0 58px 0 0;transform:perspective(850px) rotateY(9deg)}
+.ng35-foreground.fg-right{right:-42px;border-radius:58px 0 0 0;transform:perspective(850px) rotateY(-9deg)}
+.ng35-console-screen{
+  position:absolute;left:48px;top:42px;width:122px;height:69px;border-radius:17px;
+  display:grid;place-items:center;font-size:53px;color:var(--ng-state-a);
+  background:linear-gradient(145deg,#0a2b50,#152659);border:1px solid rgba(100,221,242,.15);
+  text-shadow:0 0 17px var(--ng-state-glow);box-shadow:inset 0 0 22px rgba(74,230,214,.05);
+}
+.ng35-brain-pod{
+  position:absolute;right:58px;top:17px;width:106px;height:112px;border-radius:53px 53px 34px 34px;
+  display:grid;place-items:center;font-size:46px;
+  border:2px solid rgba(231,246,255,.23);background:radial-gradient(circle at 50% 50%,rgba(255,184,225,.12),rgba(127,126,255,.08) 55%,rgba(13,35,70,.36));
+  box-shadow:0 0 34px rgba(255,133,211,.09),inset 0 10px 25px rgba(255,255,255,.05);
+}
+.ng35-console-lights{position:absolute;bottom:37px;left:55px;right:55px;display:flex;gap:12px}
+.ng35-console-lights i{display:block;width:30px;height:8px;border-radius:999px;background:#59e7d0;box-shadow:0 0 15px rgba(89,231,208,.45)}
+.ng35-console-lights i:nth-child(2){background:#ffd66b;box-shadow:0 0 15px rgba(255,214,107,.36)}
+.ng35-console-lights i:nth-child(3){background:#ae8fff;box-shadow:0 0 15px rgba(174,143,255,.32)}
+.ng35-floor-reflection{
+  position:absolute;left:50%;bottom:-76px;width:min(1180px,83vw);height:260px;transform:translateX(-50%);
+  border-radius:50%;background:radial-gradient(ellipse,rgba(76,221,237,.13),rgba(105,96,212,.08) 37%,rgba(6,20,48,.42) 70%,transparent 71%);
+  filter:blur(4px);opacity:.9;
+}
+
+/* -------- GLASS CHAMBER: let the world show through -------- */
+.neural-shell{
+  background:
+    linear-gradient(180deg,rgba(250,253,255,.83) 0 14%,rgba(226,243,255,.36) 26%,rgba(228,235,255,.26) 65%,rgba(219,232,255,.20) 100%),
+    radial-gradient(circle at 50% 40%,rgba(255,255,255,.22),transparent 48%);
+  backdrop-filter:blur(12px) saturate(126%);
+  -webkit-backdrop-filter:blur(12px) saturate(126%);
+  border-color:rgba(242,252,255,.88);
+  box-shadow:0 42px 115px rgba(0,10,34,.48),0 0 0 8px rgba(104,220,241,.06),0 0 82px var(--ng-state-glow),inset 0 2px 0 rgba(255,255,255,.92),inset 0 -1px 0 rgba(133,179,220,.12);
+}
+.neural-top{
+  min-height:100px;
+  background:linear-gradient(90deg,rgba(233,255,249,.76),rgba(255,255,255,.70) 26%,rgba(255,243,248,.67) 66%,rgba(241,232,255,.72));
+  backdrop-filter:blur(15px) saturate(132%);
+}
+.neural-stage{
+  background:
+    radial-gradient(circle at 50% 46%,rgba(255,255,255,.12),transparent 33%),
+    linear-gradient(180deg,rgba(210,238,255,.04),rgba(119,126,198,.03));
+}
+
+/* -------- INTERNAL MACHINERY -------- */
+.ng35-depth-kit{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.ng35-projector{
+  position:absolute;left:50%;top:-6px;width:230px;height:76px;transform:translateX(-50%);
+  border-radius:0 0 48% 48%;border:1px solid rgba(146,232,250,.13);
+  background:linear-gradient(180deg,rgba(44,79,126,.30),rgba(76,113,165,.07));
+  box-shadow:0 18px 38px rgba(69,204,235,.06);
+}
+.ng35-projector:after{
+  content:"";position:absolute;left:50%;top:50px;width:84px;height:16px;transform:translateX(-50%);border-radius:999px;
+  background:linear-gradient(90deg,var(--ng-state-b),#fff,var(--ng-state-a));box-shadow:0 0 22px var(--ng-state-glow);opacity:.5;
+}
+.ng35-projector i{position:absolute;left:50%;top:17px;width:42px;height:42px;border-radius:50%;transform:translateX(-50%);border:1px solid rgba(255,255,255,.25);box-shadow:inset 0 0 15px var(--ng-state-glow)}
+.ng35-projector span{position:absolute;left:50%;top:26px;width:15px;height:15px;border-radius:50%;transform:translateX(-50%);background:var(--ng-state-a);box-shadow:0 0 22px var(--ng-state-a)}
+
+.ng35-data-rail{
+  position:absolute;left:17%;right:13%;top:51%;height:4px;border-radius:999px;
+  background:linear-gradient(90deg,transparent,var(--ng-state-a) 12%,var(--ng-state-b) 52%,var(--ng-state-c) 82%,transparent);
+  box-shadow:0 0 14px var(--ng-state-glow);opacity:.28;
+}
+.ng35-data-rail i{position:absolute;top:50%;width:10px;height:10px;border-radius:50%;transform:translateY(-50%);border:2px solid var(--ng-state-a);background:rgba(247,254,255,.92);box-shadow:0 0 13px var(--ng-state-glow)}
+.ng35-data-rail i:nth-child(1){left:5%}.ng35-data-rail i:nth-child(2){left:27%}.ng35-data-rail i:nth-child(3){left:50%}.ng35-data-rail i:nth-child(4){left:73%}.ng35-data-rail i:nth-child(5){left:95%}
+
+.ng35-grid-dock{
+  position:absolute;left:50%;top:56%;width:410px;height:126px;transform:translate(-50%,-50%);
+  border-radius:50%;opacity:0;transition:opacity .28s ease,filter .28s ease;
+  background:radial-gradient(ellipse,rgba(112,235,241,.20),rgba(103,95,213,.08) 48%,transparent 73%);
+  border:1px solid rgba(113,222,241,.15);box-shadow:0 0 35px var(--ng-state-glow),inset 0 4px 16px rgba(255,255,255,.06);
+}
+.ng35-grid-dock span,.ng35-grid-dock b{position:absolute;bottom:17px;width:82px;height:9px;border-radius:999px;box-shadow:0 0 16px currentColor}
+.ng35-grid-dock span{left:86px;background:var(--ng-state-a);color:var(--ng-state-a)}
+.ng35-grid-dock b{right:86px;background:var(--ng-state-b);color:var(--ng-state-b)}
+.neural-shell[data-neural-state="scan"] .ng35-grid-dock,.neural-shell[data-neural-state="recall"] .ng35-grid-dock{opacity:.74}
+.neural-shell[data-neural-state="scan"] .ng35-grid-dock{filter:saturate(1.18)}
+.neural-shell[data-neural-state="recall"] .ng35-grid-dock{background:radial-gradient(ellipse,rgba(92,214,239,.17),rgba(141,112,255,.14) 49%,transparent 72%)}
+
+.ng35-mascot-pad{
+  position:absolute;left:37px;top:298px;width:142px;height:54px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(94,235,226,.23),rgba(92,119,210,.10) 48%,transparent 70%);
+  border:1px solid rgba(100,226,240,.15);box-shadow:0 0 25px rgba(76,224,229,.12);opacity:.78;
+}
+.ng35-mascot-pad span{position:absolute;left:50%;bottom:8px;width:62px;height:7px;transform:translateX(-50%);border-radius:999px;background:var(--ng-state-a);box-shadow:0 0 18px var(--ng-state-a);opacity:.64}
+
+.ng35-energy-dock{
+  position:absolute;right:23px;top:186px;width:138px;height:350px;border-radius:39px;
+  border:1px solid rgba(180,221,245,.14);
+  background:linear-gradient(180deg,rgba(70,94,156,.08),rgba(65,55,128,.05));
+  box-shadow:inset 0 0 34px rgba(122,140,219,.04),0 0 30px rgba(93,153,232,.05);
+  opacity:.76;
+}
+.ng35-energy-dock:before,.ng35-energy-dock:after{content:"";position:absolute;left:23px;right:23px;height:2px;border-radius:999px;background:linear-gradient(90deg,transparent,var(--ng-state-b),transparent);box-shadow:0 0 11px var(--ng-state-glow);opacity:.5}
+.ng35-energy-dock:before{top:45px}.ng35-energy-dock:after{bottom:45px}
+.ng35-energy-dock i{position:absolute;right:-16px;width:29px;height:58px;border-radius:0 16px 16px 0;background:linear-gradient(180deg,#ffe275,#ff835f);box-shadow:0 0 18px rgba(255,177,86,.24)}
+.ng35-energy-dock i:nth-child(1){top:74px}.ng35-energy-dock i:nth-child(2){bottom:74px}
+.ng35-energy-dock span{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-size:8px;letter-spacing:.16em;font-weight:900;color:#7790b3}
+
+.ng35-stage-plinth{
+  position:absolute;left:50%;bottom:2px;width:620px;height:110px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(ellipse,rgba(99,223,244,.13),rgba(104,89,194,.08) 48%,transparent 72%);
+  border:1px solid rgba(128,214,239,.12);box-shadow:0 -7px 30px rgba(84,214,235,.08);opacity:.72;
+}
+.ng35-stage-plinth i{position:absolute;bottom:12px;width:66px;height:7px;border-radius:999px;background:var(--ng-state-a);box-shadow:0 0 15px var(--ng-state-a);opacity:.45}
+.ng35-stage-plinth i:nth-child(1){left:142px}.ng35-stage-plinth i:nth-child(2){left:277px;background:var(--ng-state-c)}.ng35-stage-plinth i:nth-child(3){right:142px;background:var(--ng-state-b)}
+
+/* -------- INTRO / RESULT: holographic projection, not white card-on-card -------- */
+.neural-ready,
+.neural-result{
+  position:relative;
+  max-width:610px;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.neural-ready{min-height:430px;padding:50px 34px 18px;}
+.neural-result{max-width:600px;padding:50px 30px 16px;}
+.neural-ready:after,
+.neural-result:after{
+  content:"";position:absolute;z-index:-1;left:50%;top:50%;width:94%;height:88%;transform:translate(-50%,-50%);
+  border-radius:34px;
+  border:1px solid rgba(196,241,250,.18);
+  background:
+    linear-gradient(180deg,rgba(235,253,255,.10),rgba(231,237,255,.07)),
+    radial-gradient(circle at 50% 46%,rgba(255,255,255,.18),transparent 57%);
+  box-shadow:inset 0 0 40px rgba(255,255,255,.04),0 0 45px var(--ng-state-glow);
+  opacity:.74;
+}
+.neural-ready:before,.neural-result:before{
+  background:rgba(238,249,255,.80)!important;
+  border-color:rgba(255,255,255,.80)!important;
+  box-shadow:0 8px 24px rgba(37,82,122,.08),0 0 18px var(--ng-state-glow)!important;
+}
+.neural-ready .neural-orb{
+  background:linear-gradient(145deg,rgba(239,255,248,.92),rgba(111,239,194,.75) 54%,rgba(135,129,255,.70));
+  box-shadow:0 16px 38px rgba(55,167,132,.15),0 0 34px var(--ng-state-glow),inset 0 2px 0 rgba(255,255,255,.95);
+}
+.neural-ready h3{font-size:39px;letter-spacing:-.04em;text-shadow:0 3px 18px rgba(255,255,255,.50)}
+.neural-ready-copy{font-size:15px;max-width:460px;color:#5f6172;text-shadow:0 1px 0 rgba(255,255,255,.45)}
+.neural-result h3{text-shadow:0 4px 22px rgba(255,255,255,.58)}
+.neural-score-ring{
+  box-shadow:0 16px 40px rgba(61,102,130,.14),0 0 42px var(--ng-state-glow),inset 0 2px 0 rgba(255,255,255,.92)!important;
+}
+.neural-result-card{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+
+/* Mascot now lives on a pad; Energy Tube lives in a wall dock. */
+.neural-lab-mascot{left:38px;top:215px;filter:drop-shadow(0 0 12px rgba(91,229,220,.08));}
+.neural-lab-mascot img{filter:drop-shadow(0 17px 13px rgba(31,47,88,.18)) drop-shadow(0 0 10px rgba(94,231,222,.10));}
+.neural-lab-bubble{
+  background:linear-gradient(145deg,rgba(242,253,255,.82),rgba(228,246,255,.70));
+  border-color:rgba(255,255,255,.76);box-shadow:0 11px 25px rgba(26,53,92,.10),0 0 20px rgba(92,221,226,.07);
+  color:#40566e;
+}
+.neural-memory-energy{right:43px;top:205px;}
+.neural-energy-vessel{
+  background:linear-gradient(180deg,rgba(246,253,255,.62),rgba(238,245,255,.24));
+  box-shadow:0 15px 34px rgba(45,58,107,.13),inset 0 0 0 5px rgba(255,255,255,.18),0 0 30px var(--ng-state-glow);
+}
+.neural-energy-label,.neural-energy-value{color:#58647f;}
+
+/* Play state: board becomes the physical memory device sitting on the dock. */
+.neural-play{position:relative;z-index:8;}
+.neural-board{
+  box-shadow:0 22px 34px rgba(19,43,82,.24),0 0 30px var(--ng-state-glow),inset 0 2px 0 rgba(255,255,255,.13)!important;
+  transform:translateZ(0);
+}
+.neural-shell[data-neural-state="scan"] .neural-board{filter:drop-shadow(0 0 9px rgba(84,239,195,.13));}
+.neural-shell[data-neural-state="recall"] .neural-board{filter:drop-shadow(0 0 12px rgba(109,130,255,.15));}
+.neural-prompt{background:rgba(239,249,255,.78)!important;border-color:rgba(255,255,255,.68)!important;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);}
+.neural-option{background:linear-gradient(145deg,rgba(250,253,255,.91),rgba(231,240,255,.78));}
+
+/* -------- STATE REACTIVITY -------- */
+.neural-shell[data-neural-state="ready"] .ng35-ceiling-rig{opacity:.76}
+.neural-shell[data-neural-state="scan"] .ng35-projector:after{opacity:1;animation:ng35ProjectorPulse 1.15s ease-in-out infinite}
+.neural-shell[data-neural-state="scan"] .ng35-data-rail{opacity:.78;animation:ng35RailPulse 1.6s linear infinite}
+.neural-shell[data-neural-state="scan"] .ng35-stage-plinth{opacity:.94;filter:saturate(1.18)}
+.neural-shell[data-neural-state="recall"] .ng35-data-rail{opacity:.52;filter:hue-rotate(34deg)}
+.neural-shell[data-neural-state="recall"] .ng35-projector:after{opacity:.38;background:linear-gradient(90deg,var(--ng-state-b),#fff,var(--ng-state-a))}
+.neural-shell[data-neural-state="result"] .ng35-stage-plinth{opacity:1;filter:saturate(1.25)}
+.neural-shell[data-neural-state="result"] .ng35-projector:after{opacity:.9;background:linear-gradient(90deg,#ffdf75,#fff,#ff98c5);animation:ng35ProjectorPulse 1.7s ease-in-out infinite}
+.neural-shell[data-neural-state="result"] .ng35-data-rail{opacity:.48;background:linear-gradient(90deg,transparent,#ffd96b 16%,#ff96c2 52%,#76efd5 82%,transparent)}
+
+.neural-shell[data-neural-outcome="success"] .ng35-data-rail{opacity:1;background:linear-gradient(90deg,transparent,#60edbd 12%,#fff 50%,#60edbd 88%,transparent);animation:ng35SuccessRail .75s ease-out 2}
+.neural-shell[data-neural-outcome="success"] .neural-memory-energy{filter:drop-shadow(0 0 18px rgba(255,205,78,.34))}
+.neural-shell[data-neural-outcome="error"] .ng35-data-rail{background:linear-gradient(90deg,transparent,#ff8b9d 18%,#ffca9a 50%,#ff8b9d 82%,transparent);opacity:.76;animation:ng35ErrorRail .55s ease-out 1}
+.neural-shell[data-result-grade="perfect"] .ng35-projector{box-shadow:0 18px 55px rgba(255,215,92,.18),0 0 55px rgba(255,145,196,.12)}
+
+@keyframes ng35ProjectorPulse{0%,100%{transform:translateX(-50%) scaleX(.9);filter:brightness(.95)}50%{transform:translateX(-50%) scaleX(1.15);filter:brightness(1.3)}}
+@keyframes ng35RailPulse{0%,100%{filter:brightness(.85)}50%{filter:brightness(1.3)}}
+@keyframes ng35SuccessRail{0%{filter:brightness(1);transform:scaleX(.92)}50%{filter:brightness(1.65);transform:scaleX(1)}100%{filter:brightness(1);transform:scaleX(.96)}}
+@keyframes ng35ErrorRail{0%{transform:translateX(0)}30%{transform:translateX(-4px)}60%{transform:translateX(4px)}100%{transform:translateX(0)}}
+
+/* Make the old generic ornaments step back; v0.5.35 scenery now carries the environment. */
+.ng-world-float{opacity:.38;transform:scale(.84)}
+.ng-prop{opacity:.34}
+.ng-core-halo{opacity:.42}
+.neural-lab-wave{opacity:.22}
+
+@media(max-width:1100px){
+  .ng35-wall-bay{opacity:.56}.ng35-foreground{opacity:.66}
+  .ng35-mascot-pad{left:20px}.ng35-energy-dock{right:8px}
+  .ng35-stage-plinth{width:520px}
+}
+
+@media(max-width:900px){
+  .ng35-wall-bay,.ng35-foreground,.ng35-ceiling-rig{opacity:.28}
+  .ng35-mascot-pad,.ng35-energy-dock{display:none}
+  .ng35-stage-plinth{width:460px;opacity:.45}
+  .ng35-data-rail{left:10%;right:10%}
+  .neural-ready:after,.neural-result:after{width:100%;height:92%}
+}
+
+@media(max-width:680px){
+  .ng35-world-depth{opacity:.56}
+  .ng35-wall-bay,.ng35-foreground{display:none}
+  .ng35-ceiling-rig{top:-130px;width:420px;opacity:.34}
+  .ng35-projector{top:-18px;transform:translateX(-50%) scale(.78)}
+  .ng35-data-rail{display:none}
+  .ng35-grid-dock{width:320px;height:100px}
+  .ng35-stage-plinth{width:350px;height:82px}
+  .neural-ready,.neural-result{padding-left:14px;padding-right:14px}
+  .neural-ready:after,.neural-result:after{height:94%;border-radius:26px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .ng35-projector:after,.ng35-data-rail{animation:none!important}
+}
