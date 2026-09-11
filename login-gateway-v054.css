@@ -1,0 +1,180 @@
+/* UbayBian v0.5.4 · Family Gateway / Adventure Login */
+
+body.login-gateway{
+  min-height:100vh;
+  padding:14px;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(255,255,255,.22),transparent 24%),
+    radial-gradient(circle at 82% 32%,rgba(66,210,255,.24),transparent 28%),
+    linear-gradient(135deg,#209bdc 0%,#20b6ef 48%,#0d7fc0 100%);
+}
+body.login-gateway .shell{
+  position:relative;
+  width:100%;max-width:none;min-height:calc(100vh - 28px);margin:0;
+  display:grid;grid-template-rows:auto 1fr auto;
+  border-radius:26px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.05);
+  box-shadow:0 22px 54px rgba(3,63,105,.25);
+  backdrop-filter:none;
+}
+body.login-gateway .topbar{
+  min-height:64px;padding:11px 24px;
+  background:linear-gradient(180deg,rgba(18,48,69,.92),rgba(21,53,73,.88));
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 12px 28px rgba(6,65,104,.20);
+  backdrop-filter:blur(18px);
+}
+body.login-gateway .brand{font-size:20px;text-shadow:0 2px 6px rgba(0,0,0,.16)}
+body.login-gateway .brand-icon{font-size:28px;filter:drop-shadow(0 5px 8px rgba(16,105,163,.3))}
+body.login-gateway .version{
+  margin-left:auto;font-size:10px;color:#d9e9f2;
+  border-color:rgba(205,232,244,.28);background:rgba(255,255,255,.04);
+  padding:5px 10px;
+}
+body.login-gateway main{
+  position:relative;isolation:isolate;min-height:0;padding:34px 24px 44px;
+  display:grid;place-items:center;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 43%,rgba(255,255,255,.11),transparent 26%),
+    linear-gradient(135deg,rgba(36,183,239,.58),rgba(5,132,199,.52));
+}
+body.login-gateway main:before,
+body.login-gateway main:after{
+  content:"";position:absolute;z-index:-3;border-radius:50%;pointer-events:none;
+}
+body.login-gateway main:before{
+  width:560px;height:560px;right:-210px;top:-140px;
+  border:34px solid rgba(202,239,255,.10);transform:rotate(-24deg);
+  box-shadow:0 0 0 52px rgba(255,255,255,.025),0 0 0 110px rgba(80,211,255,.035);
+}
+body.login-gateway main:after{
+  width:410px;height:410px;left:-170px;bottom:-180px;
+  border:26px solid rgba(255,255,255,.075);transform:rotate(20deg);
+}
+body.login-gateway footer{
+  min-height:38px;align-items:center;padding:10px 22px;
+  background:rgba(16,67,97,.72);color:#e6f5fc;border-top:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(12px);
+}
+
+.login-scene{
+  position:relative;width:min(1040px,100%);min-height:570px;
+  display:grid;place-items:center;
+}
+.login-scene .login-decor{position:absolute;inset:0;z-index:-1;pointer-events:none;}
+.login-decor span{
+  position:absolute;display:grid;place-items:center;
+  filter:saturate(.72) blur(.3px);opacity:.15;
+  text-shadow:0 10px 24px rgba(13,75,116,.12);
+  user-select:none;
+}
+.login-decor .d1{font-size:108px;left:3%;top:4%;transform:rotate(-18deg)}
+.login-decor .d2{font-size:95px;left:11%;bottom:8%;transform:rotate(-20deg)}
+.login-decor .d3{font-size:108px;right:5%;top:10%;transform:rotate(12deg)}
+.login-decor .d4{font-size:94px;right:13%;bottom:9%;transform:rotate(14deg)}
+.login-decor .d5{font-size:72px;left:27%;top:24%;transform:rotate(13deg);opacity:.09}
+.login-decor .d6{font-size:75px;right:28%;bottom:22%;transform:rotate(-9deg);opacity:.09}
+
+body.login-gateway .login-card{
+  position:relative;width:min(480px,calc(100vw - 52px));margin:0;
+  padding:32px 36px 34px;border-radius:30px;
+  background:
+    linear-gradient(145deg,rgba(246,253,255,.86),rgba(222,244,252,.79));
+  border:1px solid rgba(255,255,255,.82);
+  box-shadow:
+    0 22px 44px rgba(7,74,115,.24),
+    0 0 0 10px rgba(255,255,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.95);
+  backdrop-filter:blur(22px);
+}
+body.login-gateway .login-card:before{
+  content:"";position:absolute;inset:9px;border-radius:23px;pointer-events:none;
+  border:1px solid rgba(255,255,255,.56);
+}
+body.login-gateway .login-icon{
+  position:relative;z-index:1;width:66px;height:66px;margin:0 0 20px;
+  display:grid;place-items:center;border-radius:20px;font-size:37px;
+  background:linear-gradient(145deg,#fff3c2,#ffd46a);
+  border:1px solid rgba(226,168,52,.34);
+  box-shadow:0 10px 22px rgba(163,103,29,.18),inset 0 1px 0 #fff;
+}
+body.login-gateway .login-card .eyebrow{
+  margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#315c74;
+}
+body.login-gateway .login-card h1{
+  margin:0 0 7px;font-size:31px;line-height:1.12;font-weight:900;letter-spacing:-.025em;color:#17354d;
+}
+body.login-gateway .login-card .intro{
+  margin:0 0 23px;max-width:390px;font-size:14px;line-height:1.45;color:#4f7084;
+}
+body.login-gateway .login-form{position:relative;z-index:1;display:grid;gap:7px;}
+body.login-gateway .field-label{
+  margin-top:3px;font-size:10px;font-weight:900;color:#274a60;
+}
+.login-input-wrap{position:relative;display:block;}
+.login-input-icon{
+  position:absolute;left:13px;top:50%;transform:translateY(-50%);z-index:2;
+  width:22px;height:22px;display:grid;place-items:center;font-size:14px;color:#486a7d;pointer-events:none;
+}
+body.login-gateway .login-input-wrap .text-answer{
+  width:100%;height:45px;padding:10px 13px 10px 42px;border-radius:12px;
+  border:1px solid rgba(84,145,177,.42);
+  background:rgba(239,248,252,.64);color:#17354d;font-size:13px;
+  box-shadow:inset 0 1px 2px rgba(31,88,119,.06),0 1px 0 rgba(255,255,255,.68);
+  transition:border-color .15s,box-shadow .15s,background .15s;
+}
+body.login-gateway .login-input-wrap .text-answer::placeholder{color:#7891a0;opacity:.9}
+body.login-gateway .login-input-wrap .text-answer:focus{
+  background:rgba(255,255,255,.86);border-color:#159fe2;
+  box-shadow:0 0 0 4px rgba(21,159,226,.13),inset 0 1px 2px rgba(31,88,119,.04);
+}
+body.login-gateway .login-form .primary{
+  width:100%;height:44px;margin-top:8px;padding:0 18px;border-radius:13px;
+  background:linear-gradient(180deg,#ff8555,#f05b31);color:#fff;
+  font-size:13px;font-weight:900;
+  box-shadow:0 9px 18px rgba(209,75,34,.29),inset 0 1px 0 rgba(255,255,255,.28),0 3px 0 rgba(174,59,29,.22);
+  transition:transform .12s,box-shadow .12s;
+}
+body.login-gateway .login-form .primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 11px 22px rgba(209,75,34,.34),inset 0 1px 0 rgba(255,255,255,.28),0 3px 0 rgba(174,59,29,.22)}
+body.login-gateway .login-status{min-height:17px;margin:4px 0 0;text-align:center;font-size:10px;color:#c5483c;font-weight:700;}
+.login-welcome-bot{
+  position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);z-index:2;
+  display:grid;place-items:center;width:72px;height:58px;font-size:48px;
+  filter:drop-shadow(0 8px 10px rgba(7,79,119,.2));
+  animation:loginBotFloat 3.2s ease-in-out infinite;
+}
+.login-welcome-bot:after{
+  content:"";position:absolute;left:50%;bottom:1px;transform:translateX(-50%);z-index:-1;
+  width:54px;height:10px;border-radius:50%;background:rgba(3,75,116,.16);filter:blur(5px);
+}
+@keyframes loginBotFloat{0%,100%{transform:translate(-50%,0) rotate(-2deg)}50%{transform:translate(-50%,-6px) rotate(2deg)}}
+
+@media (max-height:760px) and (min-width:681px){
+  body.login-gateway main{padding-top:20px;padding-bottom:28px;}
+  .login-scene{min-height:500px;}
+  body.login-gateway .login-card{padding:25px 32px 27px;}
+  body.login-gateway .login-icon{width:57px;height:57px;font-size:31px;margin-bottom:14px;}
+  body.login-gateway .login-card h1{font-size:28px;}
+  body.login-gateway .login-card .intro{margin-bottom:17px;}
+  .login-welcome-bot{font-size:42px;height:50px;}
+}
+@media (max-width:680px){
+  body.login-gateway{padding:0;}
+  body.login-gateway .shell{min-height:100vh;border:0;border-radius:0;}
+  body.login-gateway .topbar{min-height:58px;padding:9px 15px;}
+  body.login-gateway .brand{font-size:18px;}
+  body.login-gateway .version{font-size:9px;padding:4px 8px;}
+  body.login-gateway main{padding:24px 14px 38px;}
+  .login-scene{min-height:520px;}
+  body.login-gateway .login-card{width:min(430px,100%);padding:27px 24px 28px;border-radius:26px;}
+  body.login-gateway .login-card h1{font-size:27px;}
+  body.login-gateway .login-card .intro{font-size:13px;}
+  .login-decor .d1,.login-decor .d3{font-size:70px;}
+  .login-decor .d2,.login-decor .d4{font-size:62px;}
+  .login-welcome-bot{bottom:-4px;}
+  body.login-gateway footer{font-size:9px;padding:9px 14px;}
+}
+@media (prefers-reduced-motion:reduce){.login-welcome-bot{animation:none}}
