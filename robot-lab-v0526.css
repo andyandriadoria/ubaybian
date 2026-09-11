@@ -1,0 +1,86 @@
+/* v0.5.26 — Energy Core Terminal Fit
+   Shrinks the bolt terminals and reserves vertical + horizontal breathing room so
+   XP labels and the next-step copy never collide with the decorative boxes. */
+
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-wrap{
+  padding-top:12px !important;
+  padding-bottom:14px !important;
+}
+
+/* Give the text copy a wider safe inset than the decorative terminal. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label,
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+  padding-left:46px !important;
+  padding-right:46px !important;
+}
+
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+  margin-bottom:10px !important;
+}
+
+/* Slightly smaller, lighter terminals: still visible, no longer dominant. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::before,
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::after{
+  width:28px !important;
+  height:28px !important;
+  border-width:2px !important;
+  border-radius:8px !important;
+  font-size:13px !important;
+  box-shadow:0 3px 7px rgba(59,84,109,.18),inset 0 1px 0 #fff !important;
+}
+
+/* Pull the terminals closer to the track ends after reducing their footprint. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::before{
+  left:-17px !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::after{
+  right:-17px !important;
+}
+
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track{
+  margin-left:22px !important;
+  margin-right:22px !important;
+}
+
+/* Keep the next target clear of the right terminal's lower edge. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{
+  margin-top:11px !important;
+  padding-left:46px !important;
+  padding-right:50px !important;
+}
+
+@media (max-width:900px){
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label,
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+    padding-left:42px !important;
+    padding-right:42px !important;
+  }
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{
+    padding-left:42px !important;
+    padding-right:46px !important;
+  }
+}
+
+@media (max-width:700px){
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::before,
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::after{
+    width:25px !important;
+    height:25px !important;
+    font-size:12px !important;
+  }
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::before{left:-15px !important}
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::after{right:-15px !important}
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track{
+    margin-left:19px !important;
+    margin-right:19px !important;
+  }
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label,
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+    padding-left:36px !important;
+    padding-right:36px !important;
+  }
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{
+    padding-left:36px !important;
+    padding-right:40px !important;
+  }
+}
