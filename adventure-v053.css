@@ -1,0 +1,48 @@
+/* UbayBian Home v0.5.3 · cleanup legacy Adventure decorations */
+
+/* v0.5.0 generated its own start flag / medal through pseudo-elements.
+   v0.5.2 now renders real checkpoint nodes, so the legacy pair must be removed. */
+body.adventure-home .adventure-map::before,
+body.adventure-home .adventure-map::after{
+  content:none!important;
+  display:none!important;
+}
+
+/* v0.5.0 also placed a large robot bubble on every today-summary.
+   Today Mission has its own heading icon + companion card now. */
+body.adventure-home .today-summary.today-mission::before,
+body.adventure-home .today-summary.today-mission::after{
+  content:none!important;
+  display:none!important;
+}
+
+/* Keep the new route visually centered once the duplicated legacy endpoints are gone. */
+body.adventure-home .adventure-map-checkpoints .p0{
+  left:5%;
+  top:37px;
+}
+body.adventure-home .adventure-map-checkpoints .p4{
+  right:4%;
+  top:33px;
+}
+
+/* Give Today Mission's actual heading a clean, protected lane. */
+body.adventure-home .today-summary.today-mission .mission-heading{
+  position:relative;
+  z-index:4;
+  min-height:42px;
+}
+body.adventure-home .today-summary.today-mission .mission-heading-copy{
+  min-width:0;
+}
+body.adventure-home .today-summary.today-mission .mission-heading-copy>div:last-child{
+  min-width:0;
+}
+
+/* Slightly tighten the companion so it cannot visually creep into the content column. */
+body.adventure-home .today-summary.today-mission .mission-visual{
+  isolation:isolate;
+}
+body.adventure-home .today-summary.today-mission .mission-robot{
+  max-width:100%;
+}
