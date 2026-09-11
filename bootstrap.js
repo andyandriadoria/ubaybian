@@ -5,6 +5,7 @@ const main=document.querySelector('#main');
 const switchButton=document.querySelector('#switch-profile');
 const profileNav=document.querySelector('#profile-nav');
 const api=backendEnabled?createApiClient(apiBase):null;
+const FAMILY_USERNAME=String(globalThis.UBAYBIAN_FAMILY_USERNAME||'keluarga').trim();
 
 function node(tag,attrs={},children=[]){
  const el=document.createElement(tag);
@@ -31,26 +32,23 @@ function showLogin(message=''){
  [['d1','📚'],['d2','✏️'],['d3','🔭'],['d4','📐'],['d5','🧪'],['d6','📝']].forEach(([cls,symbol])=>decor.append(text('span',symbol,cls)));
 
  const card=node('section',{class:'login-card','aria-labelledby':'login-title'});
- card.append(text('span','🛡️','login-icon'),text('p','UBAYBIAN FAMILY','eyebrow'),node('h1',{id:'login-title',text:'Masuk ke ruang belajar'}),text('p','Login keluarga menjaga bank soal dan progres Ubay & Bian tetap privat.','intro'));
+ card.append(text('span','🛡️','login-icon'),text('p','UBAYBIAN FAMILY','eyebrow'),node('h1',{id:'login-title',text:'Masuk ke ruang belajar'}));
  const form=node('form',{class:'login-form'});
- const usernameLabel=node('label',{htmlFor:'family-username',text:'Username keluarga',class:'field-label'});
- const username=node('input',{id:'family-username',name:'username',autocomplete:'username',required:'true',maxlength:'40',class:'text-answer',placeholder:'username keluarga'});
- const usernameWrap=node('span',{class:'login-input-wrap'},[text('span','♙','login-input-icon'),username]);
- const passwordLabel=node('label',{htmlFor:'family-password',text:'Password',class:'field-label'});
- const password=node('input',{id:'family-password',name:'password',type:'password',autocomplete:'current-password',required:'true',maxlength:'200',class:'text-answer',placeholder:'password keluarga'});
+ const passwordLabel=node('label',{htmlFor:'family-password',text:'Password keluarga',class:'field-label'});
+ const password=node('input',{id:'family-password',name:'password',type:'password',autocomplete:'current-password',required:'true',maxlength:'200',class:'text-answer',placeholder:'masukkan password keluarga'});
  const passwordWrap=node('span',{class:'login-input-wrap'},[text('span','🔒','login-input-icon'),password]);
  const status=text('p',message,'login-status');
  const submit=node('button',{type:'submit',class:'primary',text:'Masuk'});
- form.append(usernameLabel,usernameWrap,passwordLabel,passwordWrap,submit,status);card.append(form);
+ form.append(passwordLabel,passwordWrap,submit,status);card.append(form);
 
  const welcomeBot=text('span','🤖','login-welcome-bot');welcomeBot.setAttribute('aria-hidden','true');
  scene.append(decor,card,welcomeBot);main.append(scene);
  form.addEventListener('submit',async event=>{
   event.preventDefault();submit.disabled=true;submit.textContent='Memeriksa…';status.textContent='';
-  try{await api.login({username:username.value,password:password.value});location.reload();}
+  try{await api.login({username:FAMILY_USERNAME,password:password.value});location.reload();}
   catch(error){submit.disabled=false;submit.textContent='Masuk';status.textContent=error instanceof ApiError?error.message:'Login belum berhasil. Coba lagi.';}
  });
- username.focus();
+ password.focus();
 }
 
 function installLogout(family){
