@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Ubay Cosmic Spider Bot">
+  <defs>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff5570"/><stop offset="1" stop-color="#d92f54"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#48c9ff"/><stop offset="1" stop-color="#2468d8"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#17395f"/><stop offset="1" stop-color="#071b35"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#86e7ff" stop-opacity=".55"/><stop offset="1" stop-color="#86e7ff" stop-opacity="0"/></radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#13395f" flood-opacity=".25"/></filter>
+  </defs>
+  <circle cx="128" cy="128" r="112" fill="url(#halo)"/>
+  <g filter="url(#shadow)">
+    <path d="M84 76c7-25 26-39 44-39s38 14 45 39l9 33-17 15H91l-18-15z" fill="url(#red)"/>
+    <rect x="73" y="86" width="110" height="91" rx="35" fill="url(#red)"/>
+    <path d="M128 39v43M95 50l22 31M161 50l-22 31M79 85l36 23M177 85l-36 23" stroke="#ff9bad" stroke-width="3.2" stroke-linecap="round" opacity=".72"/>
+    <path d="M83 100h90c9 0 16 7 16 16v27c0 11-9 20-20 20H87c-11 0-20-9-20-20v-27c0-9 7-16 16-16z" fill="url(#glass)" stroke="#73dcff" stroke-width="4"/>
+    <path d="M92 117c13-14 31-14 36 2-8 16-24 23-38 18-6-6-5-13 2-20z" fill="#dff8ff"/>
+    <path d="M164 117c-13-14-31-14-36 2 8 16 24 23 38 18 6-6 5-13-2-20z" fill="#dff8ff"/>
+    <circle cx="111" cy="123" r="4" fill="#5fdcff"/>
+    <circle cx="145" cy="123" r="4" fill="#5fdcff"/>
+    <rect x="97" y="165" width="62" height="31" rx="14" fill="url(#blue)"/>
+    <path d="M128 170l9 10-9 10-9-10z" fill="#ffda58" opacity=".9"/>
+    <rect x="50" y="98" width="28" height="61" rx="14" fill="url(#blue)"/>
+    <rect x="178" y="98" width="28" height="61" rx="14" fill="url(#blue)"/>
+    <circle cx="64" cy="92" r="8" fill="#ffdd5d"/>
+    <circle cx="192" cy="92" r="8" fill="#ffdd5d"/>
+    <path d="M64 92V69M192 92V69" stroke="#193e6b" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="64" cy="66" r="7" fill="#ff5570"/>
+    <circle cx="192" cy="66" r="7" fill="#ff5570"/>
+    <path d="M102 200l-12 18M154 200l12 18" stroke="#2368d8" stroke-width="16" stroke-linecap="round"/>
+    <path d="M85 220h34M137 220h34" stroke="#102d55" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <g fill="#fff" opacity=".9"><circle cx="49" cy="45" r="4"/><circle cx="207" cy="48" r="3"/><path d="M211 183l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/></g>
+</svg>
