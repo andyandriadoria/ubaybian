@@ -21,19 +21,30 @@ const text=(tag,value,cls)=>node(tag,{text:value,...(cls?{class:cls}:{})});
 
 function showLogin(message=''){
  document.body.dataset.profile='';
+ document.body.classList.add('login-gateway');
  if(switchButton)switchButton.hidden=true;
  if(profileNav)profileNav.hidden=true;
  main.replaceChildren();
+
+ const scene=node('div',{class:'login-scene'});
+ const decor=node('div',{class:'login-decor','aria-hidden':'true'});
+ [['d1','📚'],['d2','✏️'],['d3','🔭'],['d4','📐'],['d5','🧪'],['d6','📝']].forEach(([cls,symbol])=>decor.append(text('span',symbol,cls)));
+
  const card=node('section',{class:'login-card','aria-labelledby':'login-title'});
- card.append(text('span','🔐','login-icon'),text('p','UBAYBIAN FAMILY','eyebrow'),node('h1',{id:'login-title',text:'Masuk ke ruang belajar'}),text('p','Login keluarga menjaga bank soal dan progres Ubay & Bian tetap privat.','intro'));
+ card.append(text('span','🛡️','login-icon'),text('p','UBAYBIAN FAMILY','eyebrow'),node('h1',{id:'login-title',text:'Masuk ke ruang belajar'}),text('p','Login keluarga menjaga bank soal dan progres Ubay & Bian tetap privat.','intro'));
  const form=node('form',{class:'login-form'});
  const usernameLabel=node('label',{htmlFor:'family-username',text:'Username keluarga',class:'field-label'});
  const username=node('input',{id:'family-username',name:'username',autocomplete:'username',required:'true',maxlength:'40',class:'text-answer',placeholder:'username keluarga'});
+ const usernameWrap=node('span',{class:'login-input-wrap'},[text('span','♙','login-input-icon'),username]);
  const passwordLabel=node('label',{htmlFor:'family-password',text:'Password',class:'field-label'});
  const password=node('input',{id:'family-password',name:'password',type:'password',autocomplete:'current-password',required:'true',maxlength:'200',class:'text-answer',placeholder:'password keluarga'});
+ const passwordWrap=node('span',{class:'login-input-wrap'},[text('span','🔒','login-input-icon'),password]);
  const status=text('p',message,'login-status');
  const submit=node('button',{type:'submit',class:'primary',text:'Masuk'});
- form.append(usernameLabel,username,passwordLabel,password,submit,status);card.append(form);main.append(card);
+ form.append(usernameLabel,usernameWrap,passwordLabel,passwordWrap,submit,status);card.append(form);
+
+ const welcomeBot=text('span','🤖','login-welcome-bot');welcomeBot.setAttribute('aria-hidden','true');
+ scene.append(decor,card,welcomeBot);main.append(scene);
  form.addEventListener('submit',async event=>{
   event.preventDefault();submit.disabled=true;submit.textContent='Memeriksa…';status.textContent='';
   try{await api.login({username:username.value,password:password.value});location.reload();}
@@ -43,6 +54,7 @@ function showLogin(message=''){
 }
 
 function installLogout(family){
+ document.body.classList.remove('login-gateway');
  const topbar=document.querySelector('.topbar');
  const old=document.querySelector('#logout-family');if(old)old.remove();
  const logout=node('button',{id:'logout-family',class:'quiet family-logout',type:'button',text:'Keluar'});
