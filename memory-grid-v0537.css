@@ -1,0 +1,87 @@
+/* UbayBian v0.5.37 · Memory Grid Chamber Lock Polish
+   Final chamber lock: keep the world, remove gameplay collisions, tighten focus,
+   and make mascot/core/projector relationships read as one coherent machine. */
+
+/* 1) Hard-gap the neural rail around the board. The line must connect TO the board, never cross it. */
+.ng36-link{top:51.5%!important;height:3px!important;box-shadow:0 0 8px var(--ng-state-glow)!important;}
+.ng36-link.left{left:9.5%!important;width:26%!important;}
+.ng36-link.right{right:9.5%!important;width:26%!important;}
+.ng36-link.left:after,
+.ng36-link.right:before{
+  content:"";position:absolute;top:50%;width:14px;height:14px;border-radius:50%;transform:translateY(-50%);
+  background:rgba(247,253,255,.96);border:2px solid var(--ng-state-a);box-shadow:0 0 16px var(--ng-state-glow);
+}
+.ng36-link.left:after{right:-4px}.ng36-link.right:before{left:-4px}
+.neural-shell[data-neural-state="scan"] .ng36-link,
+.neural-shell[data-neural-state="recall"] .ng36-link{opacity:.58!important;}
+.neural-shell[data-neural-outcome="success"] .ng36-link{opacity:.88!important;}
+
+/* 2) Projector clears the HUD instead of sitting behind Ronde / score. */
+.ng35-projector{top:-60px!important;width:210px!important;height:68px!important;opacity:.78!important;}
+.ng35-projector:after{top:47px!important;width:74px!important;height:12px!important;}
+.ng35-projector i{top:12px!important;width:36px!important;height:36px!important;}
+.ng35-projector span{top:22px!important;width:13px!important;height:13px!important;}
+.neural-shell[data-neural-state="ready"] .ng35-projector{opacity:.52!important;}
+.neural-shell[data-neural-state="result"] .ng35-projector{opacity:.62!important;}
+
+/* 3) Ready state gets a holographic focus plate, not another white card. */
+.neural-shell[data-neural-state="ready"] .ng36-focus-field{
+  width:560px!important;height:390px!important;top:52%!important;opacity:.92!important;
+  background:
+    radial-gradient(ellipse at center,rgba(247,253,255,.54) 0%,rgba(217,242,249,.20) 46%,transparent 71%),
+    linear-gradient(180deg,rgba(114,238,222,.05),rgba(155,135,255,.04))!important;
+  border:1px solid rgba(185,238,245,.10);box-shadow:0 0 38px rgba(90,219,232,.08)!important;
+}
+.neural-ready-copy{color:#48566d!important;font-weight:800!important;text-shadow:0 1px 0 rgba(255,255,255,.45);}
+
+/* 4) Result spotlight stays cinematic, but no longer washes the whole chamber. */
+.neural-shell[data-neural-state="result"] .ng36-focus-field{
+  width:430px!important;height:440px!important;top:49%!important;opacity:.86!important;
+  background:radial-gradient(ellipse at center,rgba(255,249,218,.34) 0%,rgba(255,217,142,.12) 38%,rgba(177,150,255,.05) 58%,transparent 74%)!important;
+}
+.neural-shell[data-neural-state="result"] .ng36-stage-rim{width:520px!important;opacity:.56!important;}
+.neural-shell[data-neural-state="result"] .ng36-celebration{width:450px!important;height:310px!important;}
+
+/* 5) Memory Core becomes a compact dock instead of a long empty column. */
+.ng35-energy-dock{
+  right:34px!important;top:206px!important;width:108px!important;height:292px!important;border-radius:34px!important;
+  opacity:.64!important;background:linear-gradient(180deg,rgba(68,94,150,.065),rgba(65,55,128,.035))!important;
+}
+.ng35-energy-dock:before,.ng35-energy-dock:after{left:20px!important;right:20px!important;}
+.ng35-energy-dock span{
+  left:50%!important;bottom:16px!important;transform:translateX(-50%)!important;
+  font-size:8px!important;letter-spacing:.18em!important;font-weight:900!important;color:rgba(77,102,135,.66)!important;
+}
+.neural-energy-label{font-size:10px!important;letter-spacing:.12em!important;font-weight:950!important;color:#52637b!important;}
+
+/* 6) Feedback is learning content: give it enough weight to be read immediately. */
+.neural-feedback{
+  font-size:13.5px!important;line-height:1.32!important;font-weight:900!important;padding:7px 13px!important;
+  min-height:30px!important;border-radius:999px!important;
+}
+.neural-next{min-height:42px!important;padding:0 22px!important;font-weight:950!important;}
+
+/* 7) Mascot is a companion, not a sticker floating beside the machine. */
+.neural-lab-mascot{transform-origin:50% 100%!important;}
+.neural-lab-bubble{
+  max-width:150px!important;padding:8px 12px!important;border-radius:16px!important;
+  background:linear-gradient(145deg,rgba(248,253,255,.92),rgba(228,242,251,.82))!important;
+  border:1px solid rgba(255,255,255,.82)!important;color:#31465b!important;font-size:11.5px!important;line-height:1.25!important;
+}
+.neural-shell[data-neural-state="scan"] .neural-lab-mascot{transform:translateY(-2px) scale(1.02)!important;}
+.neural-shell[data-neural-state="recall"] .neural-lab-mascot{transform:translateY(0) rotate(-1deg)!important;}
+.neural-shell[data-neural-state="result"] .neural-lab-mascot{transform:translateY(-3px) scale(1.035)!important;}
+
+/* 8) Keep HUD fully above projector/fx and tighten separation from the board. */
+.neural-hud{position:relative!important;z-index:12!important;margin-bottom:6px!important;}
+.neural-round{position:relative!important;z-index:13!important;}
+.neural-phase{position:relative!important;z-index:12!important;}
+.neural-board{position:relative!important;z-index:11!important;}
+.neural-prompt,.neural-options,.neural-feedback,.neural-next{position:relative!important;z-index:12!important;}
+
+/* 9) Smaller screens: preserve the rail gap and core proportions. */
+@media (max-width:1100px){
+  .ng36-link.left{left:7%!important;width:24%!important;}
+  .ng36-link.right{right:7%!important;width:24%!important;}
+  .ng35-energy-dock{right:18px!important;width:94px!important;}
+}
