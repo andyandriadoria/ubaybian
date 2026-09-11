@@ -1,0 +1,289 @@
+/* v0.5.22 — Robot Lab Final Polish
+   Micro-hierarchy, progression wording, readable locked states, and custom robot forms.
+   Intentionally scoped to the v0.5.21 Robot Lab content so the unified shell stays untouched. */
+
+.robotlab-card.robotlab-adventure-v0521{
+  --lab-navy:#173852;
+  --lab-muted:#5f7f93;
+  --lab-cyan:#31bff4;
+  --lab-aqua:#4fd8c1;
+  --lab-gold:#ffd14a;
+}
+
+/* Slightly richer hero while preserving the Home/Report visual language. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-hero-v0521{
+  background:
+    radial-gradient(circle at 76% 8%,rgba(255,255,255,.68),transparent 21%),
+    radial-gradient(circle at 91% 29%,rgba(255,214,94,.30),transparent 19%),
+    linear-gradient(120deg,#ffb978 0%,#f2b8d2 43%,#9fe5e7 100%);
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-kicker{
+  font-size:11px;
+  letter-spacing:.12em;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-current-label{
+  padding:5px 9px;
+  font-size:10.5px;
+  letter-spacing:.075em;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label{
+  font-size:10.5px;
+  letter-spacing:.045em;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+  align-items:center;
+  font-size:12px;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label span:last-child{
+  color:#1d6889;
+  font-weight:850;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+  margin:7px 5px 0;
+  color:#496f86;
+  font-size:11px;
+  line-height:1.25;
+  font-weight:650;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-next-step strong{
+  color:#1b6689;
+  font-weight:850;
+}
+
+/* Current state: less lime, more UbayBian cyan/aqua with restrained gold. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-current{
+  border-color:rgba(60,196,211,.58) !important;
+  background:
+    radial-gradient(circle at 88% 15%,rgba(255,210,77,.24),transparent 27%),
+    linear-gradient(145deg,rgba(222,253,255,.96),rgba(223,247,241,.94)) !important;
+  box-shadow:
+    0 0 0 2px rgba(77,211,210,.10),
+    0 12px 26px rgba(43,147,170,.18),
+    inset 0 1px 0 rgba(255,255,255,.94) !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-current .upgrade-state-badge{
+  background:linear-gradient(90deg,#d9f8ff,#fff0b2);
+  color:#15768c;
+  border-color:rgba(63,184,205,.28);
+}
+
+/* Locked forms should still be aspirational and readable. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked{
+  opacity:.78 !important;
+  filter:saturate(.76);
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-name{
+  color:#42637a !important;
+  opacity:1;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-note{
+  color:#6c8798 !important;
+  opacity:1;
+}
+.robotlab-card.robotlab-adventure-v0521 .upgrade-status.upgrade-lock-chip{
+  display:inline-flex;
+  width:max-content;
+  margin-top:4px;
+  padding:4px 8px;
+  border:1px solid rgba(76,117,146,.16);
+  border-radius:999px;
+  background:rgba(255,255,255,.68);
+  color:#527188;
+  font-size:10px;
+  line-height:1;
+  font-weight:800;
+}
+.robotlab-card.robotlab-adventure-v0521 .upgrade-note{
+  margin-top:5px !important;
+  font-size:10.5px !important;
+  line-height:1.3 !important;
+  font-weight:550 !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-stat .stat-label{
+  color:#547589;
+  font-size:11px;
+}
+
+/* Quieter watermark so Lv. 6 stays visually clean. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrades-panel-v0521::after{
+  right:15px;
+  bottom:-18px;
+  font-size:78px;
+  opacity:.045;
+}
+
+/* --------------------------------------------------------------------------
+   CUSTOM ROBOT FORMS
+   Pure CSS character silhouettes: every level reads as a robot evolution,
+   rather than an ability emoji (magnifier/brain/rocket/etc.).
+   -------------------------------------------------------------------------- */
+.robot-form{
+  --form-main:#42c6ef;
+  --form-deep:#315b8b;
+  --form-accent:#ffd34c;
+  position:relative;
+  display:block;
+  width:62px;
+  height:66px;
+  filter:drop-shadow(0 7px 7px rgba(42,79,116,.18));
+}
+.robot-form .rf-head{
+  position:absolute;
+  left:50%;
+  top:10px;
+  width:45px;
+  height:35px;
+  transform:translateX(-50%);
+  border:3px solid rgba(40,65,105,.72);
+  border-radius:14px 14px 12px 12px;
+  background:linear-gradient(145deg,var(--form-main),#dff9ff 88%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.65);
+}
+.robot-form .rf-face{
+  position:absolute;
+  left:50%;
+  top:19px;
+  width:31px;
+  height:15px;
+  transform:translateX(-50%);
+  border-radius:7px;
+  background:#173b61;
+}
+.robot-form .rf-eye,
+.robot-form .rf-eye::after{
+  content:"";
+  position:absolute;
+  top:5px;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#8ef3ff;
+  box-shadow:0 0 7px rgba(142,243,255,.85);
+}
+.robot-form .rf-eye{left:6px}
+.robot-form .rf-eye::after{left:13px;top:0}
+.robot-form .rf-body{
+  position:absolute;
+  left:50%;
+  bottom:5px;
+  width:31px;
+  height:22px;
+  transform:translateX(-50%);
+  border:3px solid rgba(40,65,105,.68);
+  border-radius:9px 9px 11px 11px;
+  background:linear-gradient(145deg,#e9fbff,var(--form-main));
+}
+.robot-form .rf-core{
+  position:absolute;
+  left:50%;
+  bottom:13px;
+  width:8px;
+  height:8px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:var(--form-accent);
+  box-shadow:0 0 8px rgba(255,210,68,.7);
+}
+.robot-form::before,
+.robot-form::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+}
+
+.robot-form.level-1{--form-main:#ef7d9b;--form-deep:#36618c;--form-accent:#ffd44f}
+.robot-form.level-1::before{
+  left:9px;top:7px;width:4px;height:20px;border-radius:6px;background:#ea4f78;
+  box-shadow:40px 0 0 #ea4f78;
+}
+.robot-form.level-1::after{
+  left:8px;bottom:5px;width:12px;height:5px;border-radius:6px;background:#315b8b;
+  box-shadow:34px 0 0 #315b8b;
+}
+
+.robot-form.level-2{--form-main:#44cee9;--form-deep:#275d8b;--form-accent:#ffd04a}
+.robot-form.level-2 .rf-head{border-radius:18px 18px 12px 12px}
+.robot-form.level-2::before{
+  left:28px;top:0;width:6px;height:10px;border-radius:6px;background:#ffd34c;
+  box-shadow:0 -2px 0 2px #4acfe8;
+}
+.robot-form.level-2::after{
+  left:10px;bottom:4px;width:10px;height:5px;border-radius:5px;background:#2f628e;
+  box-shadow:32px 0 0 #2f628e;
+}
+
+.robot-form.level-3{--form-main:#67d9c4;--form-deep:#315c8e;--form-accent:#ffca3f}
+.robot-form.level-3 .rf-head{width:47px}
+.robot-form.level-3::before{
+  left:3px;top:15px;width:9px;height:17px;border-radius:9px;background:#57bad8;
+  box-shadow:47px 0 0 #57bad8;
+}
+.robot-form.level-3::after{
+  left:6px;bottom:7px;width:14px;height:5px;border-radius:6px;background:#2d608e;
+  box-shadow:36px 0 0 #2d608e;
+}
+
+.robot-form.level-4{--form-main:#718be8;--form-deep:#344a86;--form-accent:#ffca45}
+.robot-form.level-4 .rf-head{transform:translateX(-50%) rotate(-2deg)}
+.robot-form.level-4::before{
+  left:4px;top:30px;width:15px;height:7px;border-radius:8px;background:#576fbf;
+  box-shadow:39px 0 0 #576fbf;
+}
+.robot-form.level-4::after{
+  left:26px;top:2px;width:10px;height:10px;border:3px solid #5f75c9;border-radius:50%;background:#bdf8ff;
+}
+
+.robot-form.level-5{--form-main:#8967d7;--form-deep:#3f3c82;--form-accent:#ffba47}
+.robot-form.level-5 .rf-head{width:48px;background:linear-gradient(145deg,#8d6ee0,#e8e4ff)}
+.robot-form.level-5::before{
+  left:25px;top:0;width:12px;height:12px;border-radius:50%;background:#ffcb57;box-shadow:0 0 10px rgba(255,191,66,.75);
+}
+.robot-form.level-5::after{
+  left:9px;bottom:2px;width:13px;height:6px;border-radius:6px;background:#423f86;
+  box-shadow:31px 0 0 #423f86;
+}
+
+.robot-form.level-6{--form-main:#f06d8a;--form-deep:#473f7e;--form-accent:#ffd64f}
+.robot-form.level-6 .rf-head{width:49px;background:linear-gradient(145deg,#ef6889,#ba9cff 92%)}
+.robot-form.level-6::before{
+  left:20px;top:-4px;width:22px;height:10px;
+  clip-path:polygon(0 100%,20% 0,50% 72%,80% 0,100% 100%);
+  background:#ffd24b;
+  filter:drop-shadow(0 2px 2px rgba(133,82,26,.2));
+}
+.robot-form.level-6::after{
+  left:8px;bottom:2px;width:14px;height:6px;border-radius:6px;background:#4b427f;
+  box-shadow:32px 0 0 #4b427f;
+}
+
+.robotlab-card.robotlab-adventure-v0521 .robotlab-core-orb .robot-form{
+  transform:scale(1.12);
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-robot-emoji.robot-form-host{
+  display:grid;
+  place-items:center;
+  width:72px;
+  height:72px;
+  font-size:0 !important;
+  filter:none !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item .upgrade-icon.robot-form-host{
+  font-size:0 !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item .upgrade-icon .robot-form{
+  transform:scale(.72);
+}
+
+@media (max-width:1100px){
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{justify-content:flex-start}
+}
+
+@media (max-width:700px){
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{font-size:10.5px}
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-kicker,
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label{font-size:10px}
+}
