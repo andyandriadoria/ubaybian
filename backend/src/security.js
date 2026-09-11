@@ -1,3 +1,5 @@
+import { pbkdf2 } from 'node:crypto';
+
 const encoder = new TextEncoder();
 const PASSWORD_ITERATIONS = 150000;
 
@@ -25,17 +27,21 @@ export async function sha256Base64Url(value) {
   return bytesToBase64Url(new Uint8Array(digest));
 }
 
+function pbkdf2Sha256(password, saltBytes, iterations) {
+  return new Promise((resolve, reject) => {
+    pbkdf2(String(password), saltBytes, iterations, 32, 'sha256', (error, derivedKey) => {
+      if (error) reject(error);
+      else resolve(new Uint8Array(derivedKey));
+    });
+  });
+}
+
 export async function hashPassword(password, salt = randomToken(16), iterations = PASSWORD_ITERATIONS) {
   const input = String(password);
   if (input.length < 10) throw new Error('Password minimal 10 karakter.');
   if (input.length > 200) throw new Error('Password terlalu panjang.');
-  const material = await crypto.subtle.importKey('raw', encoder.encode(input), 'PBKDF2', false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt: base64UrlToBytes(salt), iterations },
-    material,
-    256,
-  );
-  return { salt, iterations, hash: bytesToBase64Url(new Uint8Array(bits)) };
+  const derived = await pbkdf2Sha256(input, base64UrlToBytes(salt), Number(iterations));
+  return { salt, iterations: Number(iterations), hash: bytesToBase64Url(derived) };
 }
 
 export async function verifyPassword(password, record) {
@@ -43,6 +49,7 @@ export async function verifyPassword(password, record) {
   const a = base64UrlToBytes(candidate.hash);
   const b = base64UrlToBytes(record.password_hash);
   if (a.length !== b.length) return false;
+  if (typeof crypto.subtle.timingSafeEqual === 'function') return crypto.subtle.timingSafeEqual(a, b);
   let diff = 0;
   for (let i = 0; i < a.length; i += 1) diff |= a[i] ^ b[i];
   return diff === 0;
