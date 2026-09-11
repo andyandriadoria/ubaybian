@@ -24,11 +24,10 @@ function safeHttpsUrl(value) {
 }
 function normalizeText(value) { return String(value ?? '').normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('id-ID'); }
 
-export function sheetConfig(env, profileSlug, subjectId) {
+export function sheetConfig(profileSlug, subjectId) {
   const sheetName = SUBJECT_TABS[profileSlug]?.[subjectId];
   if (!sheetName) throw new HttpError(403, 'SUBJECT_FORBIDDEN', 'Pelajaran tidak tersedia untuk profil ini.');
-  const spreadsheetId = profileSlug === 'ubay' ? env.UBAY_SHEET_ID : env.BIAN_SHEET_ID;
-  return { spreadsheetId, sheetName };
+  return { profileSlug, sheetName };
 }
 
 export function parsePublishedQuestions(rows) {
