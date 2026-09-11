@@ -1,0 +1,253 @@
+/* UbayBian v0.5.14 — Typography Balance
+   Normalize hierarchy across the Adventure shell, Quiz Mission, and Results.
+   Goal: fewer competing heavy weights, more readable support text, no layout redesign. */
+
+/* ===== Global Adventure shell typography ===== */
+body.adventure-home .brand{
+  font-size:22px;
+  font-weight:900;
+}
+body.adventure-home .top-nav button{
+  font-size:13px;
+  font-weight:800;
+}
+body.adventure-home .quiet,
+body.adventure-home .family-logout{
+  font-size:13px;
+  font-weight:800;
+}
+body.adventure-home .version{
+  font-size:11px;
+  font-weight:700;
+}
+
+/* ===== Sidebar profile ===== */
+body.adventure-home .profile-info h2{
+  font-size:19px;
+  line-height:1.05;
+  font-weight:800;
+  letter-spacing:-.012em;
+}
+body.adventure-home .profile-info p{
+  font-size:12px;
+  line-height:1.35;
+  font-weight:600;
+}
+body.adventure-home .xp-main,
+body.adventure-home .coin-main,
+body.adventure-home .xp-level{
+  font-size:11px;
+  line-height:1.1;
+  font-weight:800;
+}
+
+/* ===== Sidebar badge + menu cards ===== */
+body.adventure-home .badge-title{
+  font-size:12.5px;
+  font-weight:800;
+  letter-spacing:.05em;
+}
+body.adventure-home .badge-empty{
+  font-size:11px;
+  line-height:1.4;
+  font-weight:550;
+}
+body.adventure-home .badge-card strong,
+body.adventure-home .badge-card b{
+  font-weight:800;
+}
+body.adventure-home .badge-card p,
+body.adventure-home .badge-card small{
+  font-size:10.75px;
+  line-height:1.35;
+  font-weight:550;
+}
+body.adventure-home .side-tile-text{
+  font-size:13px;
+  line-height:1.2;
+  font-weight:800;
+}
+body.adventure-home .side-tile-sub{
+  font-size:11px;
+  line-height:1.35;
+  font-weight:550;
+}
+
+/* ===== Quiz mission meta hierarchy ===== */
+.adventure-quiz .tag-row span{
+  font-size:11px;
+  font-weight:800;
+}
+.adventure-quiz .quiz-header h2{
+  font-size:13px;
+  line-height:1.35;
+  font-weight:700;
+}
+.adventure-quiz .score-pill{
+  font-size:11px;
+  font-weight:800;
+}
+.adventure-quiz .progress-label-row{
+  font-size:11px;
+  line-height:1.2;
+  font-weight:700;
+}
+
+/* ===== Quiz question hierarchy ===== */
+.adventure-quiz .question-text{
+  font-size:clamp(23px,1.7vw,26px);
+  line-height:1.27;
+  font-weight:800;
+  letter-spacing:-.016em;
+}
+.adventure-quiz.question-long .question-text{
+  font-size:clamp(21px,1.5vw,23px);
+  line-height:1.33;
+  font-weight:800;
+}
+.adventure-quiz.question-very-long .question-text{
+  font-size:clamp(19px,1.35vw,21px);
+  line-height:1.38;
+  font-weight:750;
+}
+
+/* ===== Quiz answers ===== */
+.adventure-quiz .option-label{
+  font-size:13px;
+  font-weight:850;
+}
+.adventure-quiz .option-text{
+  font-size:16px;
+  line-height:1.35;
+  font-weight:700;
+}
+.adventure-quiz .text-answer{
+  font-size:16px;
+  font-weight:500;
+}
+.adventure-quiz .check-btn{
+  font-size:12.5px;
+  font-weight:800;
+}
+
+/* ===== Feedback and rewards ===== */
+.adventure-quiz .feedback .feedback-title{
+  font-size:13px;
+  line-height:1.35;
+  font-weight:850;
+}
+.adventure-quiz .feedback .feedback-copy{
+  font-size:13px;
+  line-height:1.48;
+  font-weight:600;
+}
+.adventure-quiz .reward-chip{
+  font-size:11.5px;
+  font-weight:800;
+}
+.adventure-quiz .bottom-actions .secondary,
+.adventure-quiz .skip-btn{
+  font-size:11.5px;
+  font-weight:750;
+}
+.adventure-quiz .next-btn{
+  font-size:12.5px;
+  font-weight:850;
+}
+
+/* ===== Companion coach ===== */
+.mission-coach span{
+  font-size:11px;
+  line-height:1.25;
+  font-weight:800;
+}
+
+/* ===== Result screen ===== */
+.adventure-result .eyebrow{
+  font-size:10.5px;
+  line-height:1.2;
+  font-weight:850;
+}
+.adventure-result .result-score strong{
+  font-size:60px;
+  line-height:1;
+  font-weight:900;
+}
+.adventure-result .result-score span{
+  font-size:17px;
+  line-height:1;
+  font-weight:750;
+}
+.adventure-result h2{
+  font-size:25px;
+  line-height:1.15;
+  font-weight:800;
+  letter-spacing:-.012em;
+}
+.adventure-result .result-message{
+  font-size:13.5px;
+  line-height:1.45;
+  font-weight:550;
+}
+.adventure-result .result-stats span{
+  font-size:12.5px;
+  line-height:1.25;
+  font-weight:750;
+}
+.adventure-result .result-rewards span{
+  font-size:11.5px;
+  line-height:1.2;
+  font-weight:800;
+}
+.result-review-note{
+  font-size:11.5px;
+  line-height:1.35;
+  font-weight:650;
+}
+.result-companion-bubble{
+  font-size:11.5px;
+  line-height:1.3;
+  font-weight:780;
+}
+.adventure-result .result-actions .primary,
+.adventure-result .result-actions .secondary{
+  font-size:12.5px;
+  font-weight:800;
+}
+
+/* ===== Accessibility/readability on smaller screens ===== */
+@media (max-width:1180px){
+  body.adventure-home .profile-info p,
+  body.adventure-home .side-tile-sub,
+  body.adventure-home .badge-empty{
+    font-size:11px;
+  }
+  .adventure-quiz .question-text{
+    font-size:clamp(21px,2vw,25px);
+  }
+}
+
+@media (max-width:980px){
+  body.adventure-home .top-nav button,
+  body.adventure-home .quiet,
+  body.adventure-home .family-logout{
+    font-size:12.5px;
+  }
+  .adventure-quiz .question-text,
+  .adventure-quiz.question-long .question-text,
+  .adventure-quiz.question-very-long .question-text{
+    font-size:clamp(19px,3vw,24px);
+    font-weight:800;
+  }
+  .adventure-result .result-message{
+    font-size:13px;
+  }
+}
+
+@media (max-width:640px){
+  body.adventure-home .brand{font-size:20px}
+  body.adventure-home .profile-info h2{font-size:18px}
+  .adventure-quiz .option-text{font-size:15px}
+  .adventure-result h2{font-size:23px}
+  .adventure-result .result-score strong{font-size:52px}
+}
