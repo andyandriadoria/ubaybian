@@ -9,19 +9,24 @@
       : 'assets/ubay-cosmic-spider-bot.svg';
   }
 
+  function setText(node,value){
+    if (node && node.textContent !== value) node.textContent = value;
+  }
+
   function progressInfo(card){
     const labels = card.querySelectorAll('.progress-label-row span');
     let current = 1;
     let total = 1;
     if (labels[0]) {
-      labels[0].textContent = labels[0].textContent.replace('% complete', '% selesai');
+      const localized = labels[0].textContent.replace('% complete', '% selesai');
+      setText(labels[0],localized);
     }
     if (labels[1]) {
       const match = labels[1].textContent.match(/Question\s+(\d+)\s+of\s+(\d+)/i) || labels[1].textContent.match(/Soal\s+(\d+)\s+dari\s+(\d+)/i);
       if (match) {
         current = Number(match[1]) || 1;
         total = Number(match[2]) || 1;
-        labels[1].textContent = `Soal ${current} dari ${total}`;
+        setText(labels[1],`Soal ${current} dari ${total}`);
       }
     }
     return {current,total};
@@ -42,9 +47,10 @@
     }
     const img = coach.querySelector('img');
     const bubble = coach.querySelector('span');
-    img.src = profileAsset();
+    const asset = profileAsset();
+    if (img.getAttribute('src') !== asset) img.src = asset;
     const remaining = Math.max(0,total-current);
-    bubble.textContent = remaining === 0 ? 'Soal terakhir! ✨' : `Ayo, ${remaining} lagi!`;
+    setText(bubble,remaining === 0 ? 'Soal terakhir! ✨' : `Ayo, ${remaining} lagi!`);
   }
 
   function syncFeedback(card){
@@ -56,13 +62,13 @@
   }
 
   function enhanceQuiz(card){
-    card.classList.add('adventure-quiz');
+    if (!card.classList.contains('adventure-quiz')) card.classList.add('adventure-quiz');
     syncCoach(card);
     syncFeedback(card);
   }
 
   function enhanceResult(panel){
-    panel.classList.add('adventure-result');
+    if (!panel.classList.contains('adventure-result')) panel.classList.add('adventure-result');
     if (panel.querySelector('.result-review-note')) return;
     const wrong = [...panel.querySelectorAll('.result-stats span')].find(node => /salah/i.test(node.textContent));
     const count = wrong ? Number((wrong.textContent.match(/\d+/) || ['0'])[0]) : 0;
