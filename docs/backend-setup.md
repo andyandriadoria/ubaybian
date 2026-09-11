@@ -1,64 +1,60 @@
-# Menyalakan backend UbayBian v0.3
+# Menyalakan backend UbayBian v0.4
 
-Frontend tetap diterbitkan dari GitHub Pages. Backend memakai Cloudflare Worker + D1. Google Sheets hanya dibaca oleh Worker melalui service account Google; browser tidak pernah menerima credential atau ID spreadsheet.
+Frontend tetap diterbitkan dari GitHub Pages. Backend memakai Cloudflare Worker + D1. Untuk membaca dua Google Sheets privat, UbayBian memakai **Google Apps Script Web App** yang dijalankan sebagai pemilik Sheet. Jalur ini tidak membutuhkan Google Cloud billing account, service account, kartu, atau metode pembayaran.
 
-## 1. Siapkan Cloudflare Worker dan D1
+Arsitektur:
 
-Dari folder `backend/`:
+`GitHub Pages → Cloudflare Worker → Apps Script Web App → Google Sheets privat`
 
-```bash
-npm install
-npx wrangler login
-npx wrangler d1 create ubaybian
-```
+Cloudflare Worker tetap menangani login keluarga, penilaian, sesi kuis, dan progres. Apps Script hanya berfungsi sebagai gateway baca privat untuk bank soal.
 
-Salin `database_id` hasil perintah terakhir ke `backend/wrangler.jsonc`, menggantikan `REPLACE_WITH_D1_DATABASE_ID`.
+## 1. Cloudflare Worker + D1
 
-Lalu jalankan migrasi:
+Database D1 `ubaybian` dan Worker `ubaybian-api` sudah dibuat. Binding Worker harus bernama `DB` dan menunjuk ke database `ubaybian`.
 
-```bash
-npm run db:remote
-```
+Schema database berada di `backend/migrations/0001_initial.sql`.
 
-## 2. Siapkan Google service account
+## 2. Buat Apps Script gateway tanpa kartu
 
-Buat satu service account di Google Cloud project yang mengaktifkan Google Sheets API. Buat private key JSON untuk service account tersebut.
+1. Buka `https://script.google.com/` dengan akun Google yang memiliki akses ke dua Bank Soal.
+2. Klik **New project** dan beri nama misalnya `UbayBian Sheets Gateway`.
+3. Hapus isi `Code.gs`, lalu salin isi file `apps-script/Code.gs` dari repo UbayBian.
+4. Buka **Project Settings → Script Properties**.
+5. Tambahkan tiga Script Properties:
+   - `GATEWAY_SECRET` = string acak panjang yang hanya kamu simpan sendiri.
+   - `UBAY_SHEET_ID` = ID spreadsheet Bank Soal Ubay.
+   - `BIAN_SHEET_ID` = ID spreadsheet Bank Soal Bian.
+6. Simpan.
 
-Bagikan dua spreadsheet bank soal sebagai **Viewer** ke email service account itu:
+Script Properties cocok untuk konfigurasi aplikasi dan hanya tersedia di dalam project script tersebut. Jangan menaruh nilainya ke GitHub.
 
-- Bank Soal Ubaid — Grade 7
-- Bank Soal Fabian — Grade 2
+## 3. Deploy Apps Script sebagai Web App
 
-Jangan membuat Sheet menjadi public / anyone with the link.
+1. Klik **Deploy → New deployment**.
+2. Pilih **Web app**.
+3. **Execute as:** `Me` / akun yang men-deploy.
+4. **Who has access:** pilih akses yang mengizinkan pemanggilan tanpa login Google (biasanya `Anyone`).
+5. Klik **Deploy** dan selesaikan permintaan izin Google untuk membaca spreadsheet.
+6. Salin URL deployment yang berakhiran `/exec`.
 
-## 3. Isi secret Worker
+Walaupun endpoint Web App dapat diakses secara jaringan, kode menolak permintaan yang tidak membawa `GATEWAY_SECRET` yang benar. Worker tidak pernah memberikan secret ini ke browser.
 
-Dari folder `backend/`, jalankan satu per satu:
+## 4. Isi secret Worker
 
-```bash
-npx wrangler secret put SETUP_TOKEN
-npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_EMAIL
-npx wrangler secret put GOOGLE_PRIVATE_KEY
-npx wrangler secret put UBAY_SHEET_ID
-npx wrangler secret put BIAN_SHEET_ID
-```
+Di Cloudflare Worker `ubaybian-api`, tambahkan secret berikut:
 
-`SETUP_TOKEN` adalah token acak panjang yang hanya dipakai sekali untuk membuat akun keluarga pertama. `GOOGLE_PRIVATE_KEY` adalah nilai `private_key` dari JSON service account. Dua Sheet ID tetap disimpan sebagai secret agar tidak muncul di repo publik.
+- `SETUP_TOKEN` — string acak panjang, hanya dipakai untuk membuat akun keluarga pertama.
+- `APPS_SCRIPT_URL` — URL Apps Script Web App yang berakhiran `/exec`.
+- `APPS_SCRIPT_SECRET` — nilainya harus sama persis dengan `GATEWAY_SECRET` di Script Properties.
 
-## 4. Deploy backend
-
-```bash
-npm run deploy
-```
-
-Catat URL Worker HTTPS, misalnya `https://ubaybian-api.<subdomain>.workers.dev`.
+Secret lama berbasis service account (`GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `UBAY_SHEET_ID`, `BIAN_SHEET_ID`) **tidak digunakan lagi oleh Worker**. Dua Sheet ID sekarang hanya berada di Script Properties Apps Script.
 
 ## 5. Buat akun keluarga pertama
 
 Panggil endpoint setup satu kali:
 
 ```bash
-curl -X POST "https://URL-WORKER/v1/setup" \
+curl -X POST "https://ubaybian-api.andyandriadoria.workers.dev/v1/setup" \
   -H "Content-Type: application/json" \
   -H "X-Setup-Token: TOKEN-SETUP" \
   -d '{"username":"keluarga","password":"GANTI-DENGAN-PASSWORD-KUAT","displayName":"Keluarga UbayBian"}'
@@ -71,7 +67,7 @@ Setup otomatis membuat dua profil server-side: `ubay` (Grade 7) dan `bian` (Grad
 Edit `public-config.js`:
 
 ```js
-globalThis.UBAYBIAN_API_BASE = 'https://URL-WORKER';
+globalThis.UBAYBIAN_API_BASE = 'https://ubaybian-api.andyandriadoria.workers.dev';
 ```
 
 Setelah commit masuk ke `main`, GitHub Pages akan meminta login keluarga sebelum menampilkan pemilih profil.
@@ -80,9 +76,9 @@ Setelah commit masuk ke `main`, GitHub Pages akan meminta login keluarga sebelum
 
 ## 7. Publikasikan soal
 
-Backend hanya membaca baris dengan kolom `Status` bernilai tepat `Published` (tidak peka huruf besar/kecil). `Draft`, baris kosong, dan template tidak masuk latihan.
+Backend hanya membaca baris dengan kolom `Status` bernilai `Published` (tidak peka huruf besar/kecil). `Draft`, baris kosong, dan template tidak masuk latihan.
 
-Satu baris `Published` yang tidak valid akan memblokir snapshot mapel tersebut agar backend tidak diam-diam menjalankan sebagian bank soal. Perbaiki baris yang dilaporkan terlebih dahulu.
+Satu baris `Published` yang tidak valid akan memblokir snapshot mapel tersebut agar backend tidak diam-diam menjalankan sebagian bank soal.
 
 ## Penyimpanan progres
 
@@ -94,15 +90,11 @@ Setiap jawaban yang berhasil diproses disimpan di D1 dan memperbarui ringkasan p
 
 Sesi dan hasil terikat ke akun keluarga di server. `profileId` dari browser hanya selector dan tidak dianggap sebagai bukti hak akses.
 
-## Secret yang tidak boleh masuk GitHub
-
-Jangan commit nilai berikut:
+## Nilai yang tidak boleh masuk GitHub atau chat
 
 - `SETUP_TOKEN`
-- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
-- `GOOGLE_PRIVATE_KEY`
-- `UBAY_SHEET_ID`
-- `BIAN_SHEET_ID`
+- `GATEWAY_SECRET` / `APPS_SCRIPT_SECRET`
+- ID dua spreadsheet privat
 - token sesi keluarga
 
 Untuk development lokal gunakan `.dev.vars`; file itu di-ignore dari Git.
