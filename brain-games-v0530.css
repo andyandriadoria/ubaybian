@@ -1,0 +1,73 @@
+/* UbayBian v0.5.30 · Brain Games Lock Polish
+   Final micro-polish only: reactor-complete spacing, smaller energy tube end-caps,
+   softer mascot speech bubbles, and a lighter glass secondary CTA. */
+
+/* ---------- Result badge: keep it inside the result composition ---------- */
+.reactor-complete-badge{
+  transform:translateY(10px);
+  margin-bottom:16px;
+}
+.reactor-result h3{
+  margin-top:6px;
+}
+
+/* ---------- Energy tube: smaller end-caps, less slider-like ---------- */
+.reactor-xp-track{
+  margin-inline:9px;
+}
+.reactor-xp-track::before,
+.reactor-xp-track::after{
+  width:14px;
+  height:21px;
+  border-radius:6px;
+  border-width:1px;
+  box-shadow:
+    0 2px 7px rgba(0,8,28,.24),
+    inset 0 1px 0 rgba(255,255,255,.64),
+    0 0 10px rgba(67,220,255,.10);
+}
+.reactor-xp-track::before{left:-8px;}
+.reactor-xp-track::after{right:-8px;}
+
+/* ---------- Companion speech: softer and less attention-hungry ---------- */
+.reactor-mascot-bubble{
+  max-width:138px;
+  padding:8px 11px;
+  color:#244968;
+  background:rgba(235,248,255,.84);
+  border-color:rgba(164,224,248,.42);
+  box-shadow:
+    0 8px 18px rgba(0,8,34,.12),
+    0 0 14px rgba(85,220,255,.055);
+  font-weight:800;
+}
+.reactor-shell[data-reactor-state="play"] .reactor-mascot-bubble{
+  background:rgba(235,248,255,.78);
+  opacity:.92;
+}
+
+/* ---------- Secondary CTA: clearly glass, clearly secondary ---------- */
+.reactor-result-actions .reactor-ghost-btn{
+  color:#dff6ff;
+  background:
+    linear-gradient(180deg,rgba(226,248,255,.10),rgba(182,221,255,.055));
+  border:1px solid rgba(174,230,255,.20);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.09),
+    0 8px 18px rgba(0,7,29,.10);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.reactor-result-actions .reactor-ghost-btn:hover{
+  color:#fff;
+  background:rgba(226,248,255,.14);
+  border-color:rgba(183,236,255,.31);
+  transform:translateY(-1px);
+}
+
+@media (max-width:680px){
+  .reactor-complete-badge{
+    transform:translateY(6px);
+    margin-bottom:12px;
+  }
+}
