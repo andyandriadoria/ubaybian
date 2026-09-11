@@ -1,57 +1,52 @@
 # UbayBian
 
-Ruang belajar Ubay (Grade 7 / Junior High) dan Bian (Grade 2 / Primary).
+Ruang belajar keluarga untuk Ubay (Grade 7 / Junior High) dan Bian (Grade 2 / Primary).
 
-## Versi 0.2 — quiz-ready frontend
+## Versi 0.3 — family backend foundation
 
-Fondasi antarmuka sudah memiliki pilihan profil, profil terakhir pada perangkat, daftar pelajaran terpisah, routing, serta halaman latihan. Versi 0.2 menambahkan kontrak API dan quiz engine frontend yang siap menerima soal aman dari backend privat.
+Frontend GitHub Pages kini siap memakai backend privat untuk tiga kebutuhan utama:
 
-Quiz engine mendukung:
-- pilihan ganda,
-- isian teks,
-- pilihan gambar,
-- progres sesi,
-- feedback dan pembahasan setelah menjawab,
-- XP dari server,
-- idempotency key untuk pengiriman jawaban,
-- validasi payload agar kunci jawaban tidak ikut terkirim sebelum siswa menjawab.
+1. **Login keluarga** — username/password diverifikasi server, sesi memakai opaque token yang hash-nya disimpan di database.
+2. **Google Sheets privat** — bank soal dibaca oleh Cloudflare Worker melalui service account Google. Browser tidak menerima credential atau Sheet ID.
+3. **Progres online** — sesi kuis, jawaban, jumlah benar, jumlah dikerjakan, dan waktu latihan terakhir disimpan di Cloudflare D1.
 
-Jika backend belum dikonfigurasi, website masuk **mode persiapan** dan tidak mencoba membuka Google Sheets dari browser.
+Quiz engine tetap mendukung pilihan ganda, isian teks, pilihan gambar, progres sesi, feedback, dan pembahasan setelah menjawab. XP masih `0` sampai aturan XP keluarga ditentukan; backend tidak mengarang aturan reward.
 
-Belum tersedia: login keluarga, backend, koneksi runtime ke Google Sheets, penyimpanan progres online, laporan orang tua, ledger koin/hadiah, dan soal berstatus publikasi. Memilih profil **bukan autentikasi**. Jangan menaruh informasi privat pada frontend publik.
+## Status saat repo ini di-clone
 
-## Menjalankan
+Kode backend sudah tersedia di `backend/`, tetapi deployment membutuhkan akun Cloudflare, D1 database, Google service account, dan secret milik keluarga. Selama `public-config.js` belum berisi URL backend, frontend tetap masuk **mode persiapan** dan tidak meminta login.
 
-Sajikan folder ini melalui server HTTP statis (misalnya `python3 -m http.server 8000`), lalu buka `http://localhost:8000`. Tidak membutuhkan instalasi dependency.
+## Struktur
 
-Pemeriksaan:
+- `index.html`, `app.js`, `bootstrap.js` — frontend GitHub Pages.
+- `api.js`, `quiz.js` — client API dan validasi payload aman.
+- `backend/src/` — login, session, Google Sheets connector, quiz service, progress.
+- `backend/migrations/` — schema D1.
+- `docs/api-contract.md` — kontrak frontend ↔ backend.
+- `docs/backend-setup.md` — langkah deployment dan konfigurasi secret.
+
+## Menjalankan pemeriksaan frontend
 
 ```bash
 npm run check
 npm test
 ```
 
-## GitHub Pages
+Backend:
 
-Deployment: Settings → Pages → Deploy from a branch → `main` → `/(root)`.
+```bash
+cd backend
+npm install
+npm run check
+npm test
+```
 
-Semua file frontend yang diterbitkan dapat dilihat pengunjung. Credential, ID Google Sheets, kunci jawaban, dan data progres privat tidak boleh disimpan di repo.
+## Mengaktifkan backend
 
-## Bank soal
+Ikuti [docs/backend-setup.md](docs/backend-setup.md). Setelah Worker aktif, set URL HTTPS-nya pada `public-config.js` lalu commit ke `main`.
 
-Dua Google Sheets privat telah disiapkan terpisah untuk Ubay dan Bian. Struktur tab mapel dan header sudah sesuai rancangan integrasi. Pada pengecekan v0.2, bank masih berupa template/Draft; aplikasi tidak membuat soal contoh seolah-olah sebagai data nyata.
+## Keamanan
 
-Kolom dan aturan impor ada di [rancangan integrasi](docs/integrasi.md). Kontrak antara frontend dan backend ada di [kontrak API](docs/api-contract.md).
-
-## Konfigurasi backend
-
-Frontend membaca URL layanan dari global `UBAYBIAN_API_BASE`. Produksi harus HTTPS; HTTP hanya diterima untuk `localhost` saat development. URL backend bukan secret, tetapi semua credential dan akses Sheets tetap berada di server.
-
-## Tahap selanjutnya
-
-1. Implementasikan backend + login keluarga dan endpoint sesuai `docs/api-contract.md`.
-2. Hubungkan Google Sheets privat di backend, validasi seluruh baris, lalu publikasikan snapshot soal yang valid.
-3. Isi dan review soal per mapel; hanya status publikasi yang masuk latihan.
-4. Simpan hasil lintas perangkat, lalu tambahkan dashboard orang tua, XP/koin, badge, dan approval hadiah.
+Repo ini publik. Jangan pernah menyimpan password keluarga, token sesi, Google private key, setup token, atau ID Sheet privat pada file frontend / commit GitHub. Secret backend dimasukkan melalui `wrangler secret put`.
 
 Website UbaidBits dan FabianBits lama tidak diubah.

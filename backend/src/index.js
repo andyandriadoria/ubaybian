@@ -1,0 +1,64 @@
+import { familyProfiles, login, logout, requireProfile, requireSession, setupFamily } from './auth.js';
+import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
+import { progressForFamily } from './progress.js';
+import { startQuiz, submitAnswer } from './quiz-service.js';
+
+async function handler(request, env) {
+  const url = new URL(request.url); const path = url.pathname.replace(/\/+$/, '') || '/';
+  if (request.method === 'GET' && path === '/v1/health') return json({ ok: true, service: 'ubaybian-api' });
+
+  if (request.method === 'POST' && path === '/v1/setup') {
+    const body = await readJson(request);
+    const result = await setupFamily(env, body, request.headers.get('X-Setup-Token') || '');
+    return json({ ok: true, family: result }, 201);
+  }
+  if (request.method === 'POST' && path === '/v1/auth/login') {
+    const result = await login(env, await readJson(request));
+    const profiles = await familyProfiles(env, result.family.id);
+    return json({ token: result.token, expiresAt: result.expiresAt, family: result.family, profiles });
+  }
+  if (request.method === 'POST' && path === '/v1/auth/logout') {
+    await logout(request, env); return json({ ok: true });
+  }
+  if (request.method === 'GET' && path === '/v1/auth/me') {
+    const session = await requireSession(request, env);
+    return json({ family: session.family, profiles: await familyProfiles(env, session.familyId) });
+  }
+  if (request.method === 'GET' && path === '/v1/progress') {
+    const session = await requireSession(request, env);
+    return json({ items: await progressForFamily(env, session.familyId) });
+  }
+  const progressParams = routeMatch(path, '/v1/progress/:profileId');
+  if (request.method === 'GET' && progressParams) {
+    const session = await requireSession(request, env); const profile = await requireProfile(env, session.familyId, progressParams.profileId);
+    return json({ items: await progressForFamily(env, session.familyId, profile.id) });
+  }
+  if (request.method === 'POST' && path === '/v1/quiz/sessions') {
+    const session = await requireSession(request, env); const body = await readJson(request);
+    const profile = await requireProfile(env, session.familyId, String(body?.profileId || ''));
+    return json(await startQuiz(env, session.familyId, profile, String(body?.subjectId || ''), body?.limit), 201);
+  }
+  const answerParams = routeMatch(path, '/v1/quiz/sessions/:sessionId/answers');
+  if (request.method === 'POST' && answerParams) {
+    const session = await requireSession(request, env); const body = await readJson(request);
+    return json(await submitAnswer(env, session.familyId, answerParams.sessionId, body, request.headers.get('Idempotency-Key') || ''));
+  }
+  throw new HttpError(404, 'NOT_FOUND', 'Endpoint tidak ditemukan.');
+}
+
+export default {
+  async fetch(request, env) {
+    let cors = {};
+    try {
+      cors = corsHeaders(request, env);
+      if (request.method === 'OPTIONS') return withCors(new Response(null, { status: 204 }), cors);
+      return withCors(await handler(request, env), cors);
+    } catch (error) {
+      const status = error instanceof HttpError ? error.status : 500;
+      const code = error instanceof HttpError ? error.code : 'INTERNAL_ERROR';
+      const message = error instanceof HttpError ? error.message : 'Terjadi kesalahan pada layanan belajar.';
+      console.error(code, error);
+      return withCors(json({ code, message }, status), cors);
+    }
+  },
+};

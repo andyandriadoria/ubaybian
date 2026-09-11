@@ -1,0 +1,17 @@
+{
+  "name": "ubaybian-api",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/index.js && node --check src/auth.js && node --check src/google.js && node --check src/questions.js && node --check src/quiz-service.js",
+    "test": "node --test tests/*.test.js",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 migrations apply ubaybian --local",
+    "db:remote": "wrangler d1 migrations apply ubaybian --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^4.131.0"
+  }
+}

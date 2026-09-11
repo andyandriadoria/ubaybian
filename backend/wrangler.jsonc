@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ubaybian-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-11",
+  "vars": {
+    "FRONTEND_ORIGIN": "https://andyandriadoria.github.io",
+    "SESSION_TTL_DAYS": "30"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ubaybian",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ]
+}
