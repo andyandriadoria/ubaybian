@@ -3,10 +3,19 @@ import { readSheetValues } from './google.js';
 import { isCorrectAnswer, parsePublishedQuestions, publicQuestion, sheetConfig, shuffleQuestions } from './questions.js';
 import { randomToken } from './security.js';
 
+const ALLOWED_LIMITS = new Set([5, 10, 15]);
+const ALLOWED_MODES = new Set(['normal', 'challenge', 'review']);
+
 function questionFromDb(row) {
   return {
-    id: row.question_id, type: row.question_type, prompt: row.prompt, imageUrl: row.image_url || '', difficulty: row.difficulty,
-    explanation: row.explanation || '', answerKey: row.answer_key, choices: JSON.parse(row.choices_json || '[]'),
+    id: row.question_id,
+    type: row.question_type,
+    prompt: row.prompt,
+    imageUrl: row.image_url || '',
+    difficulty: row.difficulty,
+    explanation: row.explanation || '',
+    answerKey: row.answer_key,
+    choices: JSON.parse(row.choices_json || '[]'),
   };
 }
 
@@ -14,14 +23,85 @@ async function dbQuestion(env, sessionId, position) {
   return env.DB.prepare('SELECT * FROM quiz_session_questions WHERE session_id = ? AND position = ?').bind(sessionId, position).first();
 }
 
-export async function startQuiz(env, familyId, profile, subjectId, requestedLimit) {
+function normalizedLimit(requestedLimit, profileSlug) {
+  const parsed = Number(requestedLimit);
+  if (ALLOWED_LIMITS.has(parsed)) return parsed;
+  return profileSlug === 'bian' ? 5 : 10;
+}
+
+function normalizedMode(value) {
+  const mode = String(value || 'normal').toLowerCase();
+  return ALLOWED_MODES.has(mode) ? mode : 'normal';
+}
+
+function takeRandom(items, count) {
+  return shuffleQuestions(items).slice(0, Math.max(0, count));
+}
+
+function weightedSelection(questions, limit, profileSlug, mode) {
+  if (mode === 'review') return takeRandom(questions, limit);
+  const ratios = mode === 'challenge'
+    ? (profileSlug === 'bian' ? { mudah: 0.40, sedang: 0.45, sulit: 0.15 } : { mudah: 0.15, sedang: 0.45, sulit: 0.40 })
+    : (profileSlug === 'bian' ? { mudah: 0.60, sedang: 0.35, sulit: 0.05 } : { mudah: 0.30, sedang: 0.50, sulit: 0.20 });
+
+  const groups = { mudah: [], sedang: [], sulit: [] };
+  for (const question of questions) {
+    const key = String(question.difficulty || '').toLowerCase();
+    (groups[key] || groups.sedang).push(question);
+  }
+
+  const selected = [];
+  const used = new Set();
+  const target = Math.min(limit, questions.length);
+  for (const key of ['mudah', 'sedang', 'sulit']) {
+    const wanted = Math.floor(target * ratios[key]);
+    for (const question of takeRandom(groups[key], wanted)) {
+      selected.push(question);
+      used.add(question.id);
+    }
+  }
+  const remainder = shuffleQuestions(questions.filter((question) => !used.has(question.id)));
+  while (selected.length < target && remainder.length) selected.push(remainder.shift());
+  return shuffleQuestions(selected);
+}
+
+async function reviewQuestionIds(env, familyId, profileId, subjectId) {
+  const result = await env.DB.prepare(`
+    SELECT qa.question_id, qa.correct
+    FROM quiz_answers qa
+    JOIN quiz_sessions qs ON qs.id = qa.session_id
+    WHERE qs.family_id = ? AND qs.profile_id = ? AND qs.subject_id = ?
+    ORDER BY qa.answered_at DESC
+  `).bind(familyId, profileId, subjectId).all();
+  const latest = new Map();
+  for (const row of result.results || []) {
+    if (!latest.has(row.question_id)) latest.set(row.question_id, Number(row.correct));
+  }
+  return new Set([...latest.entries()].filter(([, correct]) => correct !== 1).map(([id]) => id));
+}
+
+function correctAnswerFor(question) {
+  if (question.type === 'text') return String(question.answerKey || '').split('||')[0]?.trim() || '';
+  return String(question.answerKey || '').trim().toUpperCase();
+}
+
+export async function startQuiz(env, familyId, profile, subjectId, requestedLimit, requestedMode = 'normal') {
   const { profileSlug, sheetName } = sheetConfig(profile.slug, subjectId);
   const rows = await readSheetValues(env, profileSlug, sheetName);
-  const available = parsePublishedQuestions(rows);
+  let available = parsePublishedQuestions(rows);
   if (!available.length) throw new HttpError(422, 'NO_PUBLISHED_QUESTIONS', 'Belum ada soal Published yang siap untuk pelajaran ini.');
-  const limit = Math.min(20, Math.max(1, Number(requestedLimit) || 10));
-  const selected = shuffleQuestions(available).slice(0, limit);
-  const sessionId = randomToken(24); const now = Date.now();
+
+  const limit = normalizedLimit(requestedLimit, profile.slug);
+  const mode = normalizedMode(requestedMode);
+  if (mode === 'review') {
+    const ids = await reviewQuestionIds(env, familyId, profile.id, subjectId);
+    available = available.filter((question) => ids.has(question.id));
+    if (!available.length) throw new HttpError(422, 'NO_REVIEW_QUESTIONS', 'Belum ada soal yang perlu diulang untuk pelajaran ini.');
+  }
+
+  const selected = weightedSelection(available, limit, profile.slug, mode);
+  const sessionId = randomToken(24);
+  const now = Date.now();
   const statements = [
     env.DB.prepare(`INSERT INTO quiz_sessions (id, family_id, profile_id, subject_id, current_index, total_questions, correct_count, created_at, updated_at)
                     VALUES (?, ?, ?, ?, 0, ?, 0, ?, ?)`).bind(sessionId, familyId, profile.id, subjectId, selected.length, now, now),
@@ -30,11 +110,26 @@ export async function startQuiz(env, familyId, profile, subjectId, requestedLimi
     env.DB.prepare(`INSERT INTO quiz_session_questions
       (session_id, position, question_id, question_type, prompt, image_url, choices_json, answer_key, explanation, difficulty)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
-        sessionId, index, question.id, question.type, question.prompt, question.imageUrl || '', JSON.stringify(question.choices), question.answerKey, question.explanation || '', question.difficulty,
+        sessionId,
+        index,
+        question.id,
+        question.type,
+        question.prompt,
+        question.imageUrl || '',
+        JSON.stringify(question.choices),
+        question.answerKey,
+        question.explanation || '',
+        question.difficulty,
       ),
   ));
   await env.DB.batch(statements);
-  return { sessionId, progress: { current: 1, total: selected.length }, question: publicQuestion(selected[0]) };
+  return {
+    sessionId,
+    subjectId,
+    mode,
+    progress: { current: 1, total: selected.length },
+    question: publicQuestion(selected[0]),
+  };
 }
 
 export async function submitAnswer(env, familyId, sessionId, body, idempotencyKey) {
@@ -50,14 +145,50 @@ export async function submitAnswer(env, familyId, sessionId, body, idempotencyKe
   const row = await dbQuestion(env, sessionId, position);
   if (!row) throw new HttpError(409, 'QUESTION_STATE_INVALID', 'Posisi soal pada sesi tidak valid.');
   if (String(body?.questionId || '') !== row.question_id) throw new HttpError(409, 'QUESTION_MISMATCH', 'Soal yang dijawab bukan soal aktif.');
-  const answer = String(body?.answer ?? '').trim();
-  if (!answer) throw new HttpError(422, 'ANSWER_REQUIRED', 'Jawaban belum diisi.');
-  const question = questionFromDb(row); const correct = isCorrectAnswer(question, answer); const now = Date.now();
-  const nextIndex = position + 1; const complete = nextIndex >= Number(session.total_questions);
+
+  const skipped = Boolean(body?.skip);
+  const answer = skipped ? '__SKIP__' : String(body?.answer ?? '').trim();
+  if (!skipped && !answer) throw new HttpError(422, 'ANSWER_REQUIRED', 'Jawaban belum diisi.');
+
+  const question = questionFromDb(row);
+  const correct = skipped ? false : isCorrectAnswer(question, answer);
+  const now = Date.now();
+  const nextIndex = position + 1;
+  const complete = nextIndex >= Number(session.total_questions);
   const nextRow = complete ? null : await dbQuestion(env, sessionId, nextIndex);
+  const finalCorrect = Number(session.correct_count) + (correct ? 1 : 0);
+
+  let summary = null;
+  if (complete) {
+    const previousSkipped = await env.DB.prepare(`SELECT COUNT(*) AS count FROM quiz_answers WHERE session_id = ? AND answer = '__SKIP__'`).bind(sessionId).first();
+    const skippedCount = Number(previousSkipped?.count || 0) + (skipped ? 1 : 0);
+    const total = Number(session.total_questions);
+    const wrong = Math.max(0, total - finalCorrect - skippedCount);
+    const score = total ? Math.round((finalCorrect / total) * 100) : 0;
+    const perfectBonusCoins = score === 100 ? 100 : 0;
+    summary = {
+      score,
+      correct: finalCorrect,
+      wrong,
+      skipped: skippedCount,
+      total,
+      xpEarned: (finalCorrect * 10) + 20,
+      coinsEarned: (finalCorrect * 50) + perfectBonusCoins,
+      completionXp: 20,
+      perfectBonusCoins,
+    };
+  }
+
   const response = {
-    correct, explanation: question.explanation, xpEarned: 0, sessionComplete: complete,
+    correct,
+    skipped,
+    correctAnswer: correctAnswerFor(question),
+    explanation: question.explanation,
+    xpEarned: correct ? 10 : 0,
+    coinEarned: correct ? 50 : 0,
+    sessionComplete: complete,
     progress: { current: complete ? Number(session.total_questions) : nextIndex + 1, total: Number(session.total_questions) },
+    ...(summary ? { summary } : {}),
     ...(nextRow ? { nextQuestion: publicQuestion(questionFromDb(nextRow)) } : {}),
   };
 
@@ -74,7 +205,10 @@ export async function submitAnswer(env, familyId, sessionId, body, idempotencyKe
                       last_practiced_at = excluded.last_practiced_at`)
       .bind(familyId, session.profile_id, session.subject_id, correct ? 1 : 0, now),
   ];
-  try { await env.DB.batch(statements); } catch (error) {
+
+  try {
+    await env.DB.batch(statements);
+  } catch (error) {
     const raced = await env.DB.prepare('SELECT response_json FROM quiz_answers WHERE session_id = ? AND idempotency_key = ?').bind(sessionId, idempotencyKey).first();
     if (raced?.response_json) return JSON.parse(raced.response_json);
     throw error;
