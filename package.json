@@ -1,10 +1,10 @@
 {
   "name":"ubaybian",
-  "version":"0.4.0",
+  "version":"0.4.2",
   "private":true,
   "type":"module",
   "scripts":{
     "test":"node --test tests/*.test.js",
-    "check":"node --check app-v040.js && node --check bootstrap.js && node --check api-v040.js && node --check profiles.js && node --check config.js && node --check quiz.js"
+    "check":"node --check app-v040.js && node --check bootstrap.js && node --check api-v040.js && node --check extras-v042.js && node --check profiles.js && node --check config.js && node --check quiz.js"
   }
 }
