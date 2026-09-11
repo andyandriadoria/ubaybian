@@ -1,4 +1,5 @@
 import { familyProfiles, login, logout, requireProfile, requireSession, setupFamily } from './auth.js';
+import { finishGame, gameStatus, requestReward, resolveReward, rewardShop, startGame } from './engagement.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
 import { dashboardForProfile, progressForFamily } from './progress.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
@@ -7,7 +8,7 @@ async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.4.0',
+    version: '0.4.2',
     db: { bound: Boolean(env.DB), schemaReady: false },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
@@ -73,6 +74,49 @@ async function handler(request, env) {
     const profile = await requireProfile(env, session.familyId, progressParams.profileId);
     return json({ items: await progressForFamily(env, session.familyId, profile.id) });
   }
+
+  const gameStatusParams = routeMatch(path, '/v1/games/:profileId/status');
+  if (request.method === 'GET' && gameStatusParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, gameStatusParams.profileId);
+    return json(await gameStatus(env, session.familyId, profile));
+  }
+  const gameStartParams = routeMatch(path, '/v1/games/:profileId/start');
+  if (request.method === 'POST' && gameStartParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, gameStartParams.profileId);
+    const body = await readJson(request);
+    return json(await startGame(env, session.familyId, profile, String(body?.gameId || '')), 201);
+  }
+  const gameFinishParams = routeMatch(path, '/v1/games/:profileId/finish');
+  if (request.method === 'POST' && gameFinishParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, gameFinishParams.profileId);
+    const body = await readJson(request);
+    return json(await finishGame(env, session.familyId, profile, String(body?.sessionId || ''), body?.score));
+  }
+
+  const rewardParams = routeMatch(path, '/v1/rewards/:profileId');
+  if (request.method === 'GET' && rewardParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, rewardParams.profileId);
+    return json(await rewardShop(env, session.familyId, profile));
+  }
+  const rewardRequestParams = routeMatch(path, '/v1/rewards/:profileId/requests');
+  if (request.method === 'POST' && rewardRequestParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, rewardRequestParams.profileId);
+    const body = await readJson(request);
+    return json(await requestReward(env, session.familyId, profile, String(body?.rewardId || '')), 201);
+  }
+  const rewardResolveParams = routeMatch(path, '/v1/rewards/:profileId/requests/:requestId/resolve');
+  if (request.method === 'POST' && rewardResolveParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, rewardResolveParams.profileId);
+    const body = await readJson(request);
+    return json(await resolveReward(env, session.familyId, profile, rewardResolveParams.requestId, String(body?.decision || '')));
+  }
+
   if (request.method === 'POST' && path === '/v1/quiz/sessions') {
     const session = await requireSession(request, env);
     const body = await readJson(request);
