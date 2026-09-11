@@ -1,0 +1,71 @@
+/* UbayBian v0.5.17 — Unified Side Cards
+   Report / Robot Lab / Quiz keep the exact Home side-card language.
+   This intentionally mirrors the Home v0.5.1–v0.5.2 polish instead of the older v0.5.0 tile styling. */
+
+body.adventure-shell:not(.adventure-home) .side-tile{
+  min-height:64px;
+  padding:11px 72px 11px 15px;
+  border-radius:18px;
+  box-shadow:0 6px 15px rgba(16,84,132,.18),inset 0 1px 0 rgba(255,255,255,.50);
+}
+body.adventure-shell:not(.adventure-home) .side-tile:hover{
+  transform:translateY(-1px);
+  box-shadow:0 9px 18px rgba(16,76,126,.22),inset 0 1px 0 rgba(255,255,255,.62);
+}
+
+/* Exact current Home palettes. */
+body.adventure-shell:not(.adventure-home) .side-tile.review-tile{
+  background:linear-gradient(135deg,#9be1fb 0%,#7bc8ef 58%,#9ca7e8 100%);
+}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-brain{
+  background:linear-gradient(135deg,#ff9aa2 0%,#ffb77a 58%,#ffd18b 100%);
+}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-memory{
+  background:linear-gradient(135deg,#7188bf 0%,#7178bb 58%,#807dc6 100%);
+  color:#fff;
+}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-reward{
+  background:linear-gradient(135deg,#ffe08a 0%,#ffc362 55%,#ffa866 100%);
+}
+
+/* Home uses one quiet decorative object per card — never the older paired emoji set. */
+body.adventure-shell:not(.adventure-home) .side-tile.review-tile::after,
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-brain::after,
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-memory::after,
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-reward::after{
+  right:13px;
+  bottom:8px;
+  font-size:32px;
+  letter-spacing:0;
+  opacity:.68;
+  filter:drop-shadow(0 4px 6px rgba(12,56,95,.14));
+}
+body.adventure-shell:not(.adventure-home) .side-tile.review-tile::after{content:"📝";}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-brain::after{content:"🎲";}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-memory::after{content:"🧠";}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-reward::after{content:"🎁";}
+
+body.adventure-shell:not(.adventure-home) .side-tile-icon{
+  width:40px;
+  height:40px;
+  border-radius:13px;
+  font-size:22px;
+  background:rgba(255,255,255,.38);
+  box-shadow:none;
+}
+body.adventure-shell:not(.adventure-home) .side-tile-text{
+  font-size:14px;
+  color:#15364d;
+}
+body.adventure-shell:not(.adventure-home) .side-tile-sub{
+  font-size:11px;
+  line-height:1.3;
+  color:#31556d;
+  opacity:.92;
+}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-memory .side-tile-text{
+  color:#fff;
+}
+body.adventure-shell:not(.adventure-home) .side-tile.adventure-memory .side-tile-sub{
+  color:rgba(255,255,255,.82);
+}
