@@ -3,9 +3,38 @@ import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './
 import { progressForFamily } from './progress.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
 
+async function health(env) {
+  const result = {
+    ok: true,
+    service: 'ubaybian-api',
+    version: '0.3.3',
+    db: { bound: Boolean(env.DB), schemaReady: false },
+    gateway: {
+      urlConfigured: Boolean(env.APPS_SCRIPT_URL),
+      secretConfigured: Boolean(env.APPS_SCRIPT_SECRET),
+    },
+    setupTokenConfigured: Boolean(env.SETUP_TOKEN),
+  };
+
+  if (!env.DB || typeof env.DB.prepare !== 'function') return result;
+
+  try {
+    const tables = await env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM sqlite_master
+      WHERE type = 'table'
+        AND name IN ('family_accounts', 'profiles', 'sessions', 'quiz_sessions', 'quiz_session_questions', 'quiz_answers', 'progress_summary')
+    `).first();
+    result.db.schemaReady = Number(tables?.count || 0) === 7;
+  } catch (error) {
+    console.error('HEALTH_DB_CHECK_FAILED', error);
+  }
+  return result;
+}
+
 async function handler(request, env) {
   const url = new URL(request.url); const path = url.pathname.replace(/\/+$/, '') || '/';
-  if (request.method === 'GET' && path === '/v1/health') return json({ ok: true, service: 'ubaybian-api' });
+  if (request.method === 'GET' && path === '/v1/health') return json(await health(env));
 
   if (request.method === 'POST' && path === '/v1/setup') {
     const body = await readJson(request);
