@@ -53,9 +53,11 @@
       }
     }
 
-    /* Active-bot label is Indonesian too. */
+    /* Active-bot and energy labels are Indonesian too. */
     const activeLabel=card.querySelector('.robotlab-current-label');
     if(activeLabel)activeLabel.textContent='ROBOT AKTIF';
+    const energyLabels=card.querySelectorAll('.robotlab-energy-label span');
+    if(energyLabels.length>1)energyLabels[1].textContent='PROGRES LEVEL';
 
     /* Cleaner Energy Core hierarchy: big remaining XP, short next-step label. */
     const xpbar=card.querySelector('.robotlab-xpbar');
