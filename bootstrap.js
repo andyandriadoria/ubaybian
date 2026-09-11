@@ -1,5 +1,5 @@
 import {apiBase,backendEnabled} from './config.js';
-import {ApiError,clearSessionToken,createApiClient,getSessionToken} from './api-v040.js?v=0.4.0';
+import {ApiError,clearSessionToken,createApiClient,getSessionToken} from './api-v040.js?v=0.4.2';
 
 const main=document.querySelector('#main');
 const switchButton=document.querySelector('#switch-profile');
@@ -51,8 +51,6 @@ function installLogout(family){
  topbar.append(logout);
 }
 
-// A quiz runs inside the Home route. If Home is clicked while the URL is already
-// #/profile/home, nudge the hash with a harmless trailing slash so hashchange fires.
 document.addEventListener('click',(event)=>{
  const trigger=event.target.closest('#nav-home,.brand,.result-actions .secondary');
  if(!trigger||!document.querySelector('.result-panel'))return;
@@ -62,9 +60,9 @@ document.addEventListener('click',(event)=>{
 });
 
 async function start(){
- if(!backendEnabled){await import('./app-v040.js?v=0.4.0');return;}
+ if(!backendEnabled){await import('./app-v040.js?v=0.4.2');return;}
  if(!getSessionToken()){showLogin();return;}
- try{const account=await api.me();installLogout(account.family);await import('./app-v040.js?v=0.4.0');}
+ try{const account=await api.me();installLogout(account.family);await import('./app-v040.js?v=0.4.2');}
  catch(error){clearSessionToken();showLogin(error instanceof ApiError&&error.status===401?'Sesi sudah berakhir. Silakan masuk lagi.':'Tidak dapat memverifikasi sesi keluarga.');}
 }
 
