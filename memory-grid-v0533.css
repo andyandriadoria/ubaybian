@@ -1,0 +1,232 @@
+/* UbayBian v0.5.33 · Memory Grid Gameplay Polish
+   Layout/action-zone polish layered on top of v0.5.32. */
+
+/* Compact the play stack so feedback + next CTA always stay inside the arena. */
+.neural-play{
+  width:min(720px,100%);
+  max-width:720px;
+  height:100%;
+  min-height:0;
+  margin:0 auto;
+  padding:0 0 2px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  overflow:visible;
+}
+.neural-hud{
+  flex:0 0 auto;
+  margin-bottom:4px;
+}
+.neural-phase{
+  flex:0 0 auto;
+  margin-bottom:5px;
+}
+.neural-board{
+  flex:0 0 auto;
+  width:min(310px,44vh);
+  margin-bottom:5px;
+}
+.neural-prompt{
+  flex:0 0 auto;
+  max-width:620px;
+  margin:2px auto 4px;
+  font-size:18px;
+  line-height:1.2;
+  font-weight:850;
+}
+.neural-options{
+  flex:0 0 auto;
+  width:min(600px,100%);
+  margin:0 auto;
+  gap:10px;
+}
+.neural-options[hidden],
+.neural-next[hidden]{display:none!important;}
+
+/* Reserved interaction zone: prevents the next button from falling below the clipped stage. */
+.neural-action-zone{
+  flex:0 0 78px;
+  width:min(600px,100%);
+  min-height:78px;
+  margin:3px auto 0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:5px;
+  position:relative;
+  z-index:9;
+}
+.neural-feedback{
+  min-height:22px;
+  margin:0;
+  padding:4px 12px;
+  border:1px solid transparent;
+  border-radius:999px;
+  font-size:12px;
+  line-height:1.15;
+  font-weight:900;
+  transition:opacity .18s ease,transform .18s ease,background .18s ease;
+}
+.neural-feedback:empty{
+  opacity:0;
+  pointer-events:none;
+}
+.neural-feedback.success{
+  color:#15765c;
+  background:linear-gradient(145deg,rgba(224,255,238,.96),rgba(174,247,215,.9));
+  border-color:rgba(84,215,161,.45);
+  box-shadow:0 8px 20px rgba(54,190,137,.12),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.neural-feedback.error{
+  color:#a94255;
+  background:linear-gradient(145deg,rgba(255,239,240,.98),rgba(255,199,205,.9));
+  border-color:rgba(255,127,143,.42);
+  box-shadow:0 8px 20px rgba(223,88,109,.10),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.neural-next{
+  min-width:190px;
+  min-height:42px;
+  margin:0;
+  padding:9px 20px;
+  border:2px solid rgba(255,255,255,.72);
+  border-radius:15px;
+  color:#fff;
+  font-size:13px;
+  font-weight:900;
+  background:linear-gradient(135deg,#ffb04f 0%,#ff8659 48%,#ff617d 100%);
+  box-shadow:0 8px 0 rgba(210,82,91,.10),0 14px 24px rgba(255,105,104,.20),inset 0 2px 0 rgba(255,255,255,.35);
+  transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
+}
+.neural-next:hover{
+  transform:translateY(-2px);
+  filter:saturate(1.08);
+  box-shadow:0 9px 0 rgba(210,82,91,.10),0 18px 28px rgba(255,105,104,.24),inset 0 2px 0 rgba(255,255,255,.42);
+}
+.neural-next:active{transform:translateY(1px);box-shadow:0 4px 0 rgba(210,82,91,.10),0 10px 18px rgba(255,105,104,.16);}
+
+/* Answer tiles feel like toy buttons instead of form controls. */
+.neural-option{
+  min-height:46px;
+  border:2px solid rgba(255,255,255,.88);
+  border-radius:16px;
+  font-size:15px;
+  font-weight:900;
+  box-shadow:0 7px 0 rgba(84,121,156,.07),0 12px 20px rgba(76,111,143,.08),inset 0 2px 0 rgba(255,255,255,.95);
+  transition:transform .14s ease,box-shadow .14s ease,filter .14s ease,opacity .14s ease;
+}
+.neural-option:not(:disabled):hover{
+  transform:translateY(-3px) scale(1.015);
+  box-shadow:0 9px 0 rgba(84,121,156,.06),0 16px 24px rgba(72,114,149,.13),inset 0 2px 0 #fff;
+}
+.neural-option:disabled:not(.correct):not(.wrong){opacity:.62;filter:saturate(.65);}
+.neural-option.correct{
+  color:#174d3e;
+  background:linear-gradient(145deg,#efffe5 0%,#83efb8 100%);
+  border-color:#61e6ad;
+  box-shadow:0 7px 0 rgba(45,177,126,.08),0 0 24px rgba(91,231,173,.22),inset 0 2px 0 rgba(255,255,255,.92);
+}
+.neural-option.wrong{
+  color:#803442;
+  background:linear-gradient(145deg,#fff0f2 0%,#ff9eaa 100%);
+  border-color:#ff8795;
+}
+
+/* Intro: one identity title in header; center becomes the invitation to play. */
+.neural-ready{
+  max-width:570px;
+  min-height:430px;
+  padding:48px 34px 18px;
+  border-radius:31px;
+}
+.neural-ready:before{top:14px;}
+.neural-ready .neural-orb{
+  width:82px;
+  height:82px;
+  margin-top:9px;
+}
+.neural-ready h3{
+  margin:8px 0 4px;
+  font-size:37px;
+  line-height:1.02;
+  letter-spacing:-.035em;
+}
+.neural-ready-copy{
+  max-width:470px;
+  margin:4px auto 10px;
+  line-height:1.4;
+}
+.neural-chips{margin:4px auto 10px;gap:7px;}
+.neural-ready .neural-main-btn{margin-top:2px;min-height:50px;}
+.neural-ready .neural-note{margin-top:6px;}
+
+/* Mascot + energy meter visually connect to the game console instead of floating independently. */
+.neural-lab-mascot:after{
+  content:"";
+  position:absolute;
+  left:135px;
+  top:82px;
+  width:70px;
+  height:3px;
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(69,216,239,.34),rgba(101,227,175,.06));
+  box-shadow:0 0 12px rgba(69,216,239,.16);
+  opacity:.58;
+  pointer-events:none;
+}
+.neural-memory-energy:before{
+  content:"";
+  position:absolute;
+  right:88px;
+  top:142px;
+  width:70px;
+  height:3px;
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(255,129,196,.04),rgba(155,134,255,.32));
+  box-shadow:0 0 12px rgba(155,134,255,.16);
+  opacity:.58;
+  pointer-events:none;
+}
+.neural-shell[data-neural-state="scan"] .neural-memory-energy{
+  filter:drop-shadow(0 0 12px rgba(255,199,82,.14));
+}
+.neural-shell[data-neural-state="recall"] .neural-memory-energy{
+  filter:drop-shadow(0 0 13px rgba(155,134,255,.16));
+}
+.neural-shell[data-neural-state="recall"] .neural-cell.is-target{
+  animation:ngTargetPulse 1.35s ease-in-out infinite;
+}
+@keyframes ngTargetPulse{
+  0%,100%{box-shadow:0 0 0 2px rgba(255,216,93,.52),0 0 15px rgba(255,216,93,.12),inset 0 2px 0 rgba(255,255,255,.18);}
+  50%{box-shadow:0 0 0 4px rgba(255,216,93,.86),0 0 28px rgba(255,216,93,.30),inset 0 2px 0 rgba(255,255,255,.24);}
+}
+
+/* Give the active gameplay state a little more vertical safety on desktop heights. */
+@media(min-width:681px) and (max-height:790px){
+  .neural-stage{padding-top:6px;padding-bottom:12px;}
+  .neural-hud{transform:scale(.94);transform-origin:top center;margin-bottom:-1px;}
+  .neural-phase{margin-top:-2px;margin-bottom:3px;}
+  .neural-board{width:min(286px,40vh);margin-bottom:3px;}
+  .neural-prompt{font-size:16px;margin-bottom:3px;}
+  .neural-options{gap:7px;}
+  .neural-option{min-height:40px;padding:7px 8px;}
+  .neural-action-zone{flex-basis:68px;min-height:68px;gap:3px;margin-top:1px;}
+  .neural-feedback{font-size:11px;min-height:19px;padding:3px 10px;}
+  .neural-next{min-height:38px;padding:7px 17px;}
+}
+
+@media(max-width:980px){
+  .neural-lab-mascot:after,.neural-memory-energy:before{display:none;}
+}
+
+@media(max-width:680px){
+  .neural-ready{min-height:0;padding:46px 20px 18px;}
+  .neural-ready h3{font-size:31px;}
+  .neural-play{height:auto;min-height:0;}
+  .neural-board{width:min(292px,78vw);}
+  .neural-prompt{font-size:17px;}
+  .neural-options{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .neural-action-zone{flex-basis:auto;min-height:82px;}
+}
