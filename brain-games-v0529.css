@@ -1,0 +1,244 @@
+/* UbayBian v0.5.29 · Brain Games Final Polish
+   Compact arena, tighter mascot integration, clearer speech bubbles,
+   unique intro title, reward-colored result cards, lighter secondary CTA,
+   and an energy-tube XP bar. Visual layer only. */
+
+/* ---------- Compact the arcade arena ---------- */
+.reactor-shell{
+  min-height:min(650px,86vh);
+}
+.reactor-stage{
+  padding:2px 38px 24px;
+}
+.reactor-view{
+  min-height:455px;
+}
+.reactor-stage::before{
+  inset:2px 42px 26px;
+  border-radius:30px;
+}
+.reactor-top{
+  padding-bottom:2px;
+}
+.reactor-brand::after{
+  bottom:-7px;
+  opacity:.55;
+}
+
+/* ---------- Intro: remove duplicated product title feel ---------- */
+.reactor-ready{
+  max-width:700px;
+  padding-top:0;
+  transform:translateY(-22px);
+}
+.reactor-ready h3{
+  font-size:clamp(32px,3.2vw,42px);
+  margin-bottom:7px;
+  letter-spacing:-.025em;
+}
+.reactor-ready-copy{
+  margin-bottom:15px;
+}
+.reactor-mission-chips{
+  margin-bottom:16px;
+}
+
+/* ---------- Mascot becomes a companion, not edge decoration ---------- */
+.reactor-mascot{
+  width:126px;
+}
+.reactor-mascot-bubble{
+  max-width:150px;
+  padding:9px 12px;
+  border-radius:13px;
+  font-size:11px;
+  line-height:1.3;
+  letter-spacing:.005em;
+  box-shadow:0 10px 24px rgba(0,8,34,.19),0 0 20px rgba(85,220,255,.11);
+}
+.reactor-shell[data-reactor-state="ready"] .reactor-mascot{
+  left:11.5%;
+  top:238px;
+}
+.reactor-shell[data-reactor-state="play"] .reactor-mascot{
+  right:10%;
+  top:230px;
+  transform:scale(.94);
+}
+.reactor-shell[data-reactor-state="result"] .reactor-mascot{
+  right:11.5%;
+  top:236px;
+  transform:scale(1);
+}
+
+/* ---------- XP bar becomes an arcade energy tube ---------- */
+.reactor-xp-card{
+  padding:14px 18px 16px;
+  margin-bottom:17px;
+}
+.reactor-xp-track{
+  position:relative;
+  height:16px;
+  margin:4px 12px 0;
+  overflow:visible;
+  border-radius:999px;
+  border:1px solid rgba(153,231,255,.26);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.07),transparent 42%),
+    rgba(4,20,48,.55);
+  box-shadow:
+    inset 0 3px 10px rgba(0,0,0,.28),
+    0 0 0 3px rgba(80,217,255,.025),
+    0 0 22px rgba(61,220,255,.08);
+}
+.reactor-xp-track::before,
+.reactor-xp-track::after{
+  content:"";
+  position:absolute;
+  z-index:3;
+  top:50%;
+  width:18px;
+  height:26px;
+  transform:translateY(-50%);
+  border-radius:7px;
+  background:linear-gradient(180deg,#dff8ff,#83cfe9 48%,#486c96 52%,#bdeeff);
+  border:1px solid rgba(220,250,255,.68);
+  box-shadow:0 3px 9px rgba(0,8,28,.28),inset 0 1px 0 rgba(255,255,255,.7),0 0 14px rgba(67,220,255,.13);
+}
+.reactor-xp-track::before{left:-12px;}
+.reactor-xp-track::after{right:-12px;}
+.reactor-xp-fill{
+  position:relative;
+  border-radius:999px;
+  background:linear-gradient(90deg,#39d5ff 0%,#4fe7cf 56%,#ffd04e 100%);
+  box-shadow:0 0 18px rgba(62,224,255,.48),inset 0 1px 0 rgba(255,255,255,.52);
+}
+.reactor-xp-fill::after{
+  content:"";
+  position:absolute;
+  left:7px;right:7px;top:2px;
+  height:3px;
+  border-radius:999px;
+  background:rgba(255,255,255,.34);
+}
+
+/* ---------- HUD and play spacing ---------- */
+.reactor-play{
+  max-width:830px;
+}
+.reactor-hud{
+  grid-template-columns:140px 150px 140px;
+  max-width:462px;
+  gap:14px;
+  margin-bottom:16px;
+}
+.reactor-stat{
+  min-height:92px;
+}
+.reactor-question-card{
+  margin-bottom:16px;
+}
+.reactor-answer-dock{
+  max-width:590px;
+}
+.reactor-input{
+  flex:1 1 auto;
+}
+.reactor-submit{
+  flex-basis:132px;
+  min-width:132px;
+}
+
+/* ---------- Result: stronger reward hierarchy ---------- */
+.reactor-result{
+  transform:translateY(-14px);
+}
+.reactor-result-score{
+  width:150px;
+  height:150px;
+  font-size:76px;
+  box-shadow:
+    0 0 0 10px rgba(52,219,255,.055),
+    0 0 52px rgba(65,223,255,.30),
+    0 0 88px rgba(255,202,82,.10),
+    inset 0 0 34px rgba(75,219,255,.06);
+}
+.reactor-result-grid{
+  width:min(580px,100%);
+  gap:13px;
+}
+.reactor-result-card{
+  position:relative;
+  overflow:hidden;
+  border-width:1px;
+}
+.reactor-result-card::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:4px;
+  background:var(--reward-accent,rgba(255,255,255,.22));
+  box-shadow:0 0 18px var(--reward-glow,rgba(255,255,255,.08));
+}
+.reactor-result-card:nth-child(1){
+  --reward-accent:#ffc94e;
+  --reward-glow:rgba(255,201,78,.28);
+  background:linear-gradient(180deg,rgba(255,201,78,.14),rgba(255,255,255,.07));
+  border-color:rgba(255,216,105,.28);
+}
+.reactor-result-card:nth-child(2){
+  --reward-accent:#46dcff;
+  --reward-glow:rgba(70,220,255,.28);
+  background:linear-gradient(180deg,rgba(70,220,255,.14),rgba(255,255,255,.07));
+  border-color:rgba(104,228,255,.28);
+}
+.reactor-result-card:nth-child(3){
+  --reward-accent:#ff79c9;
+  --reward-glow:rgba(255,121,201,.26);
+  background:linear-gradient(180deg,rgba(255,121,201,.13),rgba(255,255,255,.07));
+  border-color:rgba(255,151,215,.27);
+}
+.reactor-result-card:nth-child(1) span{color:#ffe39b;}
+.reactor-result-card:nth-child(2) span{color:#a8efff;}
+.reactor-result-card:nth-child(3) span{color:#ffc2e8;}
+.reactor-result-actions{
+  margin-top:13px;
+}
+.reactor-result-actions .reactor-main-btn{
+  min-width:220px;
+}
+.reactor-result-actions .reactor-ghost-btn{
+  min-width:114px;
+  color:#ddf5ff;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.055));
+  border:1px solid rgba(163,228,255,.23);
+  box-shadow:0 10px 24px rgba(0,7,29,.15),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.reactor-result-actions .reactor-ghost-btn:hover{
+  color:#fff;
+  background:rgba(255,255,255,.14);
+  border-color:rgba(178,235,255,.35);
+}
+
+/* ---------- Math decoration follows the perimeter more cleanly ---------- */
+.reactor-math-field .m1{left:5.5%;top:47%;}
+.reactor-math-field .m2{right:5.5%;top:35%;}
+.reactor-math-field .m3{right:8%;bottom:13%;}
+.reactor-math-field .m4{left:9.5%;bottom:13%;}
+.reactor-math-field .m5{right:17%;top:13%;}
+.reactor-math-field .m6{left:20%;top:29%;}
+
+@media (max-width:900px){
+  .reactor-shell[data-reactor-state="ready"] .reactor-mascot{left:5%;top:244px;}
+  .reactor-shell[data-reactor-state="play"] .reactor-mascot,
+  .reactor-shell[data-reactor-state="result"] .reactor-mascot{right:5%;top:244px;}
+}
+@media (max-width:680px){
+  .reactor-shell{min-height:min(640px,92vh);}
+  .reactor-stage{padding:2px 14px 20px;}
+  .reactor-stage::before{inset:2px 10px 18px;}
+  .reactor-view{min-height:470px;}
+  .reactor-ready,.reactor-result{transform:none;}
+  .reactor-hud{grid-template-columns:1fr 124px 1fr;max-width:100%;gap:8px;}
+  .reactor-result-grid{gap:8px;}
+}
