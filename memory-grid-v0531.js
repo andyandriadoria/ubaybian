@@ -12,6 +12,10 @@
     return !!node && !node.hidden;
   }
 
+  function setText(node,value){
+    if(node && node.textContent !== value) node.textContent = value;
+  }
+
   function makeWave(){
     const wrap = document.createElement('div');
     wrap.className = 'neural-lab-wave';
@@ -89,9 +93,13 @@
       const current = match ? Number(match[1]) : 0;
       const cap = Math.max(1, match ? Number(match[2]) : 50);
       const pct = Math.max(0,Math.min(100,(current/cap)*100));
-      energy.value.textContent = `${current} / ${cap} XP`;
-      energy.fill.style.height = `${Math.max(3,pct)}%`;
-      energy.wrap.style.setProperty('--ng-mobile-fill',`${pct}%`);
+      setText(energy.value,`${current} / ${cap} XP`);
+      const nextHeight = `${Math.max(3,pct)}%`;
+      if(energy.fill.style.height !== nextHeight) energy.fill.style.height = nextHeight;
+      const nextMobile = `${pct}%`;
+      if(energy.wrap.style.getPropertyValue('--ng-mobile-fill') !== nextMobile){
+        energy.wrap.style.setProperty('--ng-mobile-fill',nextMobile);
+      }
     }
 
     function updateState(){
@@ -101,20 +109,35 @@
         const label = phase?.textContent || '';
         state = /RECALL/i.test(label) ? 'recall' : 'scan';
       }
-      shell.dataset.neuralState = state;
-      mascot.bubble.textContent = ({
+      if(shell.dataset.neuralState !== state) shell.dataset.neuralState = state;
+      const message = ({
         ready:'Siap melatih ingatan?',
         scan:'Ingat posisinya!',
         recall:'Kotak yang mana tadi?',
         result:'Scan selesai! ✨'
       })[state] || 'Siap!';
+      setText(mascot.bubble,message);
     }
 
-    const observer = new MutationObserver(() => {
-      updateState();
-      updateEnergy();
+    let queued = false;
+    function scheduleSync(){
+      if(queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        updateState();
+        updateEnergy();
+      });
+    }
+
+    const observer = new MutationObserver(scheduleSync);
+    observer.observe(shell,{
+      subtree:true,
+      childList:true,
+      characterData:true,
+      attributes:true,
+      attributeFilter:['hidden','class']
     });
-    observer.observe(shell,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','class']});
 
     updateState();
     updateEnergy();
@@ -133,13 +156,14 @@
     }
   });
 
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded',() => {
-      scan();
-      rootObserver.observe(document.body,{childList:true,subtree:true});
-    },{once:true});
-  }else{
+  function boot(){
     scan();
-    rootObserver.observe(document.body,{childList:true,subtree:true});
+    if(document.body) rootObserver.observe(document.body,{childList:true,subtree:true});
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded',boot,{once:true});
+  }else{
+    boot();
   }
 })();
