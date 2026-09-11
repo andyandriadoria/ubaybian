@@ -1,0 +1,186 @@
+/* UbayBian v0.5.36 · Memory Grid Neural Chamber Clarity Pass
+   Reduce wash-out, strengthen gameplay hierarchy, segment the energy rail,
+   sharpen toy-game feedback, and make result/mascot reactions feel intentional. */
+
+/* ---------- 1. Clearer glass, less milky haze ---------- */
+.neural-overlay{
+  background:
+    linear-gradient(180deg,rgba(2,10,28,.03),rgba(2,10,28,.22)),
+    url('assets/memory-neural-chamber-v0534.svg') center/cover no-repeat,
+    radial-gradient(circle at 50% 3%,rgba(88,220,240,.16),transparent 23%),
+    linear-gradient(135deg,#05172f 0%,#11234b 56%,#2d2859 100%)!important;
+}
+.neural-overlay:before{opacity:.74!important;}
+.neural-overlay:after{opacity:.24!important;filter:blur(34px)!important;}
+
+.neural-shell{
+  background:
+    linear-gradient(180deg,rgba(250,253,255,.94) 0 14%,rgba(224,240,250,.44) 14.2%,rgba(215,226,246,.27) 62%,rgba(202,216,241,.23) 100%),
+    radial-gradient(circle at 50% 42%,rgba(255,255,255,.28),transparent 42%)!important;
+  backdrop-filter:blur(7px) saturate(116%) contrast(104%)!important;
+  -webkit-backdrop-filter:blur(7px) saturate(116%) contrast(104%)!important;
+  box-shadow:
+    0 42px 112px rgba(0,10,34,.50),
+    0 0 0 6px rgba(104,220,241,.055),
+    0 0 54px var(--ng-state-glow),
+    inset 0 2px 0 rgba(255,255,255,.93),
+    inset 0 -1px 0 rgba(118,151,196,.15)!important;
+}
+.neural-top{
+  background:linear-gradient(90deg,rgba(224,253,247,.78),rgba(248,251,255,.82) 28%,rgba(255,242,247,.77) 67%,rgba(238,232,255,.80))!important;
+  backdrop-filter:blur(10px) saturate(118%)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(118%)!important;
+  box-shadow:0 12px 28px rgba(17,45,79,.07),inset 0 -1px 0 rgba(255,255,255,.66)!important;
+}
+.neural-stage{
+  background:
+    linear-gradient(90deg,rgba(6,31,61,.08),rgba(226,241,252,.10) 16%,rgba(245,249,255,.18) 48%,rgba(233,229,255,.13) 84%,rgba(29,25,78,.08)),
+    radial-gradient(ellipse at 50% 56%,rgba(248,252,255,.34),transparent 48%)!important;
+  box-shadow:inset 0 34px 60px rgba(16,48,83,.025),inset 0 -40px 70px rgba(37,43,101,.035);
+}
+
+/* ---------- 2. Remove the old across-the-screen laser; use two purposeful links ---------- */
+.ng35-data-rail{opacity:0!important;animation:none!important;}
+.ng-conduit{opacity:.12!important;}
+.ng36-clarity-kit{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3;}
+.ng36-link{
+  position:absolute;top:51%;height:4px;border-radius:999px;opacity:.42;
+  background-size:180% 100%;
+  box-shadow:0 0 10px var(--ng-state-glow);
+  transition:opacity .25s ease,filter .25s ease,background .25s ease;
+}
+.ng36-link.left{left:12%;width:30%;background-image:linear-gradient(90deg,transparent 0%,var(--ng-state-a) 28%,var(--ng-state-b) 76%,transparent 100%);}
+.ng36-link.right{right:12%;width:30%;background-image:linear-gradient(90deg,transparent 0%,var(--ng-state-b) 24%,var(--ng-state-c) 72%,transparent 100%);}
+.ng36-link i{position:absolute;top:50%;width:9px;height:9px;transform:translateY(-50%);border-radius:50%;background:rgba(249,254,255,.96);border:2px solid var(--ng-state-a);box-shadow:0 0 12px var(--ng-state-glow);}
+.ng36-link i:nth-child(1){left:24%}.ng36-link i:nth-child(2){left:53%}.ng36-link i:nth-child(3){left:82%}
+.neural-shell[data-neural-state="ready"] .ng36-link{opacity:.22}
+.neural-shell[data-neural-state="scan"] .ng36-link{opacity:.72;filter:brightness(1.12);animation:ng36Flow 1.9s linear infinite}
+.neural-shell[data-neural-state="recall"] .ng36-link{opacity:.48;filter:hue-rotate(25deg)}
+.neural-shell[data-neural-state="result"] .ng36-link{opacity:.52;background-image:linear-gradient(90deg,transparent,#ffd968 26%,#ff91bf 58%,#73efd2 84%,transparent)}
+.neural-shell[data-neural-outcome="success"] .ng36-link{opacity:.95;filter:brightness(1.35);animation:ng36Success .8s ease-out 2}
+.neural-shell[data-neural-outcome="error"] .ng36-link{opacity:.74;background-image:linear-gradient(90deg,transparent,#ff879a 28%,#ffba83 58%,transparent);animation:ng36Error .48s ease-out 1}
+@keyframes ng36Flow{0%{background-position:0 0}100%{background-position:180% 0}}
+@keyframes ng36Success{0%,100%{filter:brightness(1)}50%{filter:brightness(1.7)}}
+@keyframes ng36Error{0%,100%{transform:translateX(0)}35%{transform:translateX(-3px)}70%{transform:translateX(3px)}}
+
+/* ---------- 3. A focused gameplay well: environment stays visible, play stays crisp ---------- */
+.ng36-focus-field{
+  position:absolute;left:50%;top:50%;width:620px;height:500px;transform:translate(-50%,-50%);
+  border-radius:46%;
+  background:radial-gradient(ellipse,rgba(244,251,255,.23) 0%,rgba(230,241,255,.08) 53%,transparent 72%);
+  filter:blur(1px);opacity:.78;
+}
+.ng36-stage-rim{
+  position:absolute;left:50%;bottom:18px;width:610px;height:92px;transform:translateX(-50%);
+  border-radius:50%;border:1px solid rgba(126,223,241,.10);
+  background:radial-gradient(ellipse,rgba(87,221,233,.10),rgba(113,99,224,.045) 48%,transparent 72%);
+  box-shadow:0 0 28px rgba(82,207,231,.07);opacity:.72;
+}
+
+.neural-play{z-index:8!important;}
+.neural-hud{filter:drop-shadow(0 10px 18px rgba(33,59,98,.06));}
+.neural-stat{
+  background:linear-gradient(145deg,rgba(249,253,255,.94),rgba(229,243,252,.88))!important;
+  border-color:rgba(142,202,226,.56)!important;
+  box-shadow:0 10px 24px rgba(25,65,101,.10),inset 0 2px 0 rgba(255,255,255,.92)!important;
+}
+.neural-stat.right{background:linear-gradient(145deg,rgba(255,251,230,.96),rgba(255,237,173,.88))!important;border-color:rgba(235,193,76,.50)!important;}
+.neural-round{
+  background:linear-gradient(145deg,rgba(245,237,255,.95),rgba(225,214,255,.88))!important;
+  border:1px solid rgba(153,128,232,.26)!important;
+  box-shadow:0 8px 18px rgba(99,79,170,.08),inset 0 2px 0 rgba(255,255,255,.92);
+}
+.neural-phase{color:#476c78!important;text-shadow:0 1px 0 rgba(255,255,255,.64);}
+.neural-board{
+  box-shadow:0 24px 40px rgba(15,37,72,.30),0 0 22px var(--ng-state-glow),inset 0 2px 0 rgba(255,255,255,.15)!important;
+}
+.neural-prompt{
+  color:#263249!important;
+  background:linear-gradient(145deg,rgba(250,253,255,.92),rgba(235,242,255,.82))!important;
+  border:1px solid rgba(255,255,255,.78)!important;
+  box-shadow:0 8px 20px rgba(30,55,88,.09),inset 0 1px 0 rgba(255,255,255,.94)!important;
+  text-shadow:none!important;
+}
+
+/* Answer buttons: readable toy controls, not pale form fields. */
+.neural-option{color:#2e3548!important;border-color:rgba(255,255,255,.82)!important;box-shadow:0 7px 0 rgba(47,72,105,.06),0 12px 22px rgba(30,60,96,.09),inset 0 2px 0 rgba(255,255,255,.94)!important;}
+.neural-option:nth-child(1){background:linear-gradient(145deg,#f6fbff,#dff4ff)!important;}
+.neural-option:nth-child(2){background:linear-gradient(145deg,#fffbed,#ffefbd)!important;}
+.neural-option:nth-child(3){background:linear-gradient(145deg,#f4ffe9,#dcffc5)!important;}
+.neural-option:nth-child(4){background:linear-gradient(145deg,#fff2f8,#ffddec)!important;}
+.neural-option.correct{color:#0d6248!important;background:linear-gradient(145deg,#ecffe8,#79eeb4)!important;border-color:#57dca3!important;box-shadow:0 8px 0 rgba(48,166,119,.07),0 0 28px rgba(75,225,166,.28),inset 0 2px 0 rgba(255,255,255,.92)!important;}
+.neural-option.wrong{color:#8d3445!important;background:linear-gradient(145deg,#fff0f2,#ff9da9)!important;border-color:#ff8090!important;}
+.neural-feedback{font-size:12px!important;letter-spacing:.005em;box-shadow:0 8px 18px rgba(25,56,91,.07);}
+.neural-next{box-shadow:0 10px 24px rgba(255,102,111,.21),inset 0 2px 0 rgba(255,255,255,.34)!important;}
+
+/* ---------- 4. Intro/result: no second big white rectangle ---------- */
+.neural-ready,.neural-result{max-width:550px!important;}
+.neural-ready:after,.neural-result:after{
+  width:94%!important;height:86%!important;border:0!important;border-radius:50%!important;
+  background:radial-gradient(ellipse at center,rgba(247,252,255,.64) 0%,rgba(230,240,255,.30) 47%,rgba(229,233,255,.10) 63%,transparent 75%)!important;
+  box-shadow:none!important;opacity:1!important;
+}
+.neural-ready h3,.neural-result h3{color:#2d2a43!important;text-shadow:0 3px 18px rgba(255,255,255,.34)!important;}
+.neural-ready-copy{color:#545f72!important;font-weight:750!important;}
+.neural-ready .neural-main-btn,.neural-result .neural-main-btn{box-shadow:0 12px 28px rgba(255,100,111,.23),inset 0 2px 0 rgba(255,255,255,.36)!important;}
+.neural-chips .neural-chip{box-shadow:0 6px 15px rgba(49,67,102,.06),inset 0 1px 0 rgba(255,255,255,.82)!important;}
+
+/* ---------- 5. Result celebration is stronger but controlled ---------- */
+.ng36-celebration{position:absolute;left:50%;top:42%;width:520px;height:350px;transform:translate(-50%,-50%);opacity:0;transition:opacity .25s ease;}
+.ng36-celebration i{position:absolute;width:9px;height:9px;border-radius:50%;background:#ffd762;box-shadow:0 0 15px rgba(255,215,98,.72);animation:ng36Spark 2.4s ease-in-out infinite;}
+.ng36-celebration i:nth-child(1){left:10%;top:26%}.ng36-celebration i:nth-child(2){left:22%;top:12%;background:#78ecd7;animation-delay:-.4s}.ng36-celebration i:nth-child(3){right:18%;top:19%;background:#ff91bf;animation-delay:-.8s}.ng36-celebration i:nth-child(4){right:8%;top:45%;background:#ffd762;animation-delay:-1.2s}.ng36-celebration i:nth-child(5){left:15%;bottom:18%;background:#a78cff;animation-delay:-1.6s}.ng36-celebration i:nth-child(6){right:23%;bottom:12%;background:#78ecd7;animation-delay:-2s}
+.neural-shell[data-neural-state="result"] .ng36-celebration{opacity:.92;}
+.neural-shell[data-result-grade="perfect"] .ng36-celebration{opacity:1;filter:brightness(1.15)}
+@keyframes ng36Spark{0%,100%{transform:translateY(0) scale(.72);opacity:.38}50%{transform:translateY(-11px) scale(1.18);opacity:1}}
+
+.neural-score-ring{
+  background:linear-gradient(145deg,#fffdf5,#fff1b7 46%,#ff9d86 100%)!important;
+  box-shadow:0 0 0 7px rgba(255,255,255,.55),0 18px 40px rgba(104,71,99,.15),0 0 34px rgba(255,205,91,.28),inset 0 2px 0 rgba(255,255,255,.92)!important;
+}
+.neural-shell[data-neural-state="result"] .neural-score-ring{animation:ng36ResultBreathe 2.4s ease-in-out infinite;}
+@keyframes ng36ResultBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+.neural-result-card{box-shadow:0 10px 22px rgba(29,56,90,.10),inset 0 1px 0 rgba(255,255,255,.88)!important;}
+.neural-ghost-btn{background:linear-gradient(145deg,rgba(247,251,255,.72),rgba(222,232,250,.62))!important;border-color:rgba(255,255,255,.62)!important;box-shadow:0 8px 18px rgba(35,51,87,.08),inset 0 1px 0 rgba(255,255,255,.72);backdrop-filter:blur(8px);}
+
+/* ---------- 6. Mascot is a companion: state and outcome are visible ---------- */
+.neural-lab-mascot{transition:transform .25s ease,filter .25s ease!important;}
+.neural-lab-bubble{opacity:.92!important;color:#344b61!important;box-shadow:0 8px 20px rgba(22,48,79,.10),inset 0 1px 0 rgba(255,255,255,.84)!important;}
+.neural-shell[data-neural-state="scan"] .neural-lab-mascot{filter:drop-shadow(0 0 14px rgba(88,235,205,.15));}
+.neural-shell[data-neural-state="recall"] .neural-lab-mascot{filter:drop-shadow(0 0 14px rgba(102,154,255,.15));}
+.neural-shell[data-neural-state="result"] .neural-lab-mascot{transform:scale(1.04) translateY(-3px)!important;}
+.neural-shell[data-neural-outcome="success"] .neural-lab-mascot{animation:ng36BuddyYes .62s ease-out 1;}
+.neural-shell[data-neural-outcome="success"] .neural-lab-bubble{background:linear-gradient(145deg,rgba(240,255,247,.96),rgba(193,249,222,.88))!important;border-color:rgba(112,224,174,.58)!important;}
+.neural-shell[data-neural-outcome="error"] .neural-lab-mascot{animation:ng36BuddyOops .5s ease-out 1;}
+@keyframes ng36BuddyYes{0%,100%{transform:translateY(0)}45%{transform:translateY(-8px) rotate(-2deg)}}
+@keyframes ng36BuddyOops{0%,100%{transform:translateX(0)}35%{transform:translateX(-4px)}70%{transform:translateX(4px)}}
+
+/* ---------- 7. Environment layers are crisper, not blur soup ---------- */
+.ng35-wall-bay{opacity:.72!important;filter:saturate(.92) contrast(1.04);}
+.ng35-foreground{opacity:.78!important;filter:saturate(.96) contrast(1.04);}
+.ng35-floor-reflection{opacity:.58!important;filter:blur(2px)!important;}
+.ng35-ceiling-rig{opacity:.62;}
+.ng35-projector{opacity:.76;}
+.ng35-energy-dock{opacity:.58!important;}
+.ng35-mascot-pad{opacity:.56!important;}
+.ng-core-halo{opacity:.26!important;}
+.neural-lab-wave{opacity:.15!important;}
+
+/* Smaller screens: preserve hierarchy; decorative lab steps back first. */
+@media(max-width:1100px){
+  .ng36-link.left{left:8%;width:33%}.ng36-link.right{right:8%;width:33%}
+  .ng36-focus-field{width:540px;height:470px}
+}
+@media(max-width:900px){
+  .ng36-link{opacity:.25!important}
+  .ng36-stage-rim{width:470px}
+  .ng36-celebration{width:430px}
+}
+@media(max-width:680px){
+  .ng36-link,.ng36-stage-rim{display:none}
+  .ng36-focus-field{width:92vw;height:78vh;opacity:.54}
+  .neural-ready,.neural-result{max-width:100%!important}
+  .neural-ready:after,.neural-result:after{width:100%!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .ng36-link,.ng36-celebration i,.neural-score-ring,.neural-lab-mascot{animation:none!important}
+}
