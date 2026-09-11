@@ -45,7 +45,13 @@ export async function setupFamily(env, body, setupToken) {
   const username = normalizeUsername(body?.username);
   const displayName = String(body?.displayName ?? 'Keluarga UbayBian').trim().slice(0, 80) || 'Keluarga UbayBian';
   const password = validatePassword(body?.password);
-  const passwordData = await hashPassword(password);
+  let passwordData;
+  try {
+    passwordData = await hashPassword(password);
+  } catch (error) {
+    console.error('PASSWORD_HASH_FAILED', error);
+    throw new HttpError(500, 'PASSWORD_HASH_FAILED', 'Password belum dapat diproses oleh Worker.');
+  }
   const now = Date.now();
   const db = requireDb(env);
 
