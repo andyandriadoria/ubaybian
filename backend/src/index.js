@@ -3,17 +3,25 @@ import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './
 import { progressForFamily } from './progress.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
 
+async function shortFingerprint(value) {
+  if (!value) return null;
+  const bytes = new TextEncoder().encode(String(value));
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+  return Array.from(digest.slice(0, 6), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.3.3',
+    version: '0.3.4',
     db: { bound: Boolean(env.DB), schemaReady: false },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
       secretConfigured: Boolean(env.APPS_SCRIPT_SECRET),
     },
     setupTokenConfigured: Boolean(env.SETUP_TOKEN),
+    setupTokenFingerprint: await shortFingerprint(env.SETUP_TOKEN),
   };
 
   if (!env.DB || typeof env.DB.prepare !== 'function') return result;
