@@ -27,7 +27,7 @@ export function createApiClient(baseUrl,fetchImpl=globalThis.fetch){
  const call=async(path,options={})=>{
   const token=getSessionToken();
   const headers={'Accept':'application/json','Content-Type':'application/json',...(token?{'Authorization':`Bearer ${token}`}:{}) ,...(options.headers??{})};
-  return parseResponse(await fetchImpl(`${baseUrl}${path}`,{headers,...options}));
+  return parseResponse(await fetchImpl(`${baseUrl}${path}`,{...options,headers}));
  };
  return Object.freeze({
   async login({username,password}){
