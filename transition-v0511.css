@@ -1,0 +1,170 @@
+/* UbayBian v0.5.11 · Adventure Transition
+   Modernizes the short dashboard-loading state without touching app behavior. */
+
+body[data-profile]:has(.loading-card:not(.error-state)) main{
+  position:relative;
+  display:grid;
+  place-items:center;
+  min-height:680px;
+  overflow:hidden;
+  padding:40px 24px;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(255,255,255,.24),transparent 23%),
+    radial-gradient(circle at 16% 18%,rgba(121,218,255,.32),transparent 21%),
+    radial-gradient(circle at 84% 20%,rgba(255,215,125,.14),transparent 20%),
+    radial-gradient(circle at 82% 82%,rgba(133,118,255,.12),transparent 24%),
+    linear-gradient(155deg,#2db9ef 0%,#1498dc 44%,#0a73bd 100%);
+}
+
+/* subtle adventure-space atmosphere during the handoff */
+body[data-profile]:has(.loading-card:not(.error-state)) main::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.56;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(255,255,255,.92) 0 2px,transparent 3px),
+    radial-gradient(circle at 23% 69%,rgba(255,255,255,.66) 0 1.4px,transparent 2.4px),
+    radial-gradient(circle at 39% 23%,rgba(255,255,255,.74) 0 1.6px,transparent 2.6px),
+    radial-gradient(circle at 63% 18%,rgba(255,255,255,.78) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 77% 67%,rgba(255,255,255,.68) 0 1.4px,transparent 2.4px),
+    radial-gradient(circle at 91% 30%,rgba(255,236,162,.82) 0 2px,transparent 3px);
+}
+body[data-profile]:has(.loading-card:not(.error-state)) main::after{
+  content:"";
+  position:absolute;
+  width:520px;
+  height:520px;
+  left:-300px;
+  bottom:-330px;
+  border:1px solid rgba(226,244,255,.16);
+  border-radius:50%;
+  box-shadow:0 0 0 70px rgba(255,255,255,.025),0 0 0 145px rgba(255,255,255,.015);
+  pointer-events:none;
+}
+
+body[data-profile]:has(.loading-card:not(.error-state)) .loading-card{
+  position:relative;
+  z-index:2;
+  width:min(520px,calc(100vw - 48px));
+  max-width:none;
+  margin:0;
+  padding:30px 34px 28px;
+  text-align:center;
+  overflow:hidden;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,.78);
+  background:
+    radial-gradient(circle at 50% -10%,rgba(190,238,255,.42),transparent 40%),
+    linear-gradient(145deg,rgba(255,255,255,.94),rgba(239,249,255,.88));
+  box-shadow:
+    0 26px 60px rgba(8,62,111,.28),
+    0 0 0 7px rgba(255,255,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.98);
+  backdrop-filter:blur(18px);
+}
+
+body[data-profile]:has(.loading-card:not(.error-state)) .loading-card::before{
+  content:"ADVENTURE LOADING";
+  display:block;
+  margin:0 auto 14px;
+  color:#2582b7;
+  font-size:10px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+
+body[data-profile]:has(.loading-card:not(.error-state)) .loading-icon{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:108px;
+  height:108px;
+  margin:0 auto 15px;
+  border-radius:32px;
+  font-size:0;
+  line-height:0;
+  border:1px solid rgba(117,198,235,.28);
+  background:linear-gradient(145deg,#ecfaff,#d9f2ff);
+  box-shadow:0 15px 30px rgba(36,128,177,.17),inset 0 1px 0 rgba(255,255,255,.96);
+  animation:ubaybianLoadingFloat 1.8s ease-in-out infinite;
+}
+body[data-profile="bian"]:has(.loading-card:not(.error-state)) .loading-icon{
+  border-color:rgba(231,185,82,.28);
+  background:linear-gradient(145deg,#fff9e8,#ffefbe);
+  box-shadow:0 15px 30px rgba(176,129,40,.15),inset 0 1px 0 rgba(255,255,255,.96);
+}
+body[data-profile]:has(.loading-card:not(.error-state)) .loading-icon::before{
+  content:"";
+  width:90px;
+  height:90px;
+  background:center/contain no-repeat;
+  filter:drop-shadow(0 7px 10px rgba(24,80,123,.16));
+}
+body[data-profile="ubay"]:has(.loading-card:not(.error-state)) .loading-icon::before{
+  background-image:url("assets/ubay-cosmic-spider-bot.svg");
+}
+body[data-profile="bian"]:has(.loading-card:not(.error-state)) .loading-icon::before{
+  background-image:url("assets/bian-cosmic-scout.svg");
+}
+
+body[data-profile]:has(.loading-card:not(.error-state)) .loading-card strong{
+  display:block;
+  margin:0;
+  color:#173650;
+  font-size:21px;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:-.015em;
+}
+body[data-profile]:has(.loading-card:not(.error-state)) .loading-card p{
+  margin:7px 0 0;
+  color:#68849b;
+  font-size:13px;
+  line-height:1.45;
+  font-weight:600;
+}
+body[data-profile]:has(.loading-card:not(.error-state)) .loading-card p::after{
+  content:"";
+  display:block;
+  width:150px;
+  height:6px;
+  margin:18px auto 0;
+  border-radius:999px;
+  background:
+    linear-gradient(90deg,#26a9ec 0%,#5ed3e4 35%,#ffd05c 58%,#26a9ec 100%);
+  background-size:220% 100%;
+  box-shadow:0 3px 10px rgba(30,157,211,.18);
+  animation:ubaybianLoadingSweep 1.15s linear infinite;
+}
+
+@keyframes ubaybianLoadingFloat{
+  0%,100%{transform:translateY(0) rotate(-1deg)}
+  50%{transform:translateY(-6px) rotate(1deg)}
+}
+@keyframes ubaybianLoadingSweep{
+  from{background-position:100% 0}
+  to{background-position:-120% 0}
+}
+
+@media (prefers-reduced-motion:reduce){
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-icon,
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-card p::after{animation:none;}
+}
+
+@media (max-height:760px) and (min-width:801px){
+  body[data-profile]:has(.loading-card:not(.error-state)) main{min-height:560px;padding:26px 20px;}
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-card{padding:23px 30px 22px;}
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-icon{width:90px;height:90px;border-radius:27px;margin-bottom:12px;}
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-icon::before{width:74px;height:74px;}
+}
+
+@media (max-width:800px){
+  body[data-profile]:has(.loading-card:not(.error-state)) main{min-height:620px;padding:28px 16px;}
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-card{width:min(430px,100%);padding:27px 24px 25px;border-radius:25px;}
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-icon{width:96px;height:96px;border-radius:29px;}
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-icon::before{width:80px;height:80px;}
+  body[data-profile]:has(.loading-card:not(.error-state)) .loading-card strong{font-size:19px;}
+}
