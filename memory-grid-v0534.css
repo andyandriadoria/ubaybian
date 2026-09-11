@@ -1,0 +1,355 @@
+/* UbayBian v0.5.34 · Memory Grid Neural Chamber
+   World-building layer: chamber, spatial depth, energy connections, toy-science props,
+   and state-reactive lighting. Gameplay remains in memory-grid-v046.js. */
+
+.neural-overlay{
+  --ng-state-a:#64ead0;
+  --ng-state-b:#9d8dff;
+  --ng-state-c:#ffd66b;
+  --ng-state-glow:rgba(100,234,208,.28);
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(3,13,34,.10),rgba(5,17,41,.38)),
+    url('assets/memory-neural-chamber-v0534.svg') center/cover no-repeat,
+    linear-gradient(135deg,#071d3c,#1a2859 62%,#34255c);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.neural-overlay[data-neural-state="scan"]{
+  --ng-state-a:#5df0bb;
+  --ng-state-b:#78e7ff;
+  --ng-state-c:#ffe26d;
+  --ng-state-glow:rgba(93,240,187,.38);
+}
+.neural-overlay[data-neural-state="recall"]{
+  --ng-state-a:#5bddeb;
+  --ng-state-b:#a184ff;
+  --ng-state-c:#ff8bc7;
+  --ng-state-glow:rgba(103,161,255,.34);
+}
+.neural-overlay[data-neural-state="result"]{
+  --ng-state-a:#ffd965;
+  --ng-state-b:#ff91bf;
+  --ng-state-c:#72f1d3;
+  --ng-state-glow:rgba(255,210,91,.42);
+}
+.neural-overlay:before{
+  width:100%;height:100%;left:0;bottom:0;border-radius:0;
+  opacity:1;filter:none;
+  background:
+    radial-gradient(circle at 50% 7%,var(--ng-state-glow),transparent 27%),
+    radial-gradient(circle at 10% 48%,rgba(72,226,218,.14),transparent 24%),
+    radial-gradient(circle at 90% 48%,rgba(195,128,255,.13),transparent 25%),
+    linear-gradient(180deg,rgba(3,12,30,.08),rgba(3,12,30,.34));
+  transition:background .45s ease;
+}
+.neural-overlay:after{
+  width:78vw;height:40vh;right:auto;left:50%;top:auto;bottom:-18vh;
+  transform:translateX(-50%);
+  border-radius:50%;
+  opacity:.38;
+  filter:blur(44px);
+  background:radial-gradient(ellipse,var(--ng-state-glow),transparent 68%);
+}
+
+/* Extra world depth sits behind the dialog shell. */
+.ng-chamber-world{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:0;
+}
+.ng-world-beam{
+  position:absolute;
+  left:50%;top:-8%;
+  width:320px;height:78%;
+  transform:translateX(-50%);
+  clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);
+  background:linear-gradient(180deg,rgba(137,239,255,.20),rgba(118,182,255,.05) 48%,transparent 86%);
+  filter:blur(2px);
+  opacity:.68;
+  transition:background .4s ease,opacity .4s ease;
+}
+.neural-overlay[data-neural-state="scan"] .ng-world-beam{opacity:.92;background:linear-gradient(180deg,rgba(102,255,208,.28),rgba(91,225,235,.09) 50%,transparent 88%);}
+.neural-overlay[data-neural-state="recall"] .ng-world-beam{opacity:.55;background:linear-gradient(180deg,rgba(129,124,255,.20),rgba(85,206,235,.07) 52%,transparent 88%);}
+.neural-overlay[data-neural-state="result"] .ng-world-beam{opacity:.92;background:linear-gradient(180deg,rgba(255,218,111,.28),rgba(255,139,196,.08) 52%,transparent 88%);}
+.ng-world-ring{
+  position:absolute;
+  left:50%;top:7%;
+  border:2px solid rgba(143,230,255,.18);
+  border-radius:50%;
+  transform:translateX(-50%);
+  box-shadow:0 0 34px rgba(98,221,244,.09),inset 0 0 28px rgba(129,158,255,.06);
+  animation:ngWorldRing 12s linear infinite;
+}
+.ng-world-ring.ring-a{width:560px;height:150px;}
+.ng-world-ring.ring-b{width:390px;height:104px;top:9.5%;animation-direction:reverse;animation-duration:9s;border-color:rgba(255,214,111,.16);}
+.ng-world-float{
+  position:absolute;
+  width:52px;height:52px;
+  display:grid;place-items:center;
+  border-radius:18px;
+  color:#fff;
+  font-size:24px;
+  font-weight:900;
+  border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(145deg,rgba(119,238,222,.25),rgba(121,122,255,.15));
+  box-shadow:0 12px 30px rgba(3,17,43,.18),0 0 24px var(--ng-state-glow);
+  backdrop-filter:blur(10px);
+  animation:ngFloatProp 5.6s ease-in-out infinite;
+}
+.ng-world-float.float-a{left:7%;top:26%;transform:rotate(-10deg);color:#ffe06e;}
+.ng-world-float.float-b{right:7%;top:31%;transform:rotate(11deg);color:#71efd4;animation-delay:-1.8s;}
+.ng-world-float.float-c{right:15%;bottom:16%;transform:rotate(-8deg);color:#ff9bc8;animation-delay:-3.1s;}
+.ng-world-floor{
+  position:absolute;
+  left:50%;bottom:-18px;
+  width:min(1060px,74vw);height:160px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at center,rgba(102,223,255,.15),rgba(37,47,102,.55) 49%,rgba(6,18,43,.55) 71%,transparent 72%);
+  box-shadow:0 -12px 60px rgba(91,213,235,.10);
+}
+
+/* The shell becomes a real glass chamber rather than an opaque pastel card. */
+.neural-shell{
+  width:min(1180px,95vw);
+  height:min(745px,91vh);
+  overflow:hidden;
+  border:2px solid rgba(239,253,255,.92);
+  background:
+    linear-gradient(180deg,rgba(250,254,255,.86),rgba(246,247,255,.70) 23%,rgba(246,250,255,.55) 100%),
+    radial-gradient(circle at 18% 40%,rgba(103,240,207,.17),transparent 29%),
+    radial-gradient(circle at 84% 45%,rgba(195,135,255,.17),transparent 30%);
+  backdrop-filter:blur(20px) saturate(128%);
+  -webkit-backdrop-filter:blur(20px) saturate(128%);
+  box-shadow:
+    0 42px 115px rgba(0,12,37,.44),
+    0 0 0 8px rgba(116,222,245,.08),
+    0 0 80px var(--ng-state-glow),
+    inset 0 2px 0 rgba(255,255,255,.98),
+    inset 0 -2px 0 rgba(169,194,235,.20);
+  transition:box-shadow .42s ease,background .42s ease;
+}
+.neural-shell:before{
+  opacity:.62;
+  background:
+    radial-gradient(circle at 5% 68%,rgba(90,230,228,.78) 0 2px,transparent 3px),
+    radial-gradient(circle at 16% 20%,rgba(104,237,190,.70) 0 3px,transparent 4px),
+    radial-gradient(circle at 92% 24%,rgba(255,211,93,.85) 0 3px,transparent 4px),
+    radial-gradient(circle at 85% 76%,rgba(255,124,196,.64) 0 3px,transparent 4px),
+    linear-gradient(118deg,transparent 0 19%,rgba(255,255,255,.18) 19.1% 19.8%,transparent 20% 100%);
+}
+.neural-shell:after{
+  inset:13px;
+  border-radius:31px;
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:inset 0 0 56px rgba(255,255,255,.15),inset 0 -30px 60px rgba(72,98,171,.03);
+}
+
+.neural-top{
+  min-height:104px;
+  background:
+    linear-gradient(90deg,rgba(221,255,246,.62),rgba(255,255,255,.50) 26%,rgba(255,241,245,.52) 66%,rgba(237,229,255,.60));
+  border-bottom:1px solid rgba(93,112,160,.10);
+  box-shadow:0 14px 32px rgba(55,75,130,.06),inset 0 -1px 0 rgba(255,255,255,.72);
+}
+.neural-stage{
+  position:relative;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 50% 56%,rgba(255,255,255,.26),transparent 35%),
+    linear-gradient(180deg,rgba(255,255,255,.02),rgba(196,226,255,.04));
+}
+
+/* Chamber systems inside the glass panel. */
+.ng-chamber-fx{
+  position:absolute;
+  inset:104px 0 0;
+  z-index:2;
+  pointer-events:none;
+  overflow:hidden;
+}
+.ng-core-halo{
+  position:absolute;
+  left:50%;top:44%;
+  width:560px;height:430px;
+  transform:translate(-50%,-50%);
+  border-radius:44%;
+  background:radial-gradient(ellipse,var(--ng-state-glow),rgba(255,255,255,.08) 34%,transparent 68%);
+  filter:blur(18px);
+  opacity:.58;
+  transition:background .38s ease,opacity .38s ease;
+}
+.ng-scan-beam{
+  position:absolute;
+  left:50%;top:42px;
+  width:340px;height:510px;
+  transform:translateX(-50%);
+  clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);
+  background:linear-gradient(180deg,rgba(114,241,255,.13),rgba(111,238,194,.04) 62%,transparent);
+  opacity:.28;
+  transition:opacity .3s ease,background .3s ease;
+}
+.neural-shell[data-neural-state="scan"] .ng-scan-beam{opacity:.72;background:linear-gradient(180deg,rgba(104,255,215,.22),rgba(87,227,234,.07) 60%,transparent);animation:ngScanBeam 1.7s ease-in-out infinite;}
+.neural-shell[data-neural-state="recall"] .ng-scan-beam{opacity:.30;background:linear-gradient(180deg,rgba(127,123,255,.17),rgba(74,205,235,.04) 60%,transparent);}
+.neural-shell[data-neural-state="result"] .ng-scan-beam{opacity:.62;background:linear-gradient(180deg,rgba(255,222,106,.20),rgba(255,130,192,.06) 62%,transparent);}
+
+.ng-conduit{
+  position:absolute;
+  top:50%;
+  width:30%;height:3px;
+  background:linear-gradient(90deg,transparent,var(--ng-state-a),var(--ng-state-b),transparent);
+  box-shadow:0 0 11px var(--ng-state-glow);
+  opacity:.58;
+}
+.ng-conduit.left{left:11%;transform:translateY(-50%);}
+.ng-conduit.right{right:9%;transform:translateY(-50%) scaleX(-1);}
+.ng-conduit span{
+  position:absolute;
+  top:50%;width:11px;height:11px;
+  border-radius:50%;
+  transform:translateY(-50%);
+  background:#fff;
+  border:2px solid var(--ng-state-a);
+  box-shadow:0 0 14px var(--ng-state-glow);
+  animation:ngNodePulse 2s ease-in-out infinite;
+}
+.ng-conduit span:nth-child(1){left:22%;}.ng-conduit span:nth-child(2){left:52%;animation-delay:-.7s}.ng-conduit span:nth-child(3){left:82%;animation-delay:-1.3s}
+.ng-console-bed{
+  position:absolute;
+  left:50%;bottom:10px;
+  width:610px;height:92px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  border:2px solid rgba(116,216,244,.18);
+  background:radial-gradient(ellipse,rgba(106,221,243,.12),rgba(123,111,217,.08) 48%,transparent 72%);
+  box-shadow:0 0 34px var(--ng-state-glow),inset 0 4px 16px rgba(255,255,255,.12);
+  opacity:.62;
+}
+.ng-console-bed i{
+  position:absolute;
+  bottom:13px;width:62px;height:8px;border-radius:999px;
+  background:var(--ng-state-a);box-shadow:0 0 16px var(--ng-state-a);
+  opacity:.62;
+}
+.ng-console-bed i:nth-child(1){left:130px}.ng-console-bed i:nth-child(2){left:274px;background:var(--ng-state-c)}.ng-console-bed i:nth-child(3){right:130px;background:var(--ng-state-b)}
+
+.ng-prop{
+  position:absolute;
+  width:78px;height:78px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:radial-gradient(circle at 34% 26%,rgba(255,255,255,.82),rgba(255,255,255,.22) 32%,rgba(117,216,239,.11) 64%,rgba(74,73,146,.16));
+  border:2px solid rgba(255,255,255,.58);
+  box-shadow:0 15px 30px rgba(38,61,111,.13),inset 0 0 18px rgba(255,255,255,.38),0 0 22px var(--ng-state-glow);
+  opacity:.56;
+  backdrop-filter:blur(8px);
+}
+.ng-prop b{font-size:31px;filter:drop-shadow(0 5px 9px rgba(63,62,111,.10));}
+.ng-prop-puzzle{left:20px;bottom:14px;transform:rotate(-7deg);}
+.ng-prop-brain{right:18px;bottom:16px;transform:rotate(7deg);}
+.ng-node{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--ng-state-a);box-shadow:0 0 14px var(--ng-state-glow);opacity:.66;animation:ngNodePulse 2.6s ease-in-out infinite;}
+.ng-node.n1{left:29%;top:28%}.ng-node.n2{left:72%;top:25%;animation-delay:-.8s}.ng-node.n3{left:24%;top:72%;animation-delay:-1.5s}.ng-node.n4{left:77%;top:69%;animation-delay:-2s}
+
+/* The central content now feels like a chamber console, not a white web card. */
+.neural-ready{
+  max-width:600px;
+  min-height:420px;
+  border:1px solid rgba(255,255,255,.74);
+  background:
+    radial-gradient(circle at 50% 14%,rgba(111,239,207,.14),transparent 31%),
+    linear-gradient(145deg,rgba(255,255,255,.52),rgba(245,250,255,.30));
+  backdrop-filter:blur(14px) saturate(120%);
+  -webkit-backdrop-filter:blur(14px) saturate(120%);
+  box-shadow:0 22px 50px rgba(35,54,100,.10),0 0 40px var(--ng-state-glow),inset 0 2px 0 rgba(255,255,255,.88);
+}
+.neural-ready:after{
+  content:"";
+  position:absolute;
+  left:50%;bottom:-34px;
+  width:390px;height:54px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(90,223,239,.18),transparent 68%);
+  box-shadow:0 0 24px var(--ng-state-glow);
+  pointer-events:none;
+}
+.neural-ready .neural-orb{box-shadow:0 0 0 8px rgba(255,255,255,.24),0 0 30px var(--ng-state-glow),inset 0 4px 10px rgba(255,255,255,.68);}
+.neural-chips .neural-chip{backdrop-filter:blur(8px);box-shadow:0 8px 18px rgba(37,60,103,.07),inset 0 1px 0 rgba(255,255,255,.82);}
+
+.neural-play{position:relative;z-index:5;}
+.neural-board{
+  box-shadow:0 18px 38px rgba(11,35,75,.20),0 0 28px var(--ng-state-glow),inset 0 1px 0 rgba(255,255,255,.16);
+}
+.neural-shell[data-neural-state="scan"] .neural-board{box-shadow:0 20px 42px rgba(14,59,69,.19),0 0 38px rgba(95,240,187,.28),inset 0 1px 0 rgba(255,255,255,.18);}
+.neural-shell[data-neural-state="recall"] .neural-board{box-shadow:0 20px 44px rgba(13,29,79,.24),0 0 38px rgba(122,133,255,.24),inset 0 1px 0 rgba(255,255,255,.16);}
+.neural-cell{transition:transform .16s ease,box-shadow .22s ease,background .25s ease,border-color .22s ease;}
+.neural-shell[data-neural-state="scan"] .neural-cell{animation:ngMemoryTileBreathe 2.2s ease-in-out infinite;}
+.neural-shell[data-neural-state="scan"] .neural-cell:nth-child(2){animation-delay:-.4s}.neural-shell[data-neural-state="scan"] .neural-cell:nth-child(3){animation-delay:-.8s}.neural-shell[data-neural-state="scan"] .neural-cell:nth-child(4){animation-delay:-1.2s}
+
+/* Mascot and energy meter are attached to the chamber via visible conduits. */
+.neural-lab-mascot{filter:drop-shadow(0 0 18px rgba(84,220,226,.10));}
+.neural-lab-mascot:after{
+  width:156px;height:4px;left:130px;top:82px;
+  background:linear-gradient(90deg,rgba(84,223,226,.58),rgba(106,234,194,.32),transparent);
+  box-shadow:0 0 14px rgba(79,222,221,.28);
+}
+.neural-memory-energy:before{
+  width:160px;height:4px;right:78px;top:142px;
+  background:linear-gradient(90deg,transparent,rgba(176,132,255,.30),rgba(255,144,194,.56));
+  box-shadow:0 0 14px rgba(173,128,255,.24);
+}
+.neural-energy-vessel{box-shadow:0 18px 34px rgba(65,74,129,.12),0 0 0 6px rgba(255,255,255,.22),inset 0 0 0 5px rgba(255,255,255,.38),0 0 30px var(--ng-state-glow);}
+.neural-energy-fill{transition:height .48s cubic-bezier(.2,.75,.2,1),filter .3s ease;}
+.neural-shell[data-neural-state="scan"] .neural-energy-fill{filter:saturate(1.08) brightness(1.04);}
+.neural-shell[data-neural-state="result"] .neural-energy-fill{filter:saturate(1.14) brightness(1.08);animation:ngEnergyCelebrate 1.5s ease-in-out infinite;}
+
+/* Result becomes a lit celebration chamber. */
+.neural-result{
+  position:relative;
+  z-index:5;
+  width:min(650px,100%);
+  margin:0 auto;
+  border-radius:34px;
+  border:1px solid rgba(255,255,255,.72);
+  background:
+    radial-gradient(circle at 50% 24%,rgba(255,218,102,.16),transparent 28%),
+    linear-gradient(145deg,rgba(255,255,255,.48),rgba(255,246,252,.30));
+  backdrop-filter:blur(14px);
+  box-shadow:0 24px 54px rgba(55,50,100,.11),0 0 44px var(--ng-state-glow),inset 0 2px 0 rgba(255,255,255,.85);
+}
+.neural-shell[data-neural-state="result"] .neural-score-ring{box-shadow:0 18px 36px rgba(255,133,123,.14),0 0 38px rgba(255,213,99,.30),inset 0 2px 0 rgba(255,255,255,.84);}
+.neural-shell[data-neural-state="result"] .neural-complete{animation:ngResultBadge 2s ease-in-out infinite;}
+
+/* Tiny celebratory sparks appear only at result. */
+.neural-shell[data-neural-state="result"] .ng-node{background:#ffd968;box-shadow:0 0 18px rgba(255,217,104,.56);animation-duration:1.3s;}
+
+@keyframes ngWorldRing{to{transform:translateX(-50%) rotate(360deg)}}
+@keyframes ngFloatProp{0%,100%{translate:0 0}50%{translate:0 -13px}}
+@keyframes ngScanBeam{0%,100%{opacity:.50}50%{opacity:.86}}
+@keyframes ngNodePulse{0%,100%{opacity:.28;transform:scale(.82)}50%{opacity:.95;transform:scale(1.18)}}
+@keyframes ngMemoryTileBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes ngEnergyCelebrate{0%,100%{box-shadow:0 0 28px rgba(255,126,101,.52),inset 0 4px 9px rgba(255,255,255,.28)}50%{box-shadow:0 0 42px rgba(255,202,82,.76),inset 0 4px 12px rgba(255,255,255,.42)}}
+@keyframes ngResultBadge{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+@media(max-width:980px){
+  .ng-world-float,.ng-prop{opacity:.28;}
+  .ng-conduit{width:23%;}
+  .ng-console-bed{width:500px;}
+}
+@media(max-width:760px){
+  .neural-overlay{background-position:center;background-size:auto 100%;}
+  .neural-shell{height:min(760px,94vh);border-radius:30px;}
+  .ng-world-ring{display:none;}
+  .ng-world-floor{width:110vw;}
+  .ng-chamber-fx{inset:90px 0 0;}
+  .ng-prop,.ng-conduit,.ng-console-bed{display:none;}
+  .ng-core-halo{width:420px;height:420px;}
+  .neural-ready,.neural-result{backdrop-filter:blur(10px);}
+}
+@media(prefers-reduced-motion:reduce){
+  .ng-world-ring,.ng-world-float,.ng-node,.ng-scan-beam,.neural-cell,.neural-energy-fill,.neural-complete{animation:none!important;}
+}
