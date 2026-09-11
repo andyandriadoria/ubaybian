@@ -1,0 +1,145 @@
+/* v0.5.24 — Robot Lab Micro Polish
+   Final spacing/readability pass for the Robot Lab: clears the right side of the
+   Energy Core, improves microtext/locked readability, and gives Lv.6 a restrained
+   prestige treatment. Scoped to Robot Lab only. */
+
+/* --------------------------------------------------------------------------
+   ENERGY CORE — keep the right-side copy clear of the terminal bolt.
+   -------------------------------------------------------------------------- */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-wrap{
+  padding-right:24px;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label{
+  margin-right:12px;
+  font-size:11px;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+  padding-right:18px;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label .robotlab-remaining-xp,
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label span:last-child{
+  display:inline-block;
+  min-width:74px;
+  text-align:right;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{
+  margin:6px 22px 0 4px;
+  text-align:right;
+  font-size:11.5px;
+  line-height:1.25;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track::after{
+  right:-9px;
+}
+
+/* --------------------------------------------------------------------------
+   MICROTYPE — one small readability step up, without changing the hierarchy.
+   -------------------------------------------------------------------------- */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-kicker,
+.robotlab-card.robotlab-adventure-v0521 .robotlab-current-label,
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label,
+.robotlab-card.robotlab-adventure-v0521 .upgrade-state-badge,
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-count{
+  text-rendering:optimizeLegibility;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-kicker{
+  font-size:11px;
+  letter-spacing:.12em;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-current-label{
+  font-size:10.2px;
+  letter-spacing:.07em;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-stat .stat-label{
+  color:#536f83;
+  font-size:11px;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrades-head p{
+  font-size:12px;
+}
+.robotlab-card.robotlab-adventure-v0521 .upgrade-name{
+  font-size:13.2px;
+}
+.robotlab-card.robotlab-adventure-v0521 .upgrade-note{
+  color:#5b788c !important;
+  font-size:11.3px !important;
+  line-height:1.35 !important;
+}
+
+/* --------------------------------------------------------------------------
+   LOCKED STATES — still muted, but clearly readable and aspirational.
+   -------------------------------------------------------------------------- */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked{
+  opacity:.96 !important;
+  filter:saturate(.90) !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-name{
+  color:#2f5068 !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-note{
+  color:#607c8f !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .robot-form{
+  opacity:.88;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-state-badge{
+  color:#587284;
+  background:rgba(248,251,253,.94);
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-status.upgrade-lock-chip{
+  color:#496b82;
+  background:rgba(255,255,255,.88);
+}
+
+/* --------------------------------------------------------------------------
+   LV.6 PRESTIGE — desirable but still visibly locked.
+   -------------------------------------------------------------------------- */
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6{
+  isolation:isolate;
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  border-radius:inherit;
+  background:
+    radial-gradient(circle at 84% 22%,rgba(255,222,92,.20),transparent 24%),
+    radial-gradient(circle at 18% 76%,rgba(230,165,255,.12),transparent 24%);
+  pointer-events:none;
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6 .upgrade-icon{
+  position:relative;
+  border-color:rgba(242,194,71,.40) !important;
+  box-shadow:
+    0 7px 16px rgba(92,71,128,.12),
+    0 0 0 2px rgba(255,217,91,.10),
+    0 0 20px rgba(255,209,73,.15),
+    inset 0 1px 0 #fff;
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6 .upgrade-icon::after{
+  content:"✦";
+  position:absolute;
+  top:-8px;
+  right:-6px;
+  color:#efbd35;
+  font-size:15px;
+  filter:drop-shadow(0 2px 4px rgba(181,118,18,.25));
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6 .upgrade-name{
+  color:#4f3f70 !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6 .upgrade-status.upgrade-lock-chip{
+  border-color:rgba(221,177,50,.24);
+  background:linear-gradient(90deg,rgba(255,255,255,.90),rgba(255,247,208,.88));
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6 .robot-form{
+  filter:drop-shadow(0 7px 8px rgba(102,70,140,.20)) drop-shadow(0 0 10px rgba(255,207,76,.18));
+}
+
+@media (max-width:700px){
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-energy-wrap{padding-right:17px}
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{margin-right:12px;font-size:10.8px}
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{padding-right:10px}
+  .robotlab-card.robotlab-adventure-v0521 .upgrade-note{font-size:10.8px !important}
+}
