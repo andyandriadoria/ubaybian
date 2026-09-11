@@ -1,0 +1,351 @@
+/* v0.5.18 — Adventure Report
+   Report content follows the locked UbayBian Adventure shell.
+   This layer intentionally scopes itself to .report-card[data-adventure-report]. */
+
+.report-card[data-adventure-report="1"]{
+  --report-ink:#173852;
+  --report-soft:#66849c;
+  --report-panel:rgba(226,246,255,.88);
+  --report-border:rgba(255,255,255,.84);
+  background:transparent;
+  box-shadow:none;
+  padding:0;
+  border-radius:0;
+  overflow:visible;
+}
+
+.report-card[data-adventure-report="1"] .report-header{
+  position:relative;
+  isolation:isolate;
+  min-height:128px;
+  margin:0 0 16px;
+  padding:22px 220px 22px 26px;
+  border-radius:26px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.72);
+  background:
+    radial-gradient(circle at 78% 20%,rgba(255,255,255,.25),transparent 22%),
+    linear-gradient(112deg,#ffb15d 0%,#ff9568 45%,#ff7180 100%);
+  box-shadow:0 18px 38px rgba(37,103,149,.22), inset 0 1px 0 rgba(255,255,255,.62);
+  align-items:center;
+}
+.report-card[data-adventure-report="1"] .report-header::before{
+  content:"";
+  position:absolute;
+  width:340px;
+  height:150px;
+  right:94px;
+  bottom:-88px;
+  border-radius:50%;
+  background:rgba(255,255,255,.09);
+  transform:rotate(-8deg);
+  z-index:-1;
+}
+.report-card[data-adventure-report="1"] .report-header::after{
+  content:"✦   ✧   ★";
+  position:absolute;
+  right:28px;
+  top:16px;
+  color:#ffe77e;
+  font-size:19px;
+  letter-spacing:15px;
+  text-shadow:0 3px 9px rgba(163,79,48,.18);
+  pointer-events:none;
+}
+.report-card[data-adventure-report="1"] .report-header > div:first-child{
+  position:relative;
+  z-index:2;
+}
+.report-card[data-adventure-report="1"] .report-header h2{
+  margin:0 0 4px;
+  color:#6f341f;
+  font-size:25px;
+  line-height:1.05;
+  font-weight:900;
+  letter-spacing:-.025em;
+}
+.report-card[data-adventure-report="1"] .report-header p{
+  margin:0;
+  color:#70432f;
+  font-size:13px;
+  font-weight:600;
+}
+.report-card[data-adventure-report="1"] .report-badge{
+  position:absolute;
+  right:25px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:4;
+  padding:8px 13px;
+  border:1px solid rgba(255,255,255,.75);
+  background:rgba(255,255,255,.68);
+  color:#5e3650;
+  box-shadow:0 8px 18px rgba(95,58,87,.12);
+  backdrop-filter:blur(8px);
+  font-size:11px;
+  font-weight:850;
+}
+.report-card[data-adventure-report="1"] .report-hero-visual{
+  position:absolute;
+  z-index:3;
+  right:126px;
+  bottom:-4px;
+  width:95px;
+  height:112px;
+  display:grid;
+  place-items:end center;
+  pointer-events:none;
+}
+.report-card[data-adventure-report="1"] .report-hero-visual img{
+  display:block;
+  width:90px;
+  height:100px;
+  object-fit:contain;
+  filter:drop-shadow(0 11px 12px rgba(75,54,105,.20));
+}
+.report-card[data-adventure-report="1"] .report-hero-visual::before{
+  content:"⭐";
+  position:absolute;
+  left:-25px;
+  top:8px;
+  font-size:23px;
+  transform:rotate(-13deg);
+}
+.report-card[data-adventure-report="1"] .report-hero-visual::after{
+  content:"🌟";
+  position:absolute;
+  right:-15px;
+  bottom:18px;
+  font-size:20px;
+}
+
+.report-card[data-adventure-report="1"] .report-main-grid{
+  display:grid;
+  grid-template-columns:minmax(330px,.92fr) minmax(520px,1.28fr);
+  gap:16px;
+  align-items:stretch;
+}
+.report-card[data-adventure-report="1"] .report-chart,
+.report-card[data-adventure-report="1"] .report-table-wrap{
+  position:relative;
+  min-height:420px;
+  padding:18px 18px 16px;
+  border-radius:24px;
+  border:1px solid var(--report-border);
+  background:
+    radial-gradient(circle at 86% 15%,rgba(255,255,255,.60),transparent 24%),
+    linear-gradient(145deg,rgba(236,250,255,.92),rgba(196,235,255,.80));
+  box-shadow:0 16px 34px rgba(37,103,149,.18), inset 0 1px 0 rgba(255,255,255,.88);
+  overflow:hidden;
+  backdrop-filter:blur(10px);
+}
+.report-card[data-adventure-report="1"] .report-chart::before,
+.report-card[data-adventure-report="1"] .report-table-wrap::before{
+  content:"";
+  position:absolute;
+  width:180px;
+  height:180px;
+  right:-76px;
+  bottom:-84px;
+  border:1px solid rgba(71,169,221,.17);
+  border-radius:50%;
+  box-shadow:0 0 0 34px rgba(97,187,232,.045),0 0 0 70px rgba(97,187,232,.025);
+  pointer-events:none;
+}
+.report-card[data-adventure-report="1"] .report-chart h3,
+.report-card[data-adventure-report="1"] .report-table-wrap h3{
+  position:relative;
+  z-index:2;
+  margin:0 0 12px;
+  color:var(--report-ink);
+  font-size:17px;
+  font-weight:850;
+  letter-spacing:-.015em;
+}
+.report-card[data-adventure-report="1"] .report-chart-decor{
+  position:absolute;
+  right:16px;
+  top:42px;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  gap:3px;
+  opacity:.92;
+  pointer-events:none;
+}
+.report-card[data-adventure-report="1"] .report-chart-decor .cup{font-size:38px;filter:drop-shadow(0 8px 8px rgba(189,112,21,.22))}
+.report-card[data-adventure-report="1"] .report-chart-decor .spark{font-size:16px}
+
+.report-card[data-adventure-report="1"] .report-chart-inner{
+  position:relative;
+  z-index:2;
+  height:305px;
+  padding:45px 8px 4px;
+  gap:10px;
+  align-items:flex-end;
+}
+.report-card[data-adventure-report="1"] .report-chart-inner::after{
+  content:"";
+  position:absolute;
+  left:6px;
+  right:6px;
+  bottom:23px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(66,122,161,.20) 8%,rgba(66,122,161,.20) 92%,transparent);
+  z-index:-1;
+}
+.report-card[data-adventure-report="1"] .report-bar-wrap{
+  min-width:0;
+}
+.report-card[data-adventure-report="1"] .report-bar{
+  width:min(54px,76%);
+  min-width:24px;
+  max-width:54px;
+  border-radius:24px 24px 6px 6px;
+  box-shadow:0 9px 18px rgba(35,103,143,.14),inset 0 1px 0 rgba(255,255,255,.48);
+  transition:transform .18s ease,filter .18s ease;
+}
+.report-card[data-adventure-report="1"] .report-bar:hover{transform:translateY(-3px);filter:saturate(1.08)}
+.report-card[data-adventure-report="1"] .report-bar.high{background:linear-gradient(180deg,#b5e4a3 0%,#53bd6d 55%,#39a856 100%)}
+.report-card[data-adventure-report="1"] .report-bar.mid{background:linear-gradient(180deg,#ffe99b 0%,#ffc947 55%,#f5af24 100%)}
+.report-card[data-adventure-report="1"] .report-bar.low{background:linear-gradient(180deg,#ffaaa7 0%,#f46b68 55%,#e94d51 100%)}
+.report-card[data-adventure-report="1"] .report-bar-value{
+  top:-23px;
+  color:#173852;
+  font-size:10.5px;
+  font-weight:900;
+}
+.report-card[data-adventure-report="1"] .report-bar-label{
+  margin-top:6px;
+  color:#4d6e87;
+  font-size:9.5px;
+  font-weight:650;
+}
+
+.report-card[data-adventure-report="1"] .report-table-wrap{
+  overflow:hidden;
+}
+.report-card[data-adventure-report="1"] .report-table-scroll{
+  position:relative;
+  z-index:2;
+  overflow:auto;
+  max-height:348px;
+  padding-right:2px;
+}
+.report-card[data-adventure-report="1"] .report-table{
+  position:relative;
+  z-index:2;
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 7px;
+  font-size:11.5px;
+}
+.report-card[data-adventure-report="1"] .report-table thead th{
+  padding:0 9px 4px;
+  border:0;
+  color:#22445d;
+  font-size:10.5px;
+  font-weight:850;
+  text-transform:none;
+}
+.report-card[data-adventure-report="1"] .report-table tbody td{
+  padding:9px 9px;
+  border-top:1px solid rgba(140,193,222,.28);
+  border-bottom:1px solid rgba(140,193,222,.28);
+  background:rgba(255,255,255,.53);
+  color:#294b64;
+  font-weight:600;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+.report-card[data-adventure-report="1"] .report-table tbody td:first-child{
+  border-left:1px solid rgba(140,193,222,.28);
+  border-radius:12px 0 0 12px;
+}
+.report-card[data-adventure-report="1"] .report-table tbody td:last-child{
+  border-right:1px solid rgba(140,193,222,.28);
+  border-radius:0 12px 12px 0;
+}
+.report-card[data-adventure-report="1"] .report-table tbody tr:hover td{
+  background:rgba(255,255,255,.79);
+}
+.report-card[data-adventure-report="1"] .report-subject-cell{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#193c55;
+  font-weight:800;
+}
+.report-card[data-adventure-report="1"] .report-subject-icon{
+  width:27px;
+  height:27px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:linear-gradient(145deg,#7366d9,#405bb5);
+  color:#fff;
+  font-size:14px;
+  box-shadow:0 5px 9px rgba(64,91,181,.20);
+}
+.report-card[data-adventure-report="1"] .report-score-pill{
+  display:inline-flex;
+  min-width:48px;
+  justify-content:center;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  border:1px solid rgba(255,255,255,.64);
+  box-shadow:0 4px 10px rgba(51,102,138,.10);
+}
+.report-card[data-adventure-report="1"] .report-score-pill.high{background:#dff5da;color:#247642}
+.report-card[data-adventure-report="1"] .report-score-pill.mid{background:#fff1c8;color:#b76d0a}
+.report-card[data-adventure-report="1"] .report-score-pill.low{background:#ffe0df;color:#c23f48}
+.report-card[data-adventure-report="1"] .report-correct-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:54px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(140,193,222,.28);
+  color:#375a72;
+  font-weight:800;
+}
+.report-card[data-adventure-report="1"] .report-empty{
+  margin:18px 0 0;
+  padding:26px;
+  border-radius:20px;
+  background:rgba(231,248,255,.78);
+  border:1px solid rgba(255,255,255,.74);
+  color:#50718a;
+  font-size:13px;
+  text-align:center;
+}
+
+@media(max-width:1080px){
+  .report-card[data-adventure-report="1"] .report-main-grid{grid-template-columns:1fr}
+  .report-card[data-adventure-report="1"] .report-chart,
+  .report-card[data-adventure-report="1"] .report-table-wrap{min-height:360px}
+  .report-card[data-adventure-report="1"] .report-chart-inner{height:250px}
+}
+
+@media(max-width:720px){
+  .report-card[data-adventure-report="1"] .report-header{
+    min-height:118px;
+    padding:20px 118px 20px 19px;
+    border-radius:21px;
+  }
+  .report-card[data-adventure-report="1"] .report-header h2{font-size:21px}
+  .report-card[data-adventure-report="1"] .report-header p{font-size:11.5px}
+  .report-card[data-adventure-report="1"] .report-hero-visual{right:18px;width:82px;height:92px}
+  .report-card[data-adventure-report="1"] .report-hero-visual img{width:74px;height:82px}
+  .report-card[data-adventure-report="1"] .report-badge{position:static;transform:none;display:inline-flex;margin-top:9px}
+  .report-card[data-adventure-report="1"] .report-chart,
+  .report-card[data-adventure-report="1"] .report-table-wrap{padding:15px;min-height:330px;border-radius:20px}
+  .report-card[data-adventure-report="1"] .report-chart-inner{height:225px;padding-top:38px;gap:5px}
+  .report-card[data-adventure-report="1"] .report-bar{min-width:17px;width:min(42px,80%)}
+  .report-card[data-adventure-report="1"] .report-table{font-size:10.5px}
+}
