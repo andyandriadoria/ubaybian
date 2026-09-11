@@ -1,0 +1,346 @@
+/* v0.5.23 — Robot Evolution Polish
+   Localized states, stronger locked-card readability, cleaner Energy Core hierarchy,
+   and visibly different higher-level robot silhouettes. Scoped to Robot Lab only. */
+
+.robotlab-card.robotlab-adventure-v0521{
+  --evo-navy:#173852;
+  --evo-muted:#5c7b90;
+  --evo-cyan:#2fc1ee;
+  --evo-aqua:#51d7c3;
+  --evo-gold:#f2c447;
+}
+
+/* ENERGY CORE: make the remaining XP the headline and the next bot the helper. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label{
+  font-size:10.8px;
+  letter-spacing:.035em;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label span:last-child{
+  color:#477188;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+  margin-bottom:5px;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label .robotlab-remaining-xp,
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label span:last-child{
+  color:#1f6484;
+  font-size:14px;
+  line-height:1;
+  font-weight:900;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{
+  margin:4px 4px 0;
+  color:#668397;
+  font-size:11.2px;
+  font-weight:600;
+  letter-spacing:0;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-next-step strong{
+  color:#1d6788;
+  font-weight:800;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-fill{
+  background:linear-gradient(90deg,#31bff4 0%,#45d5bd 48%,#86d85c 78%,#e8c83c 100%);
+  box-shadow:0 0 12px rgba(68,199,194,.42),inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* Indonesian state badges. */
+.robotlab-card.robotlab-adventure-v0521 .upgrade-state-badge{
+  min-width:0;
+  padding:5px 8px;
+  letter-spacing:.035em;
+  font-size:9.8px;
+  font-weight:850;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item[data-state="current"] .upgrade-state-badge{
+  background:linear-gradient(90deg,#d9f8ff,#fff1b8);
+  color:#15758a;
+  border-color:rgba(57,177,199,.28);
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item[data-state="unlocked"] .upgrade-state-badge{
+  background:rgba(223,248,255,.88);
+  color:#247295;
+  border-color:rgba(70,159,194,.20);
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item[data-state="locked"] .upgrade-state-badge{
+  background:rgba(244,248,251,.88);
+  color:#667f90;
+  border-color:rgba(91,123,145,.16);
+}
+
+/* Locked cards remain aspirational instead of disappearing. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked{
+  opacity:.90 !important;
+  filter:saturate(.84) !important;
+  background:linear-gradient(145deg,rgba(248,252,254,.84),rgba(225,239,247,.76)) !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-name{
+  color:#355872 !important;
+  font-weight:820 !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-locked .upgrade-note{
+  color:#657f91 !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .upgrade-note{
+  margin-top:5px !important;
+  font-size:11px !important;
+  line-height:1.32 !important;
+  font-weight:520 !important;
+}
+.robotlab-card.robotlab-adventure-v0521 .upgrade-status.upgrade-lock-chip{
+  padding:4px 8px;
+  color:#4f7088;
+  background:rgba(255,255,255,.76);
+  border-color:rgba(74,111,139,.18);
+  font-size:10.2px;
+}
+
+/* Current card: keep it special, but calm the lime cast. */
+.robotlab-card.robotlab-adventure-v0521 .robotlab-upgrade-item.upgrade-current{
+  background:
+    radial-gradient(circle at 88% 13%,rgba(255,212,82,.20),transparent 28%),
+    linear-gradient(145deg,rgba(219,250,255,.98),rgba(225,247,241,.96)) !important;
+  border-color:rgba(55,189,207,.56) !important;
+}
+
+/* --------------------------------------------------------------------------
+   ROBOT EVOLUTION DIFFERENTIATION
+   Lv.3+ now changes silhouette, equipment and head/body architecture—not color only.
+   -------------------------------------------------------------------------- */
+
+/* shared accessory hooks */
+.robot-form .rf-head::before,
+.robot-form .rf-head::after,
+.robot-form .rf-body::before,
+.robot-form .rf-body::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+}
+
+/* Lv.3 — SMART EXPLORER: twin sensor ears + wider scout shoulders. */
+.robot-form.level-3 .rf-head{
+  width:48px;
+  height:33px;
+  top:11px;
+  border-radius:11px 11px 14px 14px;
+}
+.robot-form.level-3 .rf-head::before{
+  left:-9px;
+  top:7px;
+  width:8px;
+  height:18px;
+  border:2px solid #3f7fa5;
+  border-radius:7px;
+  background:#89f0dc;
+  box-shadow:55px 0 0 -2px #89f0dc,55px 0 0 0 #3f7fa5;
+}
+.robot-form.level-3 .rf-head::after{
+  left:50%;
+  top:-10px;
+  width:4px;
+  height:10px;
+  transform:translateX(-50%);
+  border-radius:5px;
+  background:#3d87ab;
+  box-shadow:0 -3px 0 2px #ffd04b;
+}
+.robot-form.level-3 .rf-body{
+  width:36px;
+}
+.robot-form.level-3 .rf-body::before{
+  left:-8px;
+  top:4px;
+  width:8px;
+  height:13px;
+  border-radius:5px;
+  background:#58bcd0;
+  box-shadow:44px 0 0 #58bcd0;
+}
+
+/* Lv.4 — KNOWLEDGE RANGER: angular visor, radar dish, explorer backpack fins. */
+.robot-form.level-4 .rf-head{
+  width:47px;
+  height:33px;
+  top:11px;
+  border-radius:8px 15px 8px 15px;
+  background:linear-gradient(145deg,#6f88e8,#d8e6ff 88%);
+  transform:translateX(-50%) rotate(-1deg);
+}
+.robot-form.level-4 .rf-face{
+  width:34px;
+  border-radius:4px 9px 4px 9px;
+}
+.robot-form.level-4 .rf-head::before{
+  left:12px;
+  top:-13px;
+  width:17px;
+  height:8px;
+  border:3px solid #596fc2;
+  border-top-color:#9eeeff;
+  border-radius:50% 50% 8px 8px;
+  transform:rotate(-12deg);
+  background:rgba(197,246,255,.7);
+}
+.robot-form.level-4 .rf-head::after{
+  right:-8px;
+  top:10px;
+  width:8px;
+  height:8px;
+  border:2px solid #5368b1;
+  border-radius:50%;
+  background:#ffe17a;
+  box-shadow:0 0 7px rgba(255,207,72,.6);
+}
+.robot-form.level-4 .rf-body{
+  width:35px;
+  border-radius:7px 7px 12px 12px;
+}
+.robot-form.level-4 .rf-body::before,
+.robot-form.level-4 .rf-body::after{
+  top:2px;
+  width:9px;
+  height:17px;
+  border-radius:4px;
+  background:#5369ba;
+}
+.robot-form.level-4 .rf-body::before{left:-10px;transform:rotate(14deg)}
+.robot-form.level-4 .rf-body::after{right:-10px;transform:rotate(-14deg)}
+
+/* Lv.5 — BRAIN COMMANDER: neural dome + heavier command torso. */
+.robot-form.level-5{
+  width:66px;
+  height:69px;
+}
+.robot-form.level-5 .rf-head{
+  top:12px;
+  width:50px;
+  height:34px;
+  border-radius:18px 18px 9px 9px;
+  background:linear-gradient(145deg,#8265d4,#ece8ff 86%);
+}
+.robot-form.level-5 .rf-head::before{
+  left:50%;
+  top:-14px;
+  width:32px;
+  height:17px;
+  transform:translateX(-50%);
+  border:2px solid rgba(101,75,167,.58);
+  border-bottom:0;
+  border-radius:20px 20px 4px 4px;
+  background:
+    radial-gradient(circle at 30% 62%,#ff9bbc 0 3px,transparent 4px),
+    radial-gradient(circle at 52% 35%,#ffc1d8 0 3px,transparent 4px),
+    radial-gradient(circle at 72% 64%,#f184b1 0 3px,transparent 4px),
+    rgba(233,207,255,.82);
+  box-shadow:0 0 10px rgba(162,104,218,.3);
+}
+.robot-form.level-5 .rf-head::after{
+  left:50%;
+  top:-19px;
+  width:8px;
+  height:8px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:#ffd253;
+  box-shadow:0 0 10px rgba(255,202,72,.78);
+}
+.robot-form.level-5 .rf-body{
+  width:40px;
+  height:23px;
+  border-radius:8px 8px 13px 13px;
+  background:linear-gradient(145deg,#f1ecff,#8068cf);
+}
+.robot-form.level-5 .rf-body::before,
+.robot-form.level-5 .rf-body::after{
+  top:3px;
+  width:11px;
+  height:15px;
+  border-radius:5px;
+  background:#5a4a9d;
+}
+.robot-form.level-5 .rf-body::before{left:-11px}
+.robot-form.level-5 .rf-body::after{right:-11px}
+
+/* Lv.6 — UBAYBIAN LEGEND: crown/halo, winged shoulders and legendary aura. */
+.robot-form.level-6{
+  width:70px;
+  height:72px;
+  filter:drop-shadow(0 8px 9px rgba(102,70,140,.22)) drop-shadow(0 0 9px rgba(255,207,76,.22));
+}
+.robot-form.level-6 .rf-head{
+  top:12px;
+  width:51px;
+  height:35px;
+  border-radius:16px 16px 10px 10px;
+  background:linear-gradient(145deg,#ef6e8d,#c7a5ff 88%);
+  border-color:rgba(77,59,126,.76);
+}
+.robot-form.level-6 .rf-face{
+  width:35px;
+  background:#382e69;
+}
+.robot-form.level-6 .rf-head::before{
+  left:50%;
+  top:-16px;
+  width:34px;
+  height:12px;
+  transform:translateX(-50%);
+  clip-path:polygon(0 100%,15% 12%,34% 70%,50% 0,66% 70%,85% 12%,100% 100%);
+  background:linear-gradient(#fff1a8,#f5bd31);
+  filter:drop-shadow(0 2px 2px rgba(151,92,23,.22));
+}
+.robot-form.level-6 .rf-head::after{
+  left:50%;
+  top:-22px;
+  width:45px;
+  height:16px;
+  transform:translateX(-50%);
+  border:2px solid rgba(255,216,83,.72);
+  border-radius:50%;
+  box-shadow:0 0 11px rgba(255,216,83,.44);
+}
+.robot-form.level-6 .rf-body{
+  width:41px;
+  height:24px;
+  background:linear-gradient(145deg,#fff0f4,#d678ac 55%,#9c83e8);
+}
+.robot-form.level-6 .rf-body::before{
+  left:-17px;
+  top:0;
+  width:18px;
+  height:19px;
+  clip-path:polygon(100% 20%,28% 0,0 50%,28% 100%,100% 80%);
+  background:linear-gradient(90deg,#ffd95a,#ef8ba9);
+}
+.robot-form.level-6 .rf-body::after{
+  right:-17px;
+  top:0;
+  width:18px;
+  height:19px;
+  clip-path:polygon(0 20%,72% 0,100% 50%,72% 100%,0 80%);
+  background:linear-gradient(90deg,#ef8ba9,#ffd95a);
+}
+.robot-form.level-6 .rf-core{
+  width:10px;
+  height:10px;
+  background:#fff07a;
+  box-shadow:0 0 11px rgba(255,226,75,.9);
+}
+
+/* High-level cards get a faint identity tint without looking unlocked. */
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-4.upgrade-locked .upgrade-icon{
+  background:linear-gradient(145deg,#edf2ff,#f7f5ff);
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-5.upgrade-locked .upgrade-icon{
+  background:linear-gradient(145deg,#f2ecff,#fff4f7);
+}
+.robotlab-card.robotlab-adventure-v0521 .robot-evolution-level-6.upgrade-locked .upgrade-icon{
+  background:linear-gradient(145deg,#fff0f4,#fff6d7);
+}
+
+@media (max-width:700px){
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label .robotlab-remaining-xp,
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label span:last-child{font-size:12.5px}
+  .robotlab-card.robotlab-adventure-v0521 .upgrade-note{font-size:10.5px !important}
+}
