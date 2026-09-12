@@ -139,6 +139,49 @@ export function attachStimuli(questions, stimuli, sheetName) {
   return attached;
 }
 
+function randomizedChoiceQuestion(question, targetIndex) {
+  if (!['multiple-choice', 'image-choice'].includes(question?.type) || !Array.isArray(question.choices) || question.choices.length < 2) return { ...question };
+  const correctId = String(question.answerKey || '').trim().toUpperCase();
+  const correctChoice = question.choices.find((choice) => choice.id === correctId);
+  if (!correctChoice) return { ...question, choices: question.choices.map((choice) => ({ ...choice })) };
+
+  const distractors = shuffleQuestions(question.choices.filter((choice) => choice.id !== correctId));
+  const count = question.choices.length;
+  const safeTarget = Math.max(0, Math.min(count - 1, Number(targetIndex) || 0));
+  const ordered = [];
+  let distractorIndex = 0;
+  for (let index = 0; index < count; index += 1) {
+    ordered.push(index === safeTarget ? correctChoice : distractors[distractorIndex++]);
+  }
+  return {
+    ...question,
+    answerKey: String.fromCharCode(65 + safeTarget),
+    choices: ordered.map((choice, index) => ({ ...choice, id: String.fromCharCode(65 + index) })),
+  };
+}
+
+export function randomizeChoicePositions(questions) {
+  const result = questions.map((question) => ({
+    ...question,
+    choices: Array.isArray(question.choices) ? question.choices.map((choice) => ({ ...choice })) : [],
+  }));
+  const groups = new Map();
+  result.forEach((question, index) => {
+    if (!['multiple-choice', 'image-choice'].includes(question.type) || question.choices.length < 2) return;
+    const count = question.choices.length;
+    if (!groups.has(count)) groups.set(count, []);
+    groups.get(count).push(index);
+  });
+
+  for (const [choiceCount, indexes] of groups) {
+    const targets = shuffleQuestions(indexes.map((_, index) => index % choiceCount));
+    indexes.forEach((questionIndex, position) => {
+      result[questionIndex] = randomizedChoiceQuestion(result[questionIndex], targets[position]);
+    });
+  }
+  return result;
+}
+
 export function questionForSnapshot(question) {
   if (!question?.stimulus) return question;
   const stimulus = question.stimulus;
