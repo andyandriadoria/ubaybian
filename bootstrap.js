@@ -1,5 +1,5 @@
 import {apiBase,backendEnabled} from './config.js';
-import {ApiError,clearSessionToken,createApiClient,getSessionToken} from './api-v040.js?v=0.4.2';
+import {ApiError,clearSessionToken,createApiClient,getSessionToken} from './api-v040.js?v=0.5.52';
 
 const main=document.querySelector('#main');
 const switchButton=document.querySelector('#switch-profile');
@@ -70,9 +70,9 @@ document.addEventListener('click',(event)=>{
 });
 
 async function start(){
- if(!backendEnabled){await import('./app-v040.js?v=0.4.2');return;}
+ if(!backendEnabled){await import('./app-v040.js?v=0.5.52');return;}
  if(!getSessionToken()){showLogin();return;}
- try{const account=await api.me();installLogout(account.family);await import('./app-v040.js?v=0.4.2');}
+ try{const account=await api.me();installLogout(account.family);await import('./app-v040.js?v=0.5.52');}
  catch(error){clearSessionToken();showLogin(error instanceof ApiError&&error.status===401?'Sesi sudah berakhir. Silakan masuk lagi.':'Tidak dapat memverifikasi sesi keluarga.');}
 }
 
