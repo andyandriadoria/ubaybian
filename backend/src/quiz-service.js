@@ -1,6 +1,15 @@
 import { HttpError } from './http.js';
 import { readSheetValues } from './google.js';
-import { isCorrectAnswer, parsePublishedQuestions, publicQuestion, sheetConfig, shuffleQuestions } from './questions.js';
+import {
+  attachStimuli,
+  isCorrectAnswer,
+  parsePublishedQuestions,
+  parsePublishedStimuli,
+  publicQuestion,
+  questionForSnapshot,
+  selectGroupedQuestions,
+  sheetConfig,
+} from './questions.js';
 import { randomToken } from './security.js';
 
 const ALLOWED_LIMITS = new Set([5, 10, 15]);
@@ -34,37 +43,6 @@ function normalizedMode(value) {
   return ALLOWED_MODES.has(mode) ? mode : 'normal';
 }
 
-function takeRandom(items, count) {
-  return shuffleQuestions(items).slice(0, Math.max(0, count));
-}
-
-function weightedSelection(questions, limit, profileSlug, mode) {
-  if (mode === 'review') return takeRandom(questions, limit);
-  const ratios = mode === 'challenge'
-    ? (profileSlug === 'bian' ? { mudah: 0.40, sedang: 0.45, sulit: 0.15 } : { mudah: 0.15, sedang: 0.45, sulit: 0.40 })
-    : (profileSlug === 'bian' ? { mudah: 0.60, sedang: 0.35, sulit: 0.05 } : { mudah: 0.30, sedang: 0.50, sulit: 0.20 });
-
-  const groups = { mudah: [], sedang: [], sulit: [] };
-  for (const question of questions) {
-    const key = String(question.difficulty || '').toLowerCase();
-    (groups[key] || groups.sedang).push(question);
-  }
-
-  const selected = [];
-  const used = new Set();
-  const target = Math.min(limit, questions.length);
-  for (const key of ['mudah', 'sedang', 'sulit']) {
-    const wanted = Math.floor(target * ratios[key]);
-    for (const question of takeRandom(groups[key], wanted)) {
-      selected.push(question);
-      used.add(question.id);
-    }
-  }
-  const remainder = shuffleQuestions(questions.filter((question) => !used.has(question.id)));
-  while (selected.length < target && remainder.length) selected.push(remainder.shift());
-  return shuffleQuestions(selected);
-}
-
 async function reviewQuestionIds(env, familyId, profileId, subjectId) {
   const result = await env.DB.prepare(`
     SELECT qa.question_id, qa.correct
@@ -89,7 +67,13 @@ export async function startQuiz(env, familyId, profile, subjectId, requestedLimi
   const { profileSlug, sheetName } = sheetConfig(profile.slug, subjectId);
   const rows = await readSheetValues(env, profileSlug, sheetName);
   let available = parsePublishedQuestions(rows);
-  if (!available.length) throw new HttpError(422, 'NO_PUBLISHED_QUESTIONS', 'Belum ada soal Published yang siap untuk pelajaran ini.');
+  if (!available.length) throw new HttpError(422, 'NO_PUBLISHED_QUESTIONS', 'Belum ada soal Aktif/Published yang siap untuk pelajaran ini.');
+
+  if (available.some((question) => question.stimulusId)) {
+    const stimulusRows = await readSheetValues(env, profileSlug, 'STIMULUS');
+    const stimuli = parsePublishedStimuli(stimulusRows);
+    available = attachStimuli(available, stimuli, sheetName);
+  }
 
   const limit = normalizedLimit(requestedLimit, profile.slug);
   const mode = normalizedMode(requestedMode);
@@ -99,7 +83,9 @@ export async function startQuiz(env, familyId, profile, subjectId, requestedLimi
     if (!available.length) throw new HttpError(422, 'NO_REVIEW_QUESTIONS', 'Belum ada soal yang perlu diulang untuk pelajaran ini.');
   }
 
-  const selected = weightedSelection(available, limit, profile.slug, mode);
+  const selected = selectGroupedQuestions(available, limit, profile.slug, mode).map(questionForSnapshot);
+  if (!selected.length) throw new HttpError(422, 'NO_SESSION_QUESTIONS', 'Belum ada kombinasi soal yang dapat membentuk sesi ini.');
+
   const sessionId = randomToken(24);
   const now = Date.now();
   const statements = [
