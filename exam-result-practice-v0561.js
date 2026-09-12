@@ -1,4 +1,4 @@
-// UbayBian v0.5.61 — align Mid Exam result presentation with Practice
+// UbayBian v0.5.62 — align Mid Exam result presentation with Practice
 (() => {
   const main = document.querySelector('#main');
   if (!main) return;
@@ -90,6 +90,68 @@
     });
   }
 
+  function countFromStats(panel, pattern){
+    for (const node of panel.querySelectorAll('.exam-result-stats span')) {
+      const match = node.textContent.match(pattern);
+      if (match) return Math.max(0, Number(match[1]) || 0);
+    }
+    return 0;
+  }
+
+  function rewardProgress(panel){
+    const correct = countFromStats(panel, /(\d+)\s+auto-correct/i);
+    const wrong = countFromStats(panel, /(\d+)\s+auto-wrong/i);
+    const writing = countFromStats(panel, /(\d+)\s+writing to review/i);
+    const unanswered = countFromStats(panel, /(\d+)\s+unanswered/i);
+    const answered = correct + wrong + writing;
+    const total = answered + unanswered;
+    const threshold = total ? Math.ceil(total * .8) : 0;
+    return { answered, total, threshold };
+  }
+
+  function rewardAmounts(panel){
+    const rewards = panel.querySelector('.exam-result-rewards');
+    if (!rewards) return { xp:0, coins:0 };
+    const chips = [...rewards.querySelectorAll('span')];
+    const xp = Number(chips[0]?.textContent.match(/\+(\d+)\s*XP/i)?.[1] || 0);
+    const coins = Number(chips[1]?.textContent.match(/\+(\d+)\s*coins/i)?.[1] || 0);
+    return { xp, coins };
+  }
+
+  function ensureRewardGuidance(panel){
+    const rewards = panel.querySelector('.exam-result-rewards');
+    if (!rewards) return;
+
+    const progress = rewardProgress(panel);
+    const amounts = rewardAmounts(panel);
+    let note = panel.querySelector('.exam-result-reward-note');
+
+    if (progress.total > 0 && progress.answered < progress.threshold) {
+      const copy = `Selesaikan minimal ${progress.threshold} dari ${progress.total} soal untuk membuka reward Mid Exam. Kesempatan reward masih tersedia.`;
+      if (!note) {
+        note = document.createElement('p');
+        note.className = 'exam-result-reward-note is-retake';
+        rewards.after(note);
+      }
+      note.textContent = copy;
+      note.classList.add('is-retake');
+      return;
+    }
+
+    if (!note && amounts.xp === 0 && amounts.coins === 0) {
+      note = document.createElement('p');
+      note.className = 'exam-result-reward-note is-retake';
+      note.textContent = 'Reward tidak bertambah pada sesi ini. Retake tetap bisa digunakan untuk latihan.';
+      rewards.after(note);
+    }
+  }
+
+  function removeObsoleteResultNote(panel){
+    panel.querySelectorAll('.exam-result-note').forEach((note) => {
+      if (/Nilai baru dibuka setelah seluruh simulasi selesai/i.test(note.textContent)) note.remove();
+    });
+  }
+
   function ensureCompanion(panel, score){
     if (!panel.querySelector('.exam-result-companion')) {
       const img = document.createElement('img');
@@ -115,6 +177,8 @@
     panel.classList.toggle('exam-result-encourage', score !== null && score < 50);
     ensureMotivation(panel, score);
     ensureRewardChips(panel);
+    ensureRewardGuidance(panel);
+    removeObsoleteResultNote(panel);
     ensureCompanion(panel, score);
   }
 
