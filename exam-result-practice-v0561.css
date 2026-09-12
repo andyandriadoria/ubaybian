@@ -1,0 +1,147 @@
+/* UbayBian v0.5.61 — Mid Exam result follows the Practice result language */
+.exam-result.exam-result-practice{
+  position:relative;
+  overflow:hidden;
+  padding:24px 28px 28px;
+  background:
+    radial-gradient(circle at 50% 28%,rgba(255,229,123,.28),transparent 23%),
+    radial-gradient(circle at 10% 88%,rgba(47,188,246,.15),transparent 21%),
+    linear-gradient(145deg,rgba(247,253,255,.99),rgba(228,246,255,.97));
+}
+.exam-result.exam-result-practice.exam-result-perfect{
+  background:
+    radial-gradient(circle at 50% 27%,rgba(255,211,68,.34),transparent 24%),
+    radial-gradient(circle at 86% 20%,rgba(255,239,177,.42),transparent 20%),
+    linear-gradient(145deg,#f7fdff,#fff8df 52%,#e7f7ff);
+}
+.exam-result.exam-result-practice.exam-result-encourage{
+  background:
+    radial-gradient(circle at 50% 27%,rgba(122,226,178,.20),transparent 24%),
+    radial-gradient(circle at 88% 18%,rgba(82,197,246,.18),transparent 20%),
+    linear-gradient(145deg,#f6fdff,#ebfbf4 56%,#e7f6ff);
+}
+
+.exam-result-practice-title{
+  margin:12px 0 4px;
+  color:#17354d;
+  font-size:clamp(1.35rem,2.2vw,1.7rem);
+  font-weight:950;
+  letter-spacing:-.02em;
+  text-align:center;
+}
+.exam-result-practice-message{
+  max-width:590px;
+  margin:0 auto 15px;
+  color:#68859a;
+  font-size:.9rem;
+  line-height:1.48;
+  font-weight:700;
+  text-align:center;
+}
+
+/* Keep reward communication visible in every result state, including +0 locked rewards. */
+.exam-result.exam-result-practice .exam-result-rewards{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px auto 7px;
+}
+.exam-result.exam-result-practice .exam-result-reward-chip{
+  min-width:132px;
+  padding:9px 16px;
+  border:1px solid #f4d77f;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff5c8,#ffe49a);
+  color:#94660b;
+  font-size:.88rem;
+  line-height:1;
+  font-weight:950;
+  text-align:center;
+  box-shadow:0 6px 15px rgba(176,120,20,.10),inset 0 1px 0 #fff;
+}
+.exam-result.exam-result-practice .exam-result-reward-chip.coin{
+  border-color:#f6dca0;
+  background:linear-gradient(180deg,#fff5d6,#ffe4a7);
+  color:#9a680d;
+}
+.exam-result.exam-result-practice .exam-result-rewards-zero .exam-result-reward-chip{
+  opacity:.72;
+  filter:saturate(.72);
+}
+.exam-result.exam-result-practice .exam-result-reward-note{
+  max-width:680px;
+  margin:7px auto 13px;
+  padding:7px 12px;
+  border-radius:999px;
+  background:rgba(237,248,255,.82);
+  color:#5b7890;
+  font-size:.8rem;
+  line-height:1.4;
+  font-weight:750;
+  text-align:center;
+}
+.exam-result.exam-result-practice .exam-result-reward-note.is-retake{
+  background:rgba(239,244,249,.90);
+  color:#718493;
+}
+
+/* Practice-style result companion. */
+.exam-result-companion{
+  position:absolute;
+  right:6.2%;
+  top:47%;
+  transform:translateY(-42%);
+  width:126px;
+  height:126px;
+  object-fit:contain;
+  filter:drop-shadow(0 12px 18px rgba(21,86,128,.16));
+  opacity:.96;
+  pointer-events:none;
+  animation:examResultFloat 2.8s ease-in-out infinite;
+}
+.exam-result-companion-bubble{
+  position:absolute;
+  right:4.6%;
+  top:30%;
+  max-width:155px;
+  padding:8px 11px;
+  border-radius:14px;
+  background:rgba(255,255,255,.94);
+  border:1px solid #d7ebf5;
+  box-shadow:0 7px 18px rgba(16,87,132,.08);
+  color:#496d84;
+  font-size:.72rem;
+  line-height:1.25;
+  font-weight:900;
+  text-align:center;
+  pointer-events:none;
+}
+.exam-result-perfect .exam-result-companion-bubble{
+  color:#9a6700;
+  border-color:#f5d581;
+  background:#fffaf0;
+}
+@keyframes examResultFloat{
+  0%,100%{transform:translateY(-42%) translateY(0)}
+  50%{transform:translateY(-42%) translateY(-7px)}
+}
+
+.exam-result.exam-result-practice .exam-result-stats{
+  margin-bottom:2px;
+}
+.exam-result.exam-result-practice .exam-result-note{
+  margin-top:9px;
+}
+.exam-result.exam-result-practice .exam-review{
+  margin-top:25px;
+}
+
+@media(max-width:1180px){
+  .exam-result-companion,.exam-result-companion-bubble{display:none}
+}
+@media(max-width:800px){
+  .exam-result.exam-result-practice{padding:20px 18px 22px}
+  .exam-result.exam-result-practice .exam-result-reward-chip{min-width:0;flex:1 1 135px;padding:9px 12px}
+  .exam-result.exam-result-practice .exam-result-reward-note{border-radius:16px}
+}
