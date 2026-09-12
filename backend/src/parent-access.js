@@ -147,7 +147,6 @@ export async function setParentPin(env, familyId, familyPassword, pin) {
     .bind(familyId, pinData.salt, pinData.hash, pinData.iterations, now)
     .run();
 
-  // Changing the PIN invalidates every previously unlocked parent session.
   await db.prepare('DELETE FROM parent_unlocks WHERE family_id = ?').bind(familyId).run();
   return { ok: true, pinConfigured: true };
 }
@@ -193,6 +192,18 @@ export async function unlockParentAccess(env, familyId, pin) {
     .run();
 
   return { parentToken: token, expiresAt, ttlSeconds: Math.floor(UNLOCK_TTL_MS / 1000) };
+}
+
+export async function lockParentAccess(request, env, familyId) {
+  await ensureParentAccessSchema(env);
+  const token = String(request.headers.get('X-Parent-Token') || '').trim();
+  if (!token) return { ok: true, locked: true };
+  const tokenHash = await sha256Base64Url(token);
+  await requireDb(env)
+    .prepare('DELETE FROM parent_unlocks WHERE token_hash = ? AND family_id = ?')
+    .bind(tokenHash, familyId)
+    .run();
+  return { ok: true, locked: true };
 }
 
 export async function requireParentAccess(request, env, familyId) {
