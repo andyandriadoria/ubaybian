@@ -86,12 +86,11 @@
   color:#718493;
 }
 
-/* Practice-style result companion. */
+/* Practice-style result companion stays attached to the summary, not the long review list. */
 .exam-result-companion{
   position:absolute;
   right:6.2%;
-  top:47%;
-  transform:translateY(-42%);
+  top:285px;
   width:126px;
   height:126px;
   object-fit:contain;
@@ -103,7 +102,7 @@
 .exam-result-companion-bubble{
   position:absolute;
   right:4.6%;
-  top:30%;
+  top:205px;
   max-width:155px;
   padding:8px 11px;
   border-radius:14px;
@@ -123,8 +122,8 @@
   background:#fffaf0;
 }
 @keyframes examResultFloat{
-  0%,100%{transform:translateY(-42%) translateY(0)}
-  50%{transform:translateY(-42%) translateY(-7px)}
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-7px)}
 }
 
 .exam-result.exam-result-practice .exam-result-stats{
