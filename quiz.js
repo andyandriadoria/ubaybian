@@ -69,6 +69,75 @@ export function normalizeAnswerResult(input){
  });
 }
 
+export function normalizeExamState(input){
+ const data=requireObject(input,'Simulasi ujian');
+ const sessionId=text(data.sessionId,160);
+ if(!sessionId)throw new Error('Exam session ID tidak tersedia.');
+ const current=Math.max(1,Number(data.progress?.current)||1);
+ const total=Math.max(1,Number(data.progress?.total)||1);
+ const blueprint=data.blueprint&&typeof data.blueprint==='object'?Object.freeze({
+   id:text(data.blueprint.id,160),
+   title:text(data.blueprint.title,200),
+   subtitle:text(data.blueprint.subtitle,300),
+   semester:Math.max(0,Number(data.blueprint.semester)||0),
+   durationMinutes:Math.max(0,Number(data.blueprint.durationMinutes)||0),
+   targetQuestions:Math.max(0,Number(data.blueprint.targetQuestions)||0),
+ }):null;
+ return Object.freeze({
+   sessionId,
+   subjectId:text(data.subjectId,80),
+   blueprintId:text(data.blueprintId,160),
+   title:text(data.title,200)||blueprint?.title||'Exam Simulation',
+   durationMinutes:Math.max(0,Number(data.durationMinutes)||0),
+   deadlineAt:Math.max(0,Number(data.deadlineAt)||0),
+   remainingSeconds:Math.max(0,Number(data.remainingSeconds)||0),
+   expired:Boolean(data.expired),
+   answeredCount:Math.max(0,Number(data.answeredCount)||0),
+   savedAnswer:text(data.savedAnswer,1000),
+   progress:{current,total},
+   question:normalizeQuestion(data.question),
+   blueprint,
+ });
+}
+
+export function normalizeExamSave(input){
+ const data=requireObject(input,'Penyimpanan jawaban ujian');
+ return Object.freeze({
+   saved:Boolean(data.saved),
+   answeredCount:Math.max(0,Number(data.answeredCount)||0),
+   deadlineAt:Math.max(0,Number(data.deadlineAt)||0),
+   remainingSeconds:Math.max(0,Number(data.remainingSeconds)||0),
+   expired:Boolean(data.expired),
+ });
+}
+
+export function normalizeExamResult(input){
+ const data=requireObject(input,'Hasil simulasi ujian');
+ const summary=requireObject(data.summary,'Ringkasan ujian');
+ const results=Array.isArray(data.results)?data.results.map((item)=>Object.freeze({
+   position:Math.max(1,Number(item.position)||1),
+   questionId:text(item.questionId,120),
+   answer:text(item.answer,1000),
+   correct:Boolean(item.correct),
+   correctAnswer:text(item.correctAnswer,1000),
+   explanation:text(item.explanation,4000),
+ })):[];
+ return Object.freeze({
+   sessionId:text(data.sessionId,160),
+   title:text(data.title,200)||'Exam Simulation',
+   blueprintId:text(data.blueprintId,160),
+   summary:Object.freeze({
+     score:Math.max(0,Math.min(100,Number(summary.score)||0)),
+     correct:Math.max(0,Number(summary.correct)||0),
+     wrong:Math.max(0,Number(summary.wrong)||0),
+     unanswered:Math.max(0,Number(summary.unanswered)||0),
+     answered:Math.max(0,Number(summary.answered)||0),
+     total:Math.max(0,Number(summary.total)||0),
+   }),
+   results:Object.freeze(results),
+ });
+}
+
 export function newIdempotencyKey(){
  if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();
  return `ub-${Date.now()}-${Math.random().toString(36).slice(2)}`;
