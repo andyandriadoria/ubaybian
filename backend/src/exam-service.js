@@ -26,6 +26,7 @@ function questionFromDb(row) {
 }
 
 function correctAnswerFor(question) {
+  if (question.type === 'open-response') return '';
   if (question.type === 'text') return String(question.answerKey || '').split('||')[0]?.trim() || '';
   return String(question.answerKey || '').trim().toUpperCase();
 }
@@ -119,7 +120,7 @@ export async function startExam(env, familyId, profile, subjectId, requestedBlue
         question.prompt,
         question.imageUrl || '',
         JSON.stringify(question.choices || []),
-        question.answerKey,
+        question.answerKey || '',
         question.explanation || '',
         question.difficulty,
       ),
@@ -159,53 +160,90 @@ export async function saveExamAnswer(env, familyId, sessionId, body) {
   if (!row) throw new HttpError(409, 'EXAM_QUESTION_MISMATCH', 'Soal tidak termasuk dalam simulasi ini.');
 
   const question = questionFromDb(row);
-  const correct = isCorrectAnswer(question, answer);
+  const needsReview = question.type === 'open-response';
+  const autoResult = needsReview ? null : isCorrectAnswer(question, answer);
+  const correct = autoResult === true;
   const now = Date.now();
-  await env.DB.prepare(`INSERT INTO exam_answers (session_id, question_id, answer, correct, updated_at)
-    VALUES (?, ?, ?, ?, ?)
+  await env.DB.prepare(`INSERT INTO exam_answers (session_id, question_id, answer, correct, updated_at, needs_review)
+    VALUES (?, ?, ?, ?, ?, ?)
     ON CONFLICT(session_id, question_id) DO UPDATE SET
       answer = excluded.answer,
       correct = excluded.correct,
-      updated_at = excluded.updated_at`)
-    .bind(sessionId, questionId, answer.slice(0, 1000), correct ? 1 : 0, now)
+      updated_at = excluded.updated_at,
+      needs_review = excluded.needs_review`)
+    .bind(sessionId, questionId, answer.slice(0, 1000), correct ? 1 : 0, now, needsReview ? 1 : 0)
     .run();
 
   return {
     saved: true,
+    needsReview,
     answeredCount: await answeredCount(env, sessionId),
     ...timing(session),
   };
 }
 
 async function completedExamResult(env, session) {
-  const rows = await env.DB.prepare(`SELECT q.position, q.question_id, q.question_type, q.answer_key, q.explanation,
-      a.answer, a.correct
+  const rows = await env.DB.prepare(`SELECT q.position, q.question_id, q.question_type, q.prompt, q.answer_key, q.explanation,
+      a.answer, a.correct, a.needs_review
     FROM exam_session_questions q
     LEFT JOIN exam_answers a ON a.session_id = q.session_id AND a.question_id = q.question_id
     WHERE q.session_id = ?
     ORDER BY q.position`).bind(session.id).all();
 
   const items = rows.results || [];
-  const correct = items.reduce((sum, item) => sum + (Number(item.correct) === 1 ? 1 : 0), 0);
-  const answered = items.reduce((sum, item) => sum + (item.answer !== null && item.answer !== undefined && String(item.answer).length ? 1 : 0), 0);
   const total = Number(session.total_questions);
+  const isAnswered = (item) => item.answer !== null && item.answer !== undefined && String(item.answer).length > 0;
+  const answered = items.reduce((sum, item) => sum + (isAnswered(item) ? 1 : 0), 0);
   const unanswered = Math.max(0, total - answered);
-  const wrong = Math.max(0, total - correct - unanswered);
-  const score = total ? Math.round((correct / total) * 100) : 0;
+
+  const autoItems = items.filter((item) => item.question_type !== 'open-response');
+  const writingItems = items.filter((item) => item.question_type === 'open-response');
+  const autoTotal = autoItems.length;
+  const autoAnswered = autoItems.reduce((sum, item) => sum + (isAnswered(item) ? 1 : 0), 0);
+  const autoCorrect = autoItems.reduce((sum, item) => sum + (Number(item.correct) === 1 ? 1 : 0), 0);
+  const autoWrong = Math.max(0, autoAnswered - autoCorrect);
+  const autoUnanswered = Math.max(0, autoTotal - autoAnswered);
+  const autoScore = autoTotal ? Math.round((autoCorrect / autoTotal) * 100) : null;
+
+  const writingTotal = writingItems.length;
+  const writingAnswered = writingItems.reduce((sum, item) => sum + (isAnswered(item) ? 1 : 0), 0);
+  const writingUnanswered = Math.max(0, writingTotal - writingAnswered);
+  const reviewPending = writingItems.reduce((sum, item) => sum + (isAnswered(item) && Number(item.needs_review) === 1 ? 1 : 0), 0);
+  const score = writingTotal ? null : autoScore;
 
   return {
     sessionId: session.id,
     title: session.title,
     blueprintId: session.blueprint_id,
-    summary: { score, correct, wrong, unanswered, answered, total },
+    summary: {
+      score,
+      autoScore,
+      correct: autoCorrect,
+      wrong: autoWrong,
+      unanswered,
+      answered,
+      total,
+      autoTotal,
+      autoAnswered,
+      autoUnanswered,
+      writingTotal,
+      writingAnswered,
+      writingUnanswered,
+      reviewPending,
+    },
     results: items.map((item) => {
+      const manualReview = item.question_type === 'open-response';
+      const answeredItem = isAnswered(item);
       const question = { type: item.question_type, answerKey: item.answer_key };
       return {
         position: Number(item.position) + 1,
         questionId: item.question_id,
+        prompt: String(item.prompt || ''),
         answer: String(item.answer || ''),
-        correct: Number(item.correct) === 1,
-        correctAnswer: correctAnswerFor(question),
+        manualReview,
+        needsReview: manualReview && answeredItem && Number(item.needs_review) === 1,
+        correct: manualReview ? null : Number(item.correct) === 1,
+        correctAnswer: manualReview ? '' : correctAnswerFor(question),
         explanation: String(item.explanation || ''),
       };
     }),
@@ -216,7 +254,7 @@ export async function finishExam(env, familyId, sessionId) {
   const session = await examSession(env, familyId, sessionId);
   if (session.completed_at) return completedExamResult(env, session);
 
-  const counts = await env.DB.prepare(`SELECT COUNT(*) AS answered, COALESCE(SUM(correct), 0) AS correct
+  const counts = await env.DB.prepare(`SELECT COALESCE(SUM(CASE WHEN needs_review = 0 THEN correct ELSE 0 END), 0) AS correct
     FROM exam_answers WHERE session_id = ?`).bind(sessionId).first();
   const correct = Number(counts?.correct || 0);
   const now = Date.now();
