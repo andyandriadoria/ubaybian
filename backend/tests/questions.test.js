@@ -38,6 +38,18 @@ test('text answers support || variants without exposing normalization to client'
   assert.equal(isCorrectAnswer(q, '5'), false);
 });
 
+test('writing/open-response may omit exact answer key and is not auto-scored', () => {
+  const rows = [header,
+    ['w-1','Writing','1','Writing','Write one sentence about the picture.','','','','','','','','','','','Use a complete sentence with a subject and verb.','Sedang','Aktif','MHIS Mid Exam pointer','',''],
+  ];
+  const questions = parsePublishedQuestions(rows);
+  assert.equal(questions.length, 1);
+  assert.equal(questions[0].type, 'open-response');
+  assert.equal(questions[0].answerKey, '');
+  assert.equal(isCorrectAnswer(questions[0], 'The rabbit is eating grass.'), null);
+  assert.equal(publicQuestion(questions[0]).type, 'open-response');
+});
+
 test('profile subject mapping stays server-side', () => {
   assert.deepEqual(sheetConfig('ubay', 'math'), { profileSlug:'ubay', sheetName:'MATH' });
   assert.throws(() => sheetConfig('bian', 'informatika'), /tidak tersedia/);
