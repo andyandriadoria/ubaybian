@@ -1,0 +1,218 @@
+/* UbayBian v0.5.47 — Learning Deck Lock Polish */
+.controls-panel.learning-deck{
+  z-index:24;
+  padding:13px !important;
+  border-radius:22px !important;
+  box-shadow:
+    0 16px 38px rgba(2,24,55,.22),
+    inset 0 1px rgba(255,255,255,.10),
+    inset 0 -1px rgba(68,154,215,.10) !important;
+}
+.controls-panel.learning-deck:has(.deck-open){z-index:90}
+
+.learning-deck-heading{
+  position:relative;
+  min-height:36px;
+  margin:0 2px 10px !important;
+  overflow:hidden;
+  isolation:isolate;
+}
+.learning-deck-heading-main,
+.learning-deck-status-chip{position:relative;z-index:2}
+.learning-deck-emblem{
+  width:32px !important;
+  height:32px !important;
+  flex-basis:32px !important;
+  border-radius:11px !important;
+  font-size:14px !important;
+}
+.learning-deck-title{font-size:13px !important}
+.learning-deck-kicker{font-size:8px !important}
+.learning-deck-status-chip{
+  min-height:25px !important;
+  padding:5px 8px !important;
+  font-size:8px !important;
+  background:rgba(7,27,54,.62) !important;
+  backdrop-filter:blur(8px);
+}
+
+/* Keep the old adventure route as a faint header-world detail instead of crossing controls. */
+.learning-deck .adventure-map{
+  right:76px !important;
+  top:-3px !important;
+  width:300px !important;
+  height:42px !important;
+  opacity:.15 !important;
+  transform:scale(.78) rotate(0deg) !important;
+  transform-origin:top right !important;
+  filter:saturate(.72) brightness(.92);
+  z-index:0 !important;
+  pointer-events:none !important;
+}
+.learning-deck .adventure-map-road{
+  top:10px !important;
+  height:24px !important;
+  border-width:4px !important;
+  opacity:.82;
+}
+.learning-deck .adventure-map-scenery,
+.learning-deck .adventure-map-checkpoints{display:none !important}
+
+.learning-deck .controls-row,
+.learning-deck .learning-deck-controls{
+  z-index:12 !important;
+  gap:9px !important;
+}
+.learning-deck .controls-pill.deck-control{
+  min-height:58px !important;
+  border-radius:16px !important;
+  background:linear-gradient(145deg,rgba(27,63,101,.82),rgba(24,47,88,.78)) !important;
+}
+.deck-trigger{
+  min-height:58px !important;
+  grid-template-columns:30px minmax(0,1fr) 18px !important;
+  gap:9px !important;
+  padding:9px 11px !important;
+}
+.deck-trigger-icon,
+.deck-mode-icon{
+  width:30px !important;
+  height:30px !important;
+  border-radius:10px !important;
+  font-size:13px !important;
+}
+.deck-trigger-copy{gap:2px !important}
+.deck-trigger-label,
+.deck-mode-label{font-size:7.6px !important}
+.deck-trigger-value{font-size:12.4px !important}
+.deck-trigger-chevron{width:18px !important;height:18px !important}
+
+/* Menus should read as a separate floating layer, not reveal content underneath. */
+.learning-deck .deck-menu{
+  z-index:999 !important;
+  top:calc(100% + 7px) !important;
+  padding:7px !important;
+  border-radius:16px !important;
+  border-color:rgba(151,226,255,.34) !important;
+  background:
+    radial-gradient(circle at 14% 0,rgba(75,210,255,.10),transparent 30%),
+    linear-gradient(160deg,#102f56 0%,#15284e 58%,#1a2852 100%) !important;
+  box-shadow:
+    0 24px 58px rgba(0,9,30,.58),
+    0 0 0 1px rgba(76,168,220,.08),
+    inset 0 1px rgba(255,255,255,.08) !important;
+  backdrop-filter:blur(18px) saturate(115%);
+  overflow:auto;
+}
+.learning-deck .deck-control-subject .deck-menu{
+  max-height:246px !important;
+  min-height:210px;
+}
+.learning-deck .deck-control-questions .deck-menu{
+  max-height:none !important;
+  min-height:0 !important;
+}
+.learning-deck .deck-option{
+  min-height:39px !important;
+  border-radius:11px !important;
+  background:rgba(8,28,55,.16);
+}
+.learning-deck .deck-option:hover,
+.learning-deck .deck-option:focus-visible{
+  background:rgba(91,199,241,.14) !important;
+}
+.learning-deck .deck-option[aria-selected="true"]{
+  background:linear-gradient(90deg,rgba(68,194,239,.27),rgba(97,118,240,.23)) !important;
+}
+
+.deck-mode-shell{
+  min-height:58px !important;
+  grid-template-columns:30px minmax(0,1fr) !important;
+  gap:9px !important;
+  padding:8px 9px !important;
+}
+.deck-mode-content{gap:5px !important}
+.deck-mode-segments{padding:3px !important;border-radius:9px !important}
+.deck-mode-option{
+  min-height:24px !important;
+  padding:4px 6px !important;
+  font-size:8.4px !important;
+}
+
+/* Lock the action row into a compact mission strip. */
+.learning-deck .start-row{
+  grid-template-columns:minmax(180px,220px) minmax(160px,200px) max-content !important;
+  justify-content:start;
+  gap:8px !important;
+  margin-top:10px !important;
+}
+.learning-deck .start-btn,
+.learning-deck .review-btn{
+  min-height:44px !important;
+  border-radius:14px !important;
+  padding-top:9px !important;
+  padding-bottom:9px !important;
+}
+.learning-deck .deck-review-info{
+  width:max-content;
+  max-width:240px;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:8px 13px;
+  border-radius:14px;
+  border:1px solid rgba(157,226,255,.14);
+  background:linear-gradient(145deg,rgba(17,47,80,.88),rgba(22,43,79,.82));
+  color:#c9e4f3 !important;
+  font-size:9.3px !important;
+  font-weight:800;
+  line-height:1.25;
+  white-space:nowrap;
+  box-shadow:inset 0 1px rgba(255,255,255,.055);
+}
+.learning-deck .deck-review-info::before{
+  content:"";
+  width:7px;height:7px;flex:0 0 7px;border-radius:50%;
+  background:#ffd45a;
+  box-shadow:0 0 10px rgba(255,212,90,.38);
+}
+.learning-deck .deck-start-status{
+  grid-column:1/-1;
+  margin:0 !important;
+  min-height:0;
+}
+.learning-deck .deck-start-status:empty{display:none}
+
+/* Bridge the dark control deck into the lighter mission area. */
+.learning-deck-rules{
+  position:relative;
+  z-index:4;
+  margin-top:7px !important;
+  margin-bottom:7px !important;
+}
+.learning-deck-rules span{
+  box-shadow:0 5px 12px rgba(11,52,89,.10);
+}
+.learning-deck-rules + .today-mission{
+  margin-top:10px !important;
+  box-shadow:0 13px 30px rgba(17,97,148,.16),inset 0 1px rgba(255,255,255,.70) !important;
+}
+
+@media (max-width:980px){
+  .controls-panel.learning-deck{padding:12px !important}
+  .learning-deck .adventure-map{display:none !important}
+  .learning-deck .start-row{
+    grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) !important;
+  }
+  .learning-deck .deck-review-info{grid-column:1/-1;max-width:none;width:100%}
+}
+
+@media (max-width:720px){
+  .learning-deck-heading{margin-bottom:9px !important}
+  .learning-deck .controls-row,
+  .learning-deck .learning-deck-controls{grid-template-columns:1fr !important}
+  .learning-deck .start-row{grid-template-columns:1fr !important}
+  .learning-deck .deck-review-info{grid-column:auto;width:100%}
+  .learning-deck .deck-control-subject .deck-menu{min-height:0;max-height:260px !important}
+}
