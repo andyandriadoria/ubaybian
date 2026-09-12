@@ -1,6 +1,6 @@
-/* UbayBian v0.5.37 · Memory Grid Chamber Lock Polish
+/* UbayBian v0.5.38 · Memory Grid Contrast & State Hierarchy Pass
    Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid-v046.js.
-   Loads the v0.5.36 clarity layer followed by the v0.5.37 lock polish. */
+   Loads the v0.5.36 clarity layer, v0.5.37 lock polish, then v0.5.38 hierarchy polish. */
 (() => {
   const SELECTOR = '.neural-shell';
 
@@ -16,19 +16,24 @@
   function loadClarityCSS(){
     appendCSS({
       selector:'link[data-memory-grid-v0536]',
-      href:'memory-grid-v0536.css?v=0.5.37',
+      href:'memory-grid-v0536.css?v=0.5.38',
       dataKey:'memoryGridV0536'
     });
     appendCSS({
       selector:'link[data-memory-grid-v0537]',
-      href:'memory-grid-v0537.css?v=0.5.37',
+      href:'memory-grid-v0537.css?v=0.5.38',
       dataKey:'memoryGridV0537'
+    });
+    appendCSS({
+      selector:'link[data-memory-grid-v0538]',
+      href:'memory-grid-v0538.css?v=0.5.38',
+      dataKey:'memoryGridV0538'
     });
   }
 
   function syncVersionLabel(){
     const version = document.querySelector('.version');
-    if(version) version.textContent = 'v0.5.37 · family';
+    if(version) version.textContent = 'v0.5.38 · family';
   }
 
   function addWorldDepth(overlay){
@@ -98,6 +103,7 @@
     shell.dataset.ng0535 = '1';
     shell.dataset.ng0536 = '1';
     shell.dataset.ng0537 = '1';
+    shell.dataset.ng0538 = '1';
     const overlay = shell.closest('.neural-overlay');
     addWorldDepth(overlay);
     addChamberDepth(shell);
