@@ -15,19 +15,12 @@
   const appVersion = Object.freeze({
     version: VERSION,
     channel: CHANNEL,
-    label,
+    label: LABEL,
     asset
   });
-
-  function label(){ return `v${VERSION} · ${CHANNEL}`; }
 
   window.UBAYBIAN_VERSION = VERSION;
-  window.UBAYBIAN = Object.freeze({
-    version: VERSION,
-    channel: CHANNEL,
-    label: label(),
-    asset
-  });
+  window.UBAYBIAN = appVersion;
 
   const syncVersionUI = (root = document) => {
     const nodes = [];
@@ -35,7 +28,7 @@
     root.querySelectorAll?.('.version,[data-app-version]').forEach((node) => nodes.push(node));
 
     nodes.forEach((node) => {
-      if (node.textContent !== label()) node.textContent = label();
+      if (node.textContent !== LABEL) node.textContent = LABEL;
       node.dataset.appVersion = VERSION;
       node.dataset.appChannel = CHANNEL;
     });
