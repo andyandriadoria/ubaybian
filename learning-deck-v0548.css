@@ -1,0 +1,85 @@
+/* UbayBian v0.5.48 — Learning Deck Final Lock */
+
+/* The old adventure route no longer belongs inside Mission Setup. */
+.controls-panel.learning-deck .adventure-map,
+.controls-panel.learning-deck .deck-route-ambient{
+  display:none !important;
+}
+
+/* Keep the floating menus compact, opaque and clearly detached from the page. */
+.controls-panel.learning-deck .deck-menu{
+  background:linear-gradient(160deg,#102f56 0%,#14284d 58%,#18274e 100%) !important;
+  box-shadow:
+    0 15px 34px rgba(0,9,30,.42),
+    0 0 0 1px rgba(76,168,220,.07),
+    inset 0 1px rgba(255,255,255,.075) !important;
+  backdrop-filter:none !important;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(104,183,218,.24) transparent;
+}
+.controls-panel.learning-deck .deck-menu::-webkit-scrollbar{width:5px}
+.controls-panel.learning-deck .deck-menu::-webkit-scrollbar-track{background:transparent}
+.controls-panel.learning-deck .deck-menu::-webkit-scrollbar-thumb{
+  background:rgba(104,183,218,.22);
+  border-radius:999px;
+}
+.controls-panel.learning-deck .deck-menu::-webkit-scrollbar-thumb:hover{
+  background:rgba(116,205,239,.34);
+}
+
+/* Five subjects are enough at once; the rest remain one small scroll away. */
+.controls-panel.learning-deck .deck-control-subject .deck-menu{
+  min-height:0 !important;
+  max-height:218px !important;
+}
+
+/* Slightly tighter item rhythm prevents the subject popover from feeling modal-sized. */
+.controls-panel.learning-deck .deck-control-subject .deck-option{
+  min-height:37px !important;
+  padding-top:7px !important;
+  padding-bottom:7px !important;
+}
+
+/* Action controls stop where the mission actions stop instead of stretching across the deck. */
+.controls-panel.learning-deck .start-row{
+  display:inline-grid !important;
+  width:max-content !important;
+  max-width:100% !important;
+  grid-template-columns:220px 200px max-content !important;
+  justify-content:start !important;
+  align-self:start;
+}
+.controls-panel.learning-deck .start-btn,
+.controls-panel.learning-deck .review-btn{
+  width:100%;
+}
+.controls-panel.learning-deck .deck-review-info{
+  max-width:220px !important;
+}
+
+/* Refine the transition into Today Mission without adding another visual object. */
+.learning-deck-rules{
+  margin-top:8px !important;
+}
+.learning-deck-rules + .today-mission{
+  margin-top:9px !important;
+}
+
+@media (max-width:980px){
+  .controls-panel.learning-deck .start-row{
+    display:grid !important;
+    width:100% !important;
+    grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) !important;
+  }
+  .controls-panel.learning-deck .deck-review-info{
+    grid-column:1/-1;
+    width:100% !important;
+    max-width:none !important;
+  }
+}
+
+@media (max-width:720px){
+  .controls-panel.learning-deck .deck-control-subject .deck-menu{max-height:222px !important}
+  .controls-panel.learning-deck .start-row{grid-template-columns:1fr !important}
+  .controls-panel.learning-deck .deck-review-info{grid-column:auto}
+}
