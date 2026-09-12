@@ -2,8 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getExamBlueprint, selectExamQuestions, topicCategory } from '../src/exam-blueprints.js';
 
-function makeQuestion(id, topic, difficulty) {
-  return { id, topic, semester: '1', difficulty, type: 'text', answerKey: 'ok', choices: [] };
+function makeQuestion(id, topic, difficulty, visual = true) {
+  return {
+    id,
+    topic,
+    semester: '1',
+    difficulty,
+    type: 'text',
+    answerKey: 'ok',
+    choices: [],
+    imageUrl: visual ? 'https://example.com/science-diagram.svg' : '',
+  };
 }
 
 const groups = [
@@ -20,13 +29,13 @@ const groups = [
   { topic: 'Metals & Non-metals', category: 'ubay-science-metals', difficulties: ['Sedang', 'Sedang', 'Sulit'] },
 ];
 
-function makeBank() {
+function makeBank({ visual = true } = {}) {
   const bank = [];
   let id = 1;
   for (const variant of ['A', 'B']) {
     for (const group of groups) {
       for (const difficulty of group.difficulties) {
-        bank.push(makeQuestion(`SCI-${variant}-${id++}`, group.topic, difficulty));
+        bank.push(makeQuestion(`SCI-${variant}-${id++}`, group.topic, difficulty, visual));
       }
     }
   }
@@ -53,6 +62,7 @@ test('Ubay Science Assessment S1 uses a 30-question 120-minute Grade 7 blueprint
   assert.equal(blueprint.id, 'ubay-science-mid-s1-2026');
   assert.equal(blueprint.targetQuestions, 30);
   assert.equal(blueprint.durationMinutes, 120);
+  assert.equal(blueprint.visualTarget, 7);
   assert.equal(blueprint.subtitle, 'Grade 7 · Semester 1 · 2026/2027');
   assert.equal(Object.values(blueprint.topicTargets).reduce((sum, value) => sum + value, 0), 30);
 });
@@ -63,9 +73,11 @@ test('Ubay Science topic labels map to the intended categories', () => {
   }
 });
 
-test('Ubay Science selector builds the intended topic and difficulty mix', () => {
-  const selected = selectExamQuestions(makeBank(), getExamBlueprint('ubay', 'science'));
+test('Ubay Science selector builds the intended topic, difficulty and visual mix', () => {
+  const blueprint = getExamBlueprint('ubay', 'science');
+  const selected = selectExamQuestions(makeBank(), blueprint);
   assert.equal(selected.length, 30);
+  assert.ok(selected.filter((question) => question.imageUrl).length >= blueprint.visualTarget);
   assert.deepEqual(categoryCounts(selected), {
     'ubay-science-life-organisation': 2,
     'ubay-science-cells': 3,
@@ -80,4 +92,12 @@ test('Ubay Science selector builds the intended topic and difficulty mix', () =>
     'ubay-science-metals': 3,
   });
   assert.deepEqual(overallDifficulties(selected), { Mudah: 8, Sedang: 15, Sulit: 7 });
+});
+
+test('Ubay Science selector rejects a bank that cannot supply the visual target', () => {
+  const blueprint = getExamBlueprint('ubay', 'science');
+  assert.throws(
+    () => selectExamQuestions(makeBank({ visual: false }), blueprint),
+    (error) => error?.code === 'EXAM_BLUEPRINT_INCOMPLETE' || /minimal 7 soal visual/i.test(String(error?.message || '')),
+  );
 });
