@@ -50,6 +50,7 @@ const SCIENCE_BLUEPRINT = Object.freeze({
   subtitle: 'Grade 7 · Semester 1 · 2026/2027',
   durationMinutes: 120,
   targetQuestions: 30,
+  visualTarget: 7,
   topicTargets: Object.freeze({
     'ubay-science-life-organisation': 2,
     'ubay-science-cells': 3,
@@ -134,12 +135,7 @@ function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
-function selectCustomQuestions(questions, blueprint) {
-  const eligible = questions.filter((question) => String(question.semester) === String(blueprint.semester));
-  if (eligible.length < blueprint.targetQuestions) {
-    throw new HttpError(422, 'EXAM_BANK_INCOMPLETE', `Bank soal belum cukup untuk simulasi ${blueprint.title}. Dibutuhkan ${blueprint.targetQuestions} soal, tersedia ${eligible.length}.`);
-  }
-
+function buildCustomSelection(eligible, blueprint) {
   const selected = [];
   for (const [category, target] of Object.entries(blueprint.topicTargets)) {
     const pool = eligible.filter((question) => customTopicCategory(question) === category);
@@ -162,12 +158,40 @@ function selectCustomQuestions(questions, blueprint) {
       throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Target tingkat kesulitan ${category} tidak cocok dengan target topik (${categoryPicked}/${target}).`);
     }
   }
+  return selected;
+}
 
-  if (selected.length !== blueprint.targetQuestions) {
-    throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: jumlah soal ${selected.length}/${blueprint.targetQuestions}.`);
+function visualQuestionCount(questions) {
+  return questions.filter((question) => Boolean(String(question?.imageUrl || '').trim())).length;
+}
+
+function selectCustomQuestions(questions, blueprint) {
+  const eligible = questions.filter((question) => String(question.semester) === String(blueprint.semester));
+  if (eligible.length < blueprint.targetQuestions) {
+    throw new HttpError(422, 'EXAM_BANK_INCOMPLETE', `Bank soal belum cukup untuk simulasi ${blueprint.title}. Dibutuhkan ${blueprint.targetQuestions} soal, tersedia ${eligible.length}.`);
   }
 
-  return randomizeChoicePositions(shuffle(selected));
+  const attempts = blueprint.visualTarget ? 200 : 1;
+  let bestVisualCount = -1;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const selected = buildCustomSelection(eligible, blueprint);
+    if (selected.length !== blueprint.targetQuestions) {
+      throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: jumlah soal ${selected.length}/${blueprint.targetQuestions}.`);
+    }
+
+    const visualCount = visualQuestionCount(selected);
+    bestVisualCount = Math.max(bestVisualCount, visualCount);
+    if (!blueprint.visualTarget || visualCount >= blueprint.visualTarget) {
+      return randomizeChoicePositions(shuffle(selected));
+    }
+  }
+
+  throw new HttpError(
+    422,
+    'EXAM_BLUEPRINT_INCOMPLETE',
+    `Blueprint Mid Exam membutuhkan minimal ${blueprint.visualTarget} soal visual; kombinasi terbaik saat ini ${bestVisualCount}.`,
+  );
 }
 
 export function getExamBlueprint(profileSlug, subjectId, requestedId = '') {
