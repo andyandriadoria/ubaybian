@@ -1,4 +1,4 @@
-export const EXAM_REVIEW_POLICY_START_AT = Date.parse('2026-09-12T12:45:00Z');
+export const EXAM_REVIEW_POLICY_START_AT = Date.parse('2026-09-12T12:40:00Z');
 
 export function reviewKey(row) {
   return `${String(row?.subject_id || '')}::${String(row?.question_id || '')}`;
