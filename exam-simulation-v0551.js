@@ -1,5 +1,5 @@
 import {apiBase,backendEnabled} from './config.js';
-import {createApiClient,ApiError} from './api-v040.js?v=0.5.51';
+import {createApiClient,ApiError} from './api-v040.js?v=0.5.54';
 import {findProfile} from './profiles.js';
 
 const main=document.querySelector('#main');
@@ -29,7 +29,7 @@ function errorMessage(error){
  if(error instanceof ApiError)return error.message;
  return 'Simulasi belum bisa dibuka. Coba lagi sebentar.';
 }
-function examAvailable(profile,subjectId){return profile?.id==='bian'&&subjectId==='english';}
+function examAvailable(profile,subjectId){return profile?.id==='bian'&&['english','math'].includes(subjectId);}
 
 function setSessionOptions(panel){
  const profile=currentProfile();
@@ -160,6 +160,7 @@ function renderExam(){
  const current=activeExam.progress.current;
  const total=activeExam.progress.total;
  const writing=isWritingQuestion(question);
+ const subjectLabel=String(activeExam.subjectId||'subject').toUpperCase();
  const card=el('section',{class:'exam-shell'});
  const top=el('div',{class:'exam-topbar'},[
   el('div',{class:'exam-heading'},[
@@ -176,7 +177,7 @@ function renderExam(){
  top.querySelector('.exam-answered').id='exam-answered';
 
  const progress=el('div',{class:'exam-progress'},[el('span',{style:`width:${Math.round((current/total)*100)}%`})]);
- const tags=[text('span','ENGLISH'),text('span',question.difficulty||'Grade 2')];
+ const tags=[text('span',subjectLabel),text('span',question.difficulty||'Grade 2')];
  if(writing)tags.push(text('span','WRITING · REVIEWED','exam-writing-tag'));
  const body=el('div',{class:'exam-question-card'},[
   el('div',{class:'exam-question-head'},[
