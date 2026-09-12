@@ -1,5 +1,6 @@
 import { familyProfiles, login, logout, requireProfile, requireSession, setupFamily } from './auth.js';
 import { finishGame, gameStatus, requestReward, resolveReward, rewardShop, startGame } from './engagement.js';
+import { finishExam, getExamQuestion, saveExamAnswer, startExam } from './exam-service.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
 import { lockParentAccess, parentAccessStatus, requireParentAccess, setParentPin, unlockParentAccess } from './parent-access.js';
 import { dashboardForProfile, progressForFamily } from './progress.js';
@@ -9,8 +10,8 @@ async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.4.3',
-    db: { bound: Boolean(env.DB), schemaReady: false },
+    version: '0.5.0',
+    db: { bound: Boolean(env.DB), schemaReady: false, examSchemaReady: false },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
       secretConfigured: Boolean(env.APPS_SCRIPT_SECRET),
@@ -22,12 +23,18 @@ async function health(env) {
 
   try {
     const tables = await env.DB.prepare(`
-      SELECT COUNT(*) AS count
+      SELECT name
       FROM sqlite_master
       WHERE type = 'table'
-        AND name IN ('family_accounts', 'profiles', 'sessions', 'quiz_sessions', 'quiz_session_questions', 'quiz_answers', 'progress_summary')
-    `).first();
-    result.db.schemaReady = Number(tables?.count || 0) === 7;
+        AND name IN (
+          'family_accounts', 'profiles', 'sessions', 'quiz_sessions', 'quiz_session_questions', 'quiz_answers', 'progress_summary',
+          'exam_sessions', 'exam_session_questions', 'exam_answers'
+        )
+    `).all();
+    const names = new Set((tables.results || []).map((row) => row.name));
+    result.db.schemaReady = ['family_accounts', 'profiles', 'sessions', 'quiz_sessions', 'quiz_session_questions', 'quiz_answers', 'progress_summary']
+      .every((name) => names.has(name));
+    result.db.examSchemaReady = ['exam_sessions', 'exam_session_questions', 'exam_answers'].every((name) => names.has(name));
   } catch (error) {
     console.error('HEALTH_DB_CHECK_FAILED', error);
   }
@@ -157,6 +164,35 @@ async function handler(request, env) {
     const body = await readJson(request);
     return json(await submitAnswer(env, session.familyId, answerParams.sessionId, body, request.headers.get('Idempotency-Key') || ''));
   }
+
+  if (request.method === 'POST' && path === '/v1/exam/sessions') {
+    const session = await requireSession(request, env);
+    const body = await readJson(request);
+    const profile = await requireProfile(env, session.familyId, String(body?.profileId || ''));
+    return json(await startExam(
+      env,
+      session.familyId,
+      profile,
+      String(body?.subjectId || ''),
+      String(body?.blueprintId || ''),
+    ), 201);
+  }
+  const examQuestionParams = routeMatch(path, '/v1/exam/sessions/:sessionId/questions/:position');
+  if (request.method === 'GET' && examQuestionParams) {
+    const session = await requireSession(request, env);
+    return json(await getExamQuestion(env, session.familyId, examQuestionParams.sessionId, examQuestionParams.position));
+  }
+  const examAnswerParams = routeMatch(path, '/v1/exam/sessions/:sessionId/answers');
+  if (request.method === 'POST' && examAnswerParams) {
+    const session = await requireSession(request, env);
+    return json(await saveExamAnswer(env, session.familyId, examAnswerParams.sessionId, await readJson(request)));
+  }
+  const examFinishParams = routeMatch(path, '/v1/exam/sessions/:sessionId/finish');
+  if (request.method === 'POST' && examFinishParams) {
+    const session = await requireSession(request, env);
+    return json(await finishExam(env, session.familyId, examFinishParams.sessionId));
+  }
+
   throw new HttpError(404, 'NOT_FOUND', 'Endpoint tidak ditemukan.');
 }
 
