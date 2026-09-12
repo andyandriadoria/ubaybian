@@ -2,6 +2,7 @@ import { engagementTotals } from './engagement.js';
 import { EXAM_REWARD_RULES, examRewardTotals } from './exam-rewards.js';
 import { readSheetValues } from './google.js';
 import { parsePublishedQuestions, sheetConfig } from './questions.js';
+import { reviewKey, reviewQuestionStates } from './review-queue.js';
 
 const LEVELS = Object.freeze([
   { level: 1, minXp: 0, title: 'Rookie Bot', emoji: '🤖' },
@@ -52,14 +53,9 @@ function scoreForSession(row) {
 }
 function badge(id, name, description, emoji, extra = {}) { return { id, name, description, emoji, ...extra }; }
 
-function reviewKey(row) {
-  return `${String(row.subject_id || '')}::${String(row.question_id || '')}`;
-}
-
-async function liveReviewQuestionKeys(env, profile, latestByQuestion) {
+async function liveReviewQuestionKeys(env, profile, pendingStates) {
   const pendingBySubject = new Map();
-  for (const row of latestByQuestion.values()) {
-    if (Number(row.correct) === 1) continue;
+  for (const row of pendingStates) {
     const subjectId = String(row.subject_id || '');
     if (!subjectId) continue;
     if (!pendingBySubject.has(subjectId)) pendingBySubject.set(subjectId, []);
@@ -83,8 +79,8 @@ async function liveReviewQuestionKeys(env, profile, latestByQuestion) {
       }
     } catch (error) {
       // Dashboard availability should not fail just because the question-bank gateway is
-      // temporarily unavailable. Fall back to the historical queue; startQuiz remains the
-      // final authority and will validate the live bank again when Review is opened.
+      // temporarily unavailable. Fall back to the unified historical queue; startQuiz remains
+      // the final authority and validates the live bank again when Review is opened.
       console.error('REVIEW_LIVE_FILTER_FAILED', {
         profile: profile.slug,
         subjectId,
@@ -144,14 +140,9 @@ export async function dashboardForProfile(env, familyId, profile) {
     subjectStats.set(id, item);
   }
 
-  const latestByQuestion = new Map();
-  for (const row of answersDesc) {
-    const key = reviewKey(row);
-    if (!latestByQuestion.has(key)) latestByQuestion.set(key, row);
-  }
-
-  const liveReviewKeys = await liveReviewQuestionKeys(env, profile, latestByQuestion);
-  for (const row of latestByQuestion.values()) {
+  const pendingReviewStates = await reviewQuestionStates(env, familyId, profile.id);
+  const liveReviewKeys = await liveReviewQuestionKeys(env, profile, pendingReviewStates);
+  for (const row of pendingReviewStates) {
     const key = reviewKey(row);
     if (!liveReviewKeys.has(key)) continue;
     const subjectId = String(row.subject_id || '');
