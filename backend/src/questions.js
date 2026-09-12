@@ -14,6 +14,9 @@ const typeMap = new Map([
   ['isian', 'text'],
   ['isian singkat', 'text'],
   ['pilihan gambar', 'image-choice'],
+  ['open response', 'open-response'],
+  ['open-response', 'open-response'],
+  ['writing', 'open-response'],
 ]);
 const liveStatuses = new Set(['published', 'aktif']);
 
@@ -58,7 +61,7 @@ export function parsePublishedQuestions(rows) {
         throw new Error('Urutan Dalam Set hanya boleh diisi jika Stimulus ID diisi');
       }
       const answerKey = cell(row, 14);
-      if (!answerKey) throw new Error('Kunci Jawaban kosong');
+      if (type !== 'open-response' && !answerKey) throw new Error('Kunci Jawaban kosong');
       const question = {
         id, topic: cell(row, 1), semester, type, prompt, imageUrl: safeHttpsUrl(cell(row, 5)), difficulty,
         explanation: cell(row, 15), answerKey, choices: [], stimulusId, stimulusOrder,
@@ -75,7 +78,7 @@ export function parsePublishedQuestions(rows) {
         if (!choices.some((choice) => choice.id === answerKey.toUpperCase())) throw new Error('Kunci Jawaban tidak menunjuk pilihan yang tersedia');
         if (type === 'image-choice' && choices.some((choice) => !choice.imageUrl)) throw new Error('Pilihan Gambar wajib memiliki URL gambar HTTPS');
         question.choices = choices;
-      } else {
+      } else if (type === 'text') {
         const variants = answerKey.split('||').map((value) => value.trim()).filter(Boolean);
         if (!variants.length) throw new Error('Kunci isian kosong');
       }
@@ -155,6 +158,7 @@ export function publicQuestion(question) {
 }
 
 export function isCorrectAnswer(question, answer) {
+  if (question.type === 'open-response') return null;
   if (question.type === 'text') {
     const candidate = normalizeText(answer);
     return question.answerKey.split('||').some((variant) => normalizeText(variant) === candidate);
