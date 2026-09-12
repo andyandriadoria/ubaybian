@@ -1,0 +1,142 @@
+/* UbayBian v0.5.43 — Reward Shop Object & Hierarchy Polish */
+
+/* Reward cards should read as physical cartridges, not table rows */
+.reward-chamber .ub-reward-list{position:relative;isolation:isolate}
+.reward-chamber .ub-reward-list::before{
+  content:"";
+  position:absolute;
+  left:42px;
+  top:-12px;
+  bottom:-8px;
+  width:2px;
+  border-radius:99px;
+  background:linear-gradient(180deg,rgba(255,212,94,.5),rgba(93,222,255,.42) 50%,rgba(121,239,204,.4));
+  box-shadow:0 0 12px rgba(101,224,255,.18);
+  opacity:.72;
+  pointer-events:none;
+  z-index:0;
+}
+.reward-chamber .ub-reward-card{position:relative;z-index:1}
+.reward-chamber .ub-reward-card:hover{z-index:2}
+
+/* Make the reward object unmistakably visible */
+.reward-chamber .ub-reward-icon{
+  width:60px !important;
+  height:60px !important;
+  min-width:60px !important;
+  display:grid !important;
+  place-items:center !important;
+  overflow:visible !important;
+}
+.reward-chamber .ub-reward-icon .reward-object{
+  display:block !important;
+  position:relative !important;
+  width:48px !important;
+  height:48px !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  transform:translateY(-1px) scale(1.04);
+  filter:drop-shadow(0 7px 7px rgba(0,0,0,.25)) !important;
+}
+.reward-chamber .ub-reward-card[data-reward-kind="snack"] .ub-reward-icon{transform:rotate(-2deg)}
+.reward-chamber .ub-reward-card[data-reward-kind="book"] .ub-reward-icon{transform:rotate(1.5deg)}
+.reward-chamber .ub-reward-card[data-reward-kind="toy"] .ub-reward-icon{transform:rotate(-1deg)}
+.reward-chamber .ub-reward-card::after{
+  right:118px !important;
+  width:72px !important;
+  height:72px !important;
+  opacity:.48 !important;
+}
+
+/* Disabled CTA is secondary, not the visual hero */
+.reward-chamber .ub-reward-card .ub-primary:disabled{
+  min-width:132px !important;
+  color:rgba(220,233,245,.66) !important;
+  background:linear-gradient(145deg,rgba(76,95,130,.23),rgba(53,68,106,.31)) !important;
+  border-color:rgba(200,222,240,.10) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.045) !important;
+  opacity:.68 !important;
+}
+.reward-chamber .ub-reward-card .ub-primary:disabled::before{opacity:.52 !important}
+
+/* Slightly stronger reward hierarchy */
+.reward-chamber .ub-reward-copy strong{font-size:14.2px !important}
+.reward-chamber .ub-reward-copy p{color:#d4e0ec !important;font-size:11.6px !important}
+.reward-chamber .ub-reward-cost{font-size:11.6px !important}
+
+/* Parent area: one clear secure access badge, no duplicated tiny labels */
+.reward-chamber .reward-parent-panel::after{display:none !important}
+.reward-chamber .reward-parent-panel::before{display:none !important}
+.reward-parent-access-badge{
+  position:absolute;
+  right:18px;
+  top:50%;
+  transform:translateY(-50%);
+  width:58px;
+  min-height:58px;
+  padding:9px 6px 7px;
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  border:1px solid rgba(138,225,255,.34);
+  background:linear-gradient(155deg,rgba(102,218,255,.18),rgba(114,117,213,.22));
+  box-shadow:inset 0 1px rgba(255,255,255,.12),0 0 22px rgba(83,219,255,.10);
+  color:#dff7ff;
+  text-align:center;
+  pointer-events:none;
+}
+.reward-parent-access-badge .shield{
+  width:28px;height:31px;position:relative;
+  clip-path:polygon(50% 0,92% 16%,86% 72%,50% 100%,14% 72%,8% 16%);
+  background:linear-gradient(160deg,#9fe9ff,#7f9bee 62%,#8e75dd);
+  box-shadow:0 0 16px rgba(104,220,255,.22);
+}
+.reward-parent-access-badge .shield::after{
+  content:"";
+  position:absolute;
+  left:9px;top:9px;
+  width:10px;height:12px;
+  border:2px solid #183d5d;
+  border-top-width:4px;
+  border-radius:4px;
+  box-sizing:border-box;
+}
+.reward-parent-access-badge span:last-child{
+  font-size:6.8px;
+  line-height:1.05;
+  font-weight:900;
+  letter-spacing:.11em;
+  color:rgba(211,241,252,.72);
+}
+
+/* A subtle energy handoff from the vault to the reward bay */
+.reward-chamber .ub-wallet{position:relative}
+.reward-chamber .ub-wallet::before{
+  content:"" !important;
+  display:block !important;
+  position:absolute;
+  left:50%;
+  bottom:-10px;
+  width:92px;
+  height:10px;
+  transform:translateX(-50%);
+  background:linear-gradient(90deg,transparent,rgba(255,220,92,.68),rgba(94,224,255,.7),transparent);
+  clip-path:polygon(0 44%,44% 44%,50% 100%,56% 44%,100% 44%,100% 58%,57% 58%,50% 100%,43% 58%,0 58%);
+  opacity:.65;
+  filter:drop-shadow(0 0 6px rgba(110,224,255,.22));
+  pointer-events:none;
+}
+
+@media (max-height:760px) and (min-width:681px){
+  .reward-chamber .ub-reward-icon{width:54px !important;height:54px !important;min-width:54px !important}
+  .reward-chamber .ub-reward-icon .reward-object{width:43px !important;height:43px !important}
+  .reward-parent-access-badge{width:52px;min-height:52px;right:16px}
+}
+
+@media (max-width:680px){
+  .reward-chamber .ub-reward-list::before{display:none}
+  .reward-parent-access-badge{position:absolute;right:14px;bottom:12px;top:auto;transform:none;width:52px;min-height:52px}
+}
