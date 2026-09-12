@@ -238,13 +238,18 @@ function renderExamReward(card,reward){
    text('span',`⭐ +${reward.xpEarned} XP`),
    text('span',`🪙 +${reward.coinsEarned} coins`),
   ]));
-  const completionCopy=reward.completionQualified
-   ? `Termasuk +${reward.completionXp} XP completion bonus. Reward Mid Exam hanya diberikan pada percobaan pertama.`
-   : `Completion bonus +${reward.rule?.completionXp||50} XP membutuhkan minimal ${reward.completionThreshold} dari ${reward.total} soal terjawab. Reward hasil tetap sudah dihitung.`;
-  card.append(text('p',completionCopy,'exam-result-reward-note'));
- }else{
-  card.append(text('p','Retake tetap bisa dipakai untuk latihan, tetapi XP dan coins hanya diberikan pada percobaan pertama Mid Exam ini.','exam-result-reward-note is-retake'));
+  card.append(text('p',`Termasuk +${reward.completionXp} XP completion bonus. Reward Mid Exam hanya diberikan pada percobaan pertama yang memenuhi syarat.`,`exam-result-reward-note`));
+  return;
  }
+ if(reward.status==='incomplete'){
+  card.append(text('p',`Belum ada XP atau coins. Jawab minimal ${reward.completionThreshold} dari ${reward.total} soal untuk mengaktifkan reward Mid Exam. Kesempatan reward belum terpakai dan masih bisa didapat pada percobaan berikutnya.`,`exam-result-reward-note is-retake`));
+  return;
+ }
+ if(reward.status==='legacy'){
+  card.append(text('p','Sesi ini dibuat sebelum reward Mid Exam diaktifkan. Percobaan berikutnya yang memenuhi syarat tetap bisa mendapat XP dan coins.','exam-result-reward-note is-retake'));
+  return;
+ }
+ card.append(text('p','Retake tetap bisa dipakai untuk latihan, tetapi XP dan coins hanya diberikan pada percobaan pertama Mid Exam yang memenuhi syarat.','exam-result-reward-note is-retake'));
 }
 
 function renderExamResult(result){
