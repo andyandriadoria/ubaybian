@@ -11,6 +11,24 @@ const targets = [
   ['grammar (verbs)',2],['reading comprehension (reasoning)',1],
 ];
 
+const mathTargets = [
+  ['N2.2D Mental Subtraction',5],
+  ['N2.1D Number Words',2],
+  ['N2.2E Add Three 1-digit Numbers',2],
+  ['N2.1B Number Line and Zero',1],
+  ['N2.1F Compare and Order',4],
+  ['N2.2F Mathematical Statements',2],
+  ['N2.1E Place Value and Expanded Form',2],
+  ['N2.2C Mental Addition',2],
+  ['N2.1G Rounding to Nearest 10',1],
+  ['N2.2A Number Bonds to 20',2],
+  ['N2.1H Ordinal Numbers',2],
+  ['N2.1C Number Patterns',2],
+  ['Extension (S) 3-digit Mental Calculation',1],
+  ['Extension (S) 3-digit Algorithm',1],
+  ['Extension (S) Number Words to 1000',1],
+];
+
 function makeQuestion(id,topic,{stimulusId='',stimulusOrder=0}={}){
   return {id,topic,semester:'1',difficulty:'Sedang',stimulusId,stimulusOrder};
 }
@@ -24,9 +42,9 @@ function categoryCounts(questions){
   return counts;
 }
 
-function expectedCounts(){
+function expectedCounts(sourceTargets){
   const counts={};
-  for(const [topic,count] of targets){
+  for(const [topic,count] of sourceTargets){
     const category=topicCategory(makeQuestion('expected',topic));
     counts[category]=count;
   }
@@ -49,8 +67,29 @@ function makeThreeVariantBank(){
   return questions;
 }
 
+function makeThreeVariantMathBank(){
+  const questions=[];
+  let id=1;
+  for(const variant of ['A','B','C']){
+    for(const [topic,count] of mathTargets){
+      for(let index=0;index<count;index+=1){
+        questions.push(makeQuestion(`M-${variant}-${id++}`,topic));
+      }
+    }
+  }
+  return questions;
+}
+
 test('English Grade 2 Mid Exam blueprint has 30 questions and 90 minutes',()=>{
   const blueprint=getExamBlueprint('bian','english');
+  assert.equal(blueprint.targetQuestions,30);
+  assert.equal(blueprint.durationMinutes,90);
+  assert.equal(Object.values(blueprint.topicTargets).reduce((a,b)=>a+b,0),30);
+});
+
+test('Math Grade 2 Mid Exam blueprint has 30 questions and 90 minutes',()=>{
+  const blueprint=getExamBlueprint('bian','math');
+  assert.equal(blueprint.id,'bian-math-mid-s1-2026');
   assert.equal(blueprint.targetQuestions,30);
   assert.equal(blueprint.durationMinutes,90);
   assert.equal(Object.values(blueprint.topicTargets).reduce((a,b)=>a+b,0),30);
@@ -60,6 +99,9 @@ test('topic aliases map MHIS pointer labels to canonical categories',()=>{
   assert.equal(topicCategory(makeQuestion('1','Grammar (verbs in context)')),'verbs');
   assert.equal(topicCategory(makeQuestion('2','Reading comprehension (reasoning)')),'reading-reasoning');
   assert.equal(topicCategory(makeQuestion('3','Vocabulary (colours)')),'colour-vocabulary');
+  assert.equal(topicCategory(makeQuestion('4','N2.2D Mental Subtraction')),'math-mental-subtraction');
+  assert.equal(topicCategory(makeQuestion('5','N2.1F Compare and Order')),'math-compare-order');
+  assert.equal(topicCategory(makeQuestion('6','Extension (S) Number Words to 1000')),'math-extension-number-words');
 });
 
 test('balanced option randomizer spreads 24 four-choice answers evenly across A-D',()=>{
@@ -84,7 +126,7 @@ test('balanced option randomizer spreads 24 four-choice answers evenly across A-
   assert.deepEqual(counts,{A:6,B:6,C:6,D:6});
 });
 
-test('exam selector satisfies blueprint and keeps stimulus questions together',()=>{
+test('English exam selector satisfies blueprint and keeps stimulus questions together',()=>{
   const questions=[];
   let id=1;
   for(const [topic,count] of targets){
@@ -102,10 +144,10 @@ test('exam selector satisfies blueprint and keeps stimulus questions together',(
   assert.equal(selected[storyPositions[1]].stimulusOrder,2);
 });
 
-test('90-question three-variant bank always assembles an exact 30-question paper',()=>{
+test('English 90-question three-variant bank always assembles an exact 30-question paper',()=>{
   const blueprint=getExamBlueprint('bian','english');
   const bank=makeThreeVariantBank();
-  const expected=expectedCounts();
+  const expected=expectedCounts(targets);
   for(let run=0;run<60;run+=1){
     const selected=selectExamQuestions(bank,blueprint);
     assert.equal(selected.length,30);
@@ -118,6 +160,18 @@ test('90-question three-variant bank always assembles an exact 30-question paper
   }
 });
 
+test('Math 90-question three-variant bank always assembles exact pointer coverage',()=>{
+  const blueprint=getExamBlueprint('bian','math');
+  const bank=makeThreeVariantMathBank();
+  const expected=expectedCounts(mathTargets);
+  for(let run=0;run<60;run+=1){
+    const selected=selectExamQuestions(bank,blueprint);
+    assert.equal(selected.length,30);
+    assert.deepEqual(categoryCounts(selected),expected);
+  }
+});
+
 test('exam selector rejects an incomplete bank',()=>{
   assert.throws(()=>selectExamQuestions([makeQuestion('1','feelings')],getExamBlueprint('bian','english')),/Bank soal belum cukup/);
+  assert.throws(()=>selectExamQuestions([makeQuestion('1','N2.2D Mental Subtraction')],getExamBlueprint('bian','math')),/Bank soal belum cukup/);
 });
