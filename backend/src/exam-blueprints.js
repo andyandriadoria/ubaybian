@@ -135,6 +135,10 @@ function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
+function hasVisual(question) {
+  return Boolean(String(question?.imageUrl || '').trim());
+}
+
 function buildCustomSelection(eligible, blueprint) {
   const selected = [];
   for (const [category, target] of Object.entries(blueprint.topicTargets)) {
@@ -161,8 +165,43 @@ function buildCustomSelection(eligible, blueprint) {
   return selected;
 }
 
-function visualQuestionCount(questions) {
-  return questions.filter((question) => Boolean(String(question?.imageUrl || '').trim())).length;
+function ensureVisualTarget(selected, eligible, target) {
+  if (!target) return selected;
+  const result = [...selected];
+  let visualCount = result.filter(hasVisual).length;
+  if (visualCount >= target) return result;
+
+  const selectedIds = new Set(result.map((question) => question.id));
+  const replaceableIndexes = shuffle(result
+    .map((question, index) => ({ question, index }))
+    .filter(({ question }) => !hasVisual(question))
+    .map(({ index }) => index));
+
+  for (const index of replaceableIndexes) {
+    const current = result[index];
+    const category = customTopicCategory(current);
+    const difficulty = difficultyKey(current);
+    const replacements = shuffle(eligible.filter((question) => (
+      hasVisual(question)
+      && !selectedIds.has(question.id)
+      && customTopicCategory(question) === category
+      && difficultyKey(question) === difficulty
+    )));
+
+    if (!replacements.length) continue;
+    const replacement = replacements[0];
+    selectedIds.delete(current.id);
+    selectedIds.add(replacement.id);
+    result[index] = replacement;
+    visualCount += 1;
+    if (visualCount >= target) return result;
+  }
+
+  throw new HttpError(
+    422,
+    'EXAM_BLUEPRINT_INCOMPLETE',
+    `Blueprint Mid Exam membutuhkan minimal ${target} soal visual; bank yang sesuai topik dan kesulitan hanya dapat menyediakan ${visualCount}.`,
+  );
 }
 
 function selectCustomQuestions(questions, blueprint) {
@@ -171,27 +210,13 @@ function selectCustomQuestions(questions, blueprint) {
     throw new HttpError(422, 'EXAM_BANK_INCOMPLETE', `Bank soal belum cukup untuk simulasi ${blueprint.title}. Dibutuhkan ${blueprint.targetQuestions} soal, tersedia ${eligible.length}.`);
   }
 
-  const attempts = blueprint.visualTarget ? 200 : 1;
-  let bestVisualCount = -1;
-
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const selected = buildCustomSelection(eligible, blueprint);
-    if (selected.length !== blueprint.targetQuestions) {
-      throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: jumlah soal ${selected.length}/${blueprint.targetQuestions}.`);
-    }
-
-    const visualCount = visualQuestionCount(selected);
-    bestVisualCount = Math.max(bestVisualCount, visualCount);
-    if (!blueprint.visualTarget || visualCount >= blueprint.visualTarget) {
-      return randomizeChoicePositions(shuffle(selected));
-    }
+  let selected = buildCustomSelection(eligible, blueprint);
+  if (selected.length !== blueprint.targetQuestions) {
+    throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: jumlah soal ${selected.length}/${blueprint.targetQuestions}.`);
   }
 
-  throw new HttpError(
-    422,
-    'EXAM_BLUEPRINT_INCOMPLETE',
-    `Blueprint Mid Exam membutuhkan minimal ${blueprint.visualTarget} soal visual; kombinasi terbaik saat ini ${bestVisualCount}.`,
-  );
+  selected = ensureVisualTarget(selected, eligible, blueprint.visualTarget || 0);
+  return randomizeChoicePositions(shuffle(selected));
 }
 
 export function getExamBlueprint(profileSlug, subjectId, requestedId = '') {
