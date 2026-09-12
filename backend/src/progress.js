@@ -1,4 +1,5 @@
 import { engagementTotals } from './engagement.js';
+import { EXAM_REWARD_RULES, examRewardTotals } from './exam-rewards.js';
 
 const LEVELS = Object.freeze([
   { level: 1, minXp: 0, title: 'Rookie Bot', emoji: '🤖' },
@@ -63,13 +64,14 @@ export async function progressForFamily(env, familyId, profileId = null) {
 }
 
 export async function dashboardForProfile(env, familyId, profile) {
-  const [sessionResult, answerResult, engagement] = await Promise.all([
+  const [sessionResult, answerResult, engagement, examRewards] = await Promise.all([
     env.DB.prepare(`SELECT id, subject_id, total_questions, correct_count, created_at, completed_at
       FROM quiz_sessions WHERE family_id = ? AND profile_id = ? AND completed_at IS NOT NULL ORDER BY completed_at DESC`).bind(familyId, profile.id).all(),
     env.DB.prepare(`SELECT qa.question_id, qa.answer, qa.correct, qa.answered_at, qs.subject_id
       FROM quiz_answers qa JOIN quiz_sessions qs ON qs.id = qa.session_id
       WHERE qs.family_id = ? AND qs.profile_id = ? ORDER BY qa.answered_at DESC`).bind(familyId, profile.id).all(),
     engagementTotals(env, familyId, profile.id),
+    examRewardTotals(env, familyId, profile.id),
   ]);
 
   const sessions = sessionResult.results || [];
@@ -80,8 +82,9 @@ export async function dashboardForProfile(env, familyId, profile) {
   const streak = streakInfo(sessions.map((row) => row.completed_at));
   const streakXpBonus = (streak.longest >= 3 ? 30 : 0) + (streak.longest >= 7 ? 70 : 0);
   const quizXp = (totalCorrect * 10) + (sessions.length * 20);
-  const xp = quizXp + engagement.gameXp + streakXpBonus;
-  const coinsEarned = (totalCorrect * 50) + (perfectSessions * 100);
+  const xp = quizXp + examRewards.xp + engagement.gameXp + streakXpBonus;
+  const quizCoinsEarned = (totalCorrect * 50) + (perfectSessions * 100);
+  const coinsEarned = quizCoinsEarned + examRewards.coins;
   const coins = Math.max(0, coinsEarned - engagement.rewardSpent);
   const level = levelForXp(xp);
 
@@ -132,13 +135,41 @@ export async function dashboardForProfile(env, familyId, profile) {
   const report = sessions.slice(0, 10).map((row) => ({ sessionId: row.id, subjectId: row.subject_id, total: Number(row.total_questions), correct: Number(row.correct_count), score: scoreForSession(row), completedAt: Number(row.completed_at) }));
   return {
     stats: {
-      xp, quizXp, gameXp: engagement.gameXp, coins, coinsEarned,
-      rewardSpent: engagement.rewardSpent, rewardReserved: engagement.rewardReserved,
-      level, streak, streakXpBonus, totalSessions: sessions.length, totalAnswered, totalCorrect, perfectSessions, reviewTotal,
+      xp,
+      quizXp,
+      examXp: examRewards.xp,
+      gameXp: engagement.gameXp,
+      coins,
+      coinsEarned,
+      quizCoinsEarned,
+      examCoins: examRewards.coins,
+      rewardedExams: examRewards.rewardedExams,
+      rewardSpent: engagement.rewardSpent,
+      rewardReserved: engagement.rewardReserved,
+      level,
+      streak,
+      streakXpBonus,
+      totalSessions: sessions.length,
+      totalAnswered,
+      totalCorrect,
+      perfectSessions,
+      reviewTotal,
     },
     subjects: [...subjectStats.values()].sort((a, b) => a.subjectId.localeCompare(b.subjectId)),
     badges,
     report,
-    rules: { correctXp: 10, correctCoins: 50, completionXp: 20, perfectCoins: 100, streak3Xp: 30, streak7Xp: 70, gameDailyXpCap: 50 },
+    rules: {
+      correctXp: 10,
+      correctCoins: 50,
+      completionXp: 20,
+      perfectCoins: 100,
+      streak3Xp: 30,
+      streak7Xp: 70,
+      gameDailyXpCap: 50,
+      examCorrectXp: EXAM_REWARD_RULES.correctXp,
+      examCorrectCoins: EXAM_REWARD_RULES.correctCoins,
+      examCompletionXp: EXAM_REWARD_RULES.completionXp,
+      examCompletionAnswerRatio: EXAM_REWARD_RULES.completionAnswerRatio,
+    },
   };
 }
