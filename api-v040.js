@@ -1,4 +1,4 @@
-import {normalizeSession,normalizeAnswerResult} from './quiz.js?v=0.4.0';
+import {normalizeSession,normalizeAnswerResult,normalizeExamState,normalizeExamSave,normalizeExamResult} from './quiz.js?v=0.5.50';
 
 const SESSION_KEY='ubaybian:family-session:v1';
 
@@ -57,6 +57,25 @@ export function createApiClient(baseUrl,fetchImpl=globalThis.fetch){
     body:JSON.stringify({questionId,answer,skip}),
    });
    return normalizeAnswerResult(data);
+  },
+  async startExam({profileId,subjectId,blueprintId=''}){
+   const data=await call('/v1/exam/sessions',{method:'POST',body:JSON.stringify({profileId,subjectId,blueprintId})});
+   return normalizeExamState(data);
+  },
+  async examQuestion(sessionId,position){
+   const data=await call(`/v1/exam/sessions/${encodeURIComponent(sessionId)}/questions/${encodeURIComponent(position)}`,{method:'GET'});
+   return normalizeExamState(data);
+  },
+  async saveExamAnswer(sessionId,{questionId,answer}){
+   const data=await call(`/v1/exam/sessions/${encodeURIComponent(sessionId)}/answers`,{
+    method:'POST',
+    body:JSON.stringify({questionId,answer}),
+   });
+   return normalizeExamSave(data);
+  },
+  async finishExam(sessionId){
+   const data=await call(`/v1/exam/sessions/${encodeURIComponent(sessionId)}/finish`,{method:'POST',body:'{}'});
+   return normalizeExamResult(data);
   }
  });
 }
