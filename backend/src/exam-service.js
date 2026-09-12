@@ -10,6 +10,7 @@ import {
   sheetConfig,
 } from './questions.js';
 import { getExamBlueprint, publicExamBlueprint, selectExamQuestions } from './exam-blueprints.js';
+import { examRewardForSession } from './exam-rewards.js';
 import { randomToken } from './security.js';
 
 function questionFromDb(row) {
@@ -209,27 +210,34 @@ async function completedExamResult(env, session) {
   const writingUnanswered = Math.max(0, writingTotal - writingAnswered);
   const reviewPending = writingAnswered;
   const score = writingTotal ? null : autoScore;
+  const summary = {
+    score,
+    autoScore,
+    correct: autoCorrect,
+    wrong: autoWrong,
+    unanswered,
+    answered,
+    total,
+    autoTotal,
+    autoAnswered,
+    autoUnanswered,
+    writingTotal,
+    writingAnswered,
+    writingUnanswered,
+    reviewPending,
+  };
+  const reward = await examRewardForSession(env, session, {
+    correct: autoCorrect,
+    answered,
+    total,
+  });
 
   return {
     sessionId: session.id,
     title: session.title,
     blueprintId: session.blueprint_id,
-    summary: {
-      score,
-      autoScore,
-      correct: autoCorrect,
-      wrong: autoWrong,
-      unanswered,
-      answered,
-      total,
-      autoTotal,
-      autoAnswered,
-      autoUnanswered,
-      writingTotal,
-      writingAnswered,
-      writingUnanswered,
-      reviewPending,
-    },
+    summary,
+    reward,
     results: items.map((item) => {
       const manualReview = item.question_type === 'open-response';
       const answeredItem = isAnswered(item);
