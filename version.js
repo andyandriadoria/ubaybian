@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.5.73';
+  const VERSION = '0.5.74';
   const CHANNEL = 'family';
   const LABEL = `v${VERSION} · ${CHANNEL}`;
 
