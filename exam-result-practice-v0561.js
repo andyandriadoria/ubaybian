@@ -1,4 +1,4 @@
-// UbayBian v0.5.62 — align Mid Exam result presentation with Practice
+// UbayBian v0.5.67 — align Assessment result presentation with Practice
 (() => {
   const main = document.querySelector('#main');
   if (!main) return;
@@ -127,13 +127,13 @@
     let note = panel.querySelector('.exam-result-reward-note');
 
     if (progress.total > 0 && progress.answered < progress.threshold) {
-      const copy = `Selesaikan minimal ${progress.threshold} dari ${progress.total} soal untuk membuka reward Mid Exam. Kesempatan reward masih tersedia.`;
+      const copy = `Selesaikan minimal ${progress.threshold} dari ${progress.total} soal untuk membuka reward Assessment. Kesempatan reward masih tersedia.`;
       if (!note) {
         note = document.createElement('p');
         note.className = 'exam-result-reward-note is-retake';
         rewards.after(note);
       }
-      note.textContent = copy;
+      if (note.textContent !== copy) note.textContent = copy;
       note.classList.add('is-retake');
       return;
     }
@@ -148,7 +148,7 @@
 
   function removeObsoleteResultNote(panel){
     panel.querySelectorAll('.exam-result-note').forEach((note) => {
-      if (/Nilai baru dibuka setelah seluruh simulasi selesai/i.test(note.textContent)) note.remove();
+      if (/Nilai baru dibuka setelah seluruh (simulasi|assessment) selesai/i.test(note.textContent)) note.remove();
     });
   }
 
@@ -187,6 +187,6 @@
   }
 
   const observer = new MutationObserver(scan);
-  observer.observe(main, { childList:true, subtree:true, characterData:true });
+  observer.observe(main, { childList:true, subtree:true });
   scan();
 })();
