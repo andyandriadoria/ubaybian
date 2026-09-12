@@ -60,6 +60,23 @@ const BLUEPRINTS = Object.freeze({
       'math-extension-algorithm-3digit': 1,
       'math-extension-number-words': 1,
     }),
+    topicDifficultyTargets: Object.freeze({
+      'math-mental-subtraction': Object.freeze({ mudah: 3, sedang: 2 }),
+      'math-number-words': Object.freeze({ mudah: 2 }),
+      'math-add-three': Object.freeze({ mudah: 2 }),
+      'math-number-line': Object.freeze({ mudah: 1 }),
+      'math-compare-order': Object.freeze({ mudah: 1, sedang: 3 }),
+      'math-statements': Object.freeze({ sedang: 2 }),
+      'math-place-value': Object.freeze({ mudah: 1, sedang: 1 }),
+      'math-mental-addition': Object.freeze({ mudah: 1, sedang: 1 }),
+      'math-rounding': Object.freeze({ sedang: 1 }),
+      'math-number-bonds': Object.freeze({ mudah: 2 }),
+      'math-ordinal': Object.freeze({ sedang: 2 }),
+      'math-patterns': Object.freeze({ mudah: 1, sedang: 1 }),
+      'math-extension-mental-3digit': Object.freeze({ sulit: 1 }),
+      'math-extension-algorithm-3digit': Object.freeze({ sulit: 1 }),
+      'math-extension-number-words': Object.freeze({ sulit: 1 }),
+    }),
   }),
 });
 
@@ -111,6 +128,20 @@ function normalize(value) {
     .trim();
 }
 
+function difficultyKey(question) {
+  return String(question?.difficulty || '').trim().toLowerCase();
+}
+
+function difficultyCoverage(questions) {
+  const counts = {};
+  for (const question of questions) {
+    const difficulty = difficultyKey(question);
+    if (!difficulty) continue;
+    counts[difficulty] = (counts[difficulty] || 0) + 1;
+  }
+  return counts;
+}
+
 function randomIndex(max) {
   const buffer = new Uint32Array(1);
   crypto.getRandomValues(buffer);
@@ -160,6 +191,24 @@ function missingCoverage(questions, blueprint) {
   return Object.entries(blueprint.topicTargets)
     .map(([category, target]) => ({ category, target, actual: counts[category] || 0 }))
     .filter((item) => item.actual < item.target);
+}
+
+function difficultyMismatches(questions, blueprint) {
+  if (!blueprint.topicDifficultyTargets) return [];
+  const mismatches = [];
+  for (const [category, targets] of Object.entries(blueprint.topicDifficultyTargets)) {
+    const categoryQuestions = questions.filter((question) => topicCategory(question) === category);
+    const counts = difficultyCoverage(categoryQuestions);
+    for (const [difficulty, target] of Object.entries(targets)) {
+      const actual = counts[difficulty] || 0;
+      if (actual !== target) mismatches.push({ category, difficulty, target, actual });
+    }
+    const expectedTotal = Object.values(targets).reduce((sum, value) => sum + value, 0);
+    if (categoryQuestions.length !== expectedTotal) {
+      mismatches.push({ category, difficulty: 'total', target: expectedTotal, actual: categoryQuestions.length });
+    }
+  }
+  return mismatches;
 }
 
 function addCoverage(base, extra) {
@@ -271,24 +320,56 @@ export function selectExamQuestions(questions, blueprint) {
     );
   }
 
-  const selectedCoverage = coverageFor(selectedStimulusBlocks.flat());
+  const selectedStimulusQuestions = selectedStimulusBlocks.flat();
+  const selectedCoverage = coverageFor(selectedStimulusQuestions);
   const selectedBlocks = [...selectedStimulusBlocks];
   for (const [category, target] of Object.entries(blueprint.topicTargets)) {
     const need = target - (selectedCoverage[category] || 0);
     if (need <= 0) continue;
     const candidates = shuffle(pools.get(category) || []);
-    if (candidates.length < need) {
-      throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam kekurangan ${category}: butuh ${need}, tersedia ${candidates.length}.`);
+    const difficultyTargets = blueprint.topicDifficultyTargets?.[category];
+
+    if (!difficultyTargets) {
+      if (candidates.length < need) {
+        throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam kekurangan ${category}: butuh ${need}, tersedia ${candidates.length}.`);
+      }
+      candidates.slice(0, need).forEach((question) => selectedBlocks.push([question]));
+      continue;
     }
-    candidates.slice(0, need).forEach((question) => selectedBlocks.push([question]));
+
+    const alreadySelected = selectedStimulusQuestions.filter((question) => topicCategory(question) === category);
+    const alreadyByDifficulty = difficultyCoverage(alreadySelected);
+    let picked = 0;
+    for (const [difficulty, difficultyTarget] of Object.entries(difficultyTargets)) {
+      const difficultyNeed = difficultyTarget - (alreadyByDifficulty[difficulty] || 0);
+      if (difficultyNeed < 0) {
+        throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam melebihi target ${category}/${difficulty}.`);
+      }
+      const matching = shuffle(candidates.filter((question) => difficultyKey(question) === difficulty));
+      if (matching.length < difficultyNeed) {
+        throw new HttpError(
+          422,
+          'EXAM_BLUEPRINT_INCOMPLETE',
+          `Blueprint Mid Exam kekurangan ${category}/${difficulty}: butuh ${difficultyNeed}, tersedia ${matching.length}.`,
+        );
+      }
+      matching.slice(0, difficultyNeed).forEach((question) => selectedBlocks.push([question]));
+      picked += difficultyNeed;
+    }
+    if (picked !== need) {
+      throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Target tingkat kesulitan ${category} tidak cocok dengan target topik (${picked}/${need}).`);
+    }
   }
 
   const selected = shuffle(selectedBlocks).flat();
   const finalMissing = missingCoverage(selected, blueprint);
-  if (selected.length !== blueprint.targetQuestions || finalMissing.length) {
+  const finalDifficultyMismatches = difficultyMismatches(selected, blueprint);
+  if (selected.length !== blueprint.targetQuestions || finalMissing.length || finalDifficultyMismatches.length) {
     const detail = finalMissing.length
       ? finalMissing.map((item) => `${item.category} ${item.actual}/${item.target}`).join(', ')
-      : `jumlah soal ${selected.length}/${blueprint.targetQuestions}`;
+      : finalDifficultyMismatches.length
+        ? finalDifficultyMismatches.map((item) => `${item.category}/${item.difficulty} ${item.actual}/${item.target}`).join(', ')
+        : `jumlah soal ${selected.length}/${blueprint.targetQuestions}`;
     throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: ${detail}.`);
   }
   return randomizeChoicePositions(selected);
