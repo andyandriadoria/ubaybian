@@ -119,9 +119,60 @@ function missingCoverage(questions, blueprint) {
     .filter((item) => item.actual < item.target);
 }
 
-function coveragePenalty(questions, blueprint) {
-  const counts = coverageFor(questions);
-  return Object.entries(blueprint.topicTargets).reduce((sum, [category, target]) => sum + Math.abs((counts[category] || 0) - target), 0);
+function addCoverage(base, extra) {
+  const next = { ...base };
+  for (const [category, count] of Object.entries(extra)) next[category] = (next[category] || 0) + count;
+  return next;
+}
+
+function exceedsTargets(counts, blueprint) {
+  return Object.entries(counts).some(([category, count]) => count > (blueprint.topicTargets[category] || 0));
+}
+
+function standalonePools(standaloneBlocks) {
+  const pools = new Map();
+  for (const block of standaloneBlocks) {
+    const question = block[0];
+    const category = topicCategory(question);
+    if (!category) continue;
+    if (!pools.has(category)) pools.set(category, []);
+    pools.get(category).push(question);
+  }
+  return pools;
+}
+
+function canFinishWithStandalone(counts, pools, blueprint) {
+  for (const [category, target] of Object.entries(blueprint.topicTargets)) {
+    const current = counts[category] || 0;
+    const need = target - current;
+    if (need < 0 || (pools.get(category)?.length || 0) < need) return false;
+  }
+  return true;
+}
+
+function findStimulusBlocks(stimulusBlocks, pools, blueprint) {
+  const ordered = shuffle(stimulusBlocks);
+  let visited = 0;
+  const maxVisited = 50000;
+
+  function search(index, counts, selected) {
+    visited += 1;
+    if (visited > maxVisited) return null;
+    if (exceedsTargets(counts, blueprint)) return null;
+    if (canFinishWithStandalone(counts, pools, blueprint)) return selected;
+    if (index >= ordered.length) return null;
+
+    const block = ordered[index];
+    const blockCoverage = coverageFor(block);
+    const includedCounts = addCoverage(counts, blockCoverage);
+    if (!exceedsTargets(includedCounts, blueprint)) {
+      const included = search(index + 1, includedCounts, [...selected, block]);
+      if (included) return included;
+    }
+    return search(index + 1, counts, selected);
+  }
+
+  return search(0, {}, []);
 }
 
 export function getExamBlueprint(profileSlug, subjectId, requestedId = '') {
@@ -155,35 +206,47 @@ export function selectExamQuestions(questions, blueprint) {
     );
   }
 
-  const blocks = groupedBlocks(eligible).filter((block) => block.length <= blueprint.targetQuestions);
-  let best = [];
-  let bestPenalty = Number.POSITIVE_INFINITY;
-
-  for (let attempt = 0; attempt < 1800; attempt += 1) {
-    const ordered = shuffle(blocks);
-    const selectedBlocks = [];
-    let size = 0;
-
-    for (const block of ordered) {
-      if (size + block.length > blueprint.targetQuestions) continue;
-      selectedBlocks.push(block);
-      size += block.length;
-      if (size === blueprint.targetQuestions) break;
-    }
-
-    const selected = selectedBlocks.flat();
-    if (selected.length !== blueprint.targetQuestions) continue;
-    const penalty = coveragePenalty(selected, blueprint);
-    if (penalty < bestPenalty) {
-      best = selected;
-      bestPenalty = penalty;
-    }
-    if (penalty === 0) return selected;
+  const missing = missingCoverage(eligible, blueprint);
+  if (missing.length) {
+    const detail = missing.map((item) => `${item.category} ${item.actual}/${item.target}`).join(', ');
+    throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: ${detail}.`);
   }
 
-  const missing = missingCoverage(best, blueprint);
-  const detail = missing.length
-    ? missing.map((item) => `${item.category} ${item.actual}/${item.target}`).join(', ')
-    : 'kombinasi Question Set belum dapat membentuk paper lengkap';
-  throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: ${detail}.`);
+  const blocks = groupedBlocks(eligible)
+    .filter((block) => block.length <= blueprint.targetQuestions)
+    .filter((block) => block.every((question) => Boolean(topicCategory(question))));
+  const stimulusBlocks = blocks.filter((block) => Boolean(block[0]?.stimulusId));
+  const standaloneBlocks = blocks.filter((block) => !block[0]?.stimulusId && block.length === 1);
+  const pools = standalonePools(standaloneBlocks);
+  const selectedStimulusBlocks = findStimulusBlocks(stimulusBlocks, pools, blueprint);
+
+  if (!selectedStimulusBlocks) {
+    throw new HttpError(
+      422,
+      'EXAM_BLUEPRINT_INCOMPLETE',
+      'Blueprint Mid Exam belum dapat dibentuk tanpa memecah Question Set. Tambahkan variasi soal atau stimulus untuk kompetensi yang masih terkunci dalam satu set.',
+    );
+  }
+
+  const selectedCoverage = coverageFor(selectedStimulusBlocks.flat());
+  const selectedBlocks = [...selectedStimulusBlocks];
+  for (const [category, target] of Object.entries(blueprint.topicTargets)) {
+    const need = target - (selectedCoverage[category] || 0);
+    if (need <= 0) continue;
+    const candidates = shuffle(pools.get(category) || []);
+    if (candidates.length < need) {
+      throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam kekurangan ${category}: butuh ${need}, tersedia ${candidates.length}.`);
+    }
+    candidates.slice(0, need).forEach((question) => selectedBlocks.push([question]));
+  }
+
+  const selected = shuffle(selectedBlocks).flat();
+  const finalMissing = missingCoverage(selected, blueprint);
+  if (selected.length !== blueprint.targetQuestions || finalMissing.length) {
+    const detail = finalMissing.length
+      ? finalMissing.map((item) => `${item.category} ${item.actual}/${item.target}`).join(', ')
+      : `jumlah soal ${selected.length}/${blueprint.targetQuestions}`;
+    throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: ${detail}.`);
+  }
+  return selected;
 }
