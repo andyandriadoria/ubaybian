@@ -79,7 +79,46 @@ const SCIENCE_BLUEPRINT = Object.freeze({
   }),
 });
 
-const CUSTOM_BLUEPRINTS = Object.freeze([GLOBAL_BLUEPRINT, SCIENCE_BLUEPRINT]);
+const INFORMATIKA_BLUEPRINT = Object.freeze({
+  id: 'ubay-informatika-mid-s1-2026',
+  profileSlug: 'ubay',
+  subjectId: 'informatika',
+  semester: '1',
+  title: 'Informatika Mid Exam S1',
+  subtitle: 'Grade 7 · Semester 1 · 2026/2027',
+  durationMinutes: 90,
+  targetQuestions: 30,
+  topicTargets: Object.freeze({
+    'ubay-inf-ct-concept': 2,
+    'ubay-inf-ct-pillars': 3,
+    'ubay-inf-ct-application': 2,
+    'ubay-inf-algorithm': 3,
+    'ubay-inf-gui': 2,
+    'ubay-inf-system': 4,
+    'ubay-inf-data-code': 2,
+    'ubay-inf-file': 3,
+    'ubay-inf-network': 3,
+    'ubay-inf-security': 2,
+    'ubay-inf-search': 2,
+    'ubay-inf-email': 2,
+  }),
+  topicDifficultyTargets: Object.freeze({
+    'ubay-inf-ct-concept': Object.freeze({ mudah: 1, sedang: 1 }),
+    'ubay-inf-ct-pillars': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-inf-ct-application': Object.freeze({ sedang: 1, sulit: 1 }),
+    'ubay-inf-algorithm': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-inf-gui': Object.freeze({ mudah: 1, sedang: 1 }),
+    'ubay-inf-system': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
+    'ubay-inf-data-code': Object.freeze({ sedang: 1, sulit: 1 }),
+    'ubay-inf-file': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-inf-network': Object.freeze({ mudah: 1, sedang: 2 }),
+    'ubay-inf-security': Object.freeze({ sedang: 1, sulit: 1 }),
+    'ubay-inf-search': Object.freeze({ sedang: 2 }),
+    'ubay-inf-email': Object.freeze({ mudah: 1, sedang: 1 }),
+  }),
+});
+
+const CUSTOM_BLUEPRINTS = Object.freeze([GLOBAL_BLUEPRINT, SCIENCE_BLUEPRINT, INFORMATIKA_BLUEPRINT]);
 
 const TOPIC_ALIASES = Object.freeze({
   'ubay-gc-social-justice': ['social justice meaning & fair society'],
@@ -106,6 +145,19 @@ const TOPIC_ALIASES = Object.freeze({
   'ubay-science-separation': ['separation methods'],
   'ubay-science-hazards-acids': ['hazard symbols, acids & alkalis'],
   'ubay-science-metals': ['metals & non-metals'],
+
+  'ubay-inf-ct-concept': ['Berpikir Komputasional — Konsep & Tujuan'],
+  'ubay-inf-ct-pillars': ['Berpikir Komputasional — Empat Pilar'],
+  'ubay-inf-ct-application': ['Berpikir Komputasional — Penerapan'],
+  'ubay-inf-algorithm': ['Algoritma & Optimasi Penjadwalan'],
+  'ubay-inf-gui': ['Antarmuka Grafis (GUI)'],
+  'ubay-inf-system': ['Sistem Komputer — Hardware, Software & Cara Kerja'],
+  'ubay-inf-data-code': ['Sistem Komputer — Kodifikasi Data'],
+  'ubay-inf-file': ['Manajemen Folder, File & Ekstensi'],
+  'ubay-inf-network': ['Jaringan Komputer — Internet, LAN, Wi-Fi & Bluetooth'],
+  'ubay-inf-security': ['Keamanan Data & Enkripsi Dasar'],
+  'ubay-inf-search': ['Browser & Search Engine'],
+  'ubay-inf-email': ['Surel & Komunikasi Digital'],
 });
 
 function normalize(value) {
