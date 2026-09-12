@@ -47,12 +47,13 @@ function rewardKey(row) {
   return `${String(row.subject_id || '')}::${String(row.blueprint_id || '')}`;
 }
 
-async function firstCompletedAttempt(env, session) {
-  return env.DB.prepare(`SELECT id
-    FROM exam_sessions
-    WHERE family_id = ? AND profile_id = ? AND subject_id = ? AND blueprint_id = ?
-      AND completed_at IS NOT NULL AND completed_at >= ?
-    ORDER BY completed_at ASC, created_at ASC, id ASC
+async function firstQualifiedAttempt(env, session) {
+  return env.DB.prepare(`SELECT es.id
+    FROM exam_sessions es
+    WHERE es.family_id = ? AND es.profile_id = ? AND es.subject_id = ? AND es.blueprint_id = ?
+      AND es.completed_at IS NOT NULL AND es.completed_at >= ?
+      AND ((SELECT COUNT(*) FROM exam_answers ea WHERE ea.session_id = es.id) * 5) >= (es.total_questions * 4)
+    ORDER BY es.completed_at ASC, es.created_at ASC, es.id ASC
     LIMIT 1`)
     .bind(
       session.family_id,
@@ -66,10 +67,12 @@ async function firstCompletedAttempt(env, session) {
 
 export async function examRewardForSession(env, session, stats) {
   const completedAt = Number(session.completed_at || 0);
-  if (completedAt < EXAM_REWARD_POLICY_START_AT) return rewardFromExamStats(stats, false);
-  const first = await firstCompletedAttempt(env, session);
+  const preview = rewardFromExamStats(stats, false);
+  if (completedAt < EXAM_REWARD_POLICY_START_AT) return { ...preview, status: 'legacy' };
+  if (!preview.completionQualified) return { ...preview, status: 'incomplete' };
+  const first = await firstQualifiedAttempt(env, session);
   const eligible = Boolean(first?.id && String(first.id) === String(session.id));
-  return rewardFromExamStats(stats, eligible);
+  return { ...rewardFromExamStats(stats, eligible), status: eligible ? 'earned' : 'retake' };
 }
 
 export async function examRewardTotals(env, familyId, profileId) {
@@ -88,14 +91,15 @@ export async function examRewardTotals(env, familyId, profileId) {
   let coins = 0;
 
   for (const row of result.results || []) {
-    const key = rewardKey(row);
-    if (seen.has(key)) continue;
-    seen.add(key);
     const reward = rewardFromExamStats({
       correct: row.correct_count,
       answered: row.answered_count,
       total: row.total_questions,
     }, true);
+    if (!reward.completionQualified) continue;
+    const key = rewardKey(row);
+    if (seen.has(key)) continue;
+    seen.add(key);
     xp += reward.xpEarned;
     coins += reward.coinsEarned;
     rewarded.push({
