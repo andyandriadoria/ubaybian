@@ -1,5 +1,7 @@
 import { engagementTotals } from './engagement.js';
 import { EXAM_REWARD_RULES, examRewardTotals } from './exam-rewards.js';
+import { readSheetValues } from './google.js';
+import { parsePublishedQuestions, sheetConfig } from './questions.js';
 
 const LEVELS = Object.freeze([
   { level: 1, minXp: 0, title: 'Rookie Bot', emoji: '🤖' },
@@ -50,6 +52,51 @@ function scoreForSession(row) {
 }
 function badge(id, name, description, emoji, extra = {}) { return { id, name, description, emoji, ...extra }; }
 
+function reviewKey(row) {
+  return `${String(row.subject_id || '')}::${String(row.question_id || '')}`;
+}
+
+async function liveReviewQuestionKeys(env, profile, latestByQuestion) {
+  const pendingBySubject = new Map();
+  for (const row of latestByQuestion.values()) {
+    if (Number(row.correct) === 1) continue;
+    const subjectId = String(row.subject_id || '');
+    if (!subjectId) continue;
+    if (!pendingBySubject.has(subjectId)) pendingBySubject.set(subjectId, []);
+    pendingBySubject.get(subjectId).push(row);
+  }
+
+  if (!pendingBySubject.size) return new Set();
+
+  const liveKeys = new Set();
+  await Promise.all([...pendingBySubject.entries()].map(async ([subjectId, pendingRows]) => {
+    try {
+      const { sheetName } = sheetConfig(profile.slug, subjectId);
+      const rows = await readSheetValues(env, profile.slug, sheetName);
+      const liveQuestionIds = new Set(
+        parsePublishedQuestions(rows)
+          .filter((question) => question.type !== 'open-response')
+          .map((question) => question.id),
+      );
+      for (const row of pendingRows) {
+        if (liveQuestionIds.has(String(row.question_id || ''))) liveKeys.add(reviewKey(row));
+      }
+    } catch (error) {
+      // Dashboard availability should not fail just because the question-bank gateway is
+      // temporarily unavailable. Fall back to the historical queue; startQuiz remains the
+      // final authority and will validate the live bank again when Review is opened.
+      console.error('REVIEW_LIVE_FILTER_FAILED', {
+        profile: profile.slug,
+        subjectId,
+        code: error?.code || 'UNKNOWN',
+      });
+      for (const row of pendingRows) liveKeys.add(reviewKey(row));
+    }
+  }));
+
+  return liveKeys;
+}
+
 export async function progressForFamily(env, familyId, profileId = null) {
   const sql = profileId
     ? `SELECT p.slug AS profileId, ps.subject_id AS subjectId, ps.attempted, ps.correct, ps.last_practiced_at AS lastPracticedAt
@@ -96,24 +143,29 @@ export async function dashboardForProfile(env, familyId, profile) {
     if (Number(row.correct) === 1) item.correct += 1;
     subjectStats.set(id, item);
   }
+
   const latestByQuestion = new Map();
   for (const row of answersDesc) {
-    const key = `${row.subject_id}::${row.question_id}`;
+    const key = reviewKey(row);
     if (!latestByQuestion.has(key)) latestByQuestion.set(key, row);
   }
+
+  const liveReviewKeys = await liveReviewQuestionKeys(env, profile, latestByQuestion);
   for (const row of latestByQuestion.values()) {
-    if (Number(row.correct) === 1) continue;
-    const subject = subjectStats.get(String(row.subject_id || '')) || { subjectId: String(row.subject_id || ''), attempted: 0, correct: 0, review: 0 };
+    const key = reviewKey(row);
+    if (!liveReviewKeys.has(key)) continue;
+    const subjectId = String(row.subject_id || '');
+    const subject = subjectStats.get(subjectId) || { subjectId, attempted: 0, correct: 0, review: 0 };
     subject.review += 1;
     subjectStats.set(subject.subjectId, subject);
   }
-  const reviewTotal = [...latestByQuestion.values()].filter((row) => Number(row.correct) !== 1).length;
+  const reviewTotal = liveReviewKeys.size;
 
   const answersAsc = [...answersDesc].reverse();
   const previouslyWrong = new Set();
   const comeback = new Set();
   for (const row of answersAsc) {
-    const key = `${row.subject_id}::${row.question_id}`;
+    const key = reviewKey(row);
     if (Number(row.correct) === 1) { if (previouslyWrong.has(key)) comeback.add(key); } else previouslyWrong.add(key);
   }
 
