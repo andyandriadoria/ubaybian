@@ -118,7 +118,40 @@ const INFORMATIKA_BLUEPRINT = Object.freeze({
   }),
 });
 
-const CUSTOM_BLUEPRINTS = Object.freeze([GLOBAL_BLUEPRINT, SCIENCE_BLUEPRINT, INFORMATIKA_BLUEPRINT]);
+const PAI_BLUEPRINT = Object.freeze({
+  id: 'ubay-pai-mid-s1-2026',
+  profileSlug: 'ubay',
+  subjectId: 'pai',
+  semester: '1',
+  title: 'PAI Mid Exam S1',
+  subtitle: 'Grade 7 · Semester 1 · 2026/2027',
+  durationMinutes: 90,
+  targetQuestions: 30,
+  topicTargets: Object.freeze({
+    'ubay-pai-quran-function': 3,
+    'ubay-pai-sunnah-hadith': 3,
+    'ubay-pai-hadith-function': 4,
+    'ubay-pai-ulil-amri': 4,
+    'ubay-pai-practice-faith': 3,
+    'ubay-pai-qamariyyah': 4,
+    'ubay-pai-syamsiyah': 4,
+    'ubay-pai-qam-syam': 2,
+    'ubay-pai-ra': 3,
+  }),
+  topicDifficultyTargets: Object.freeze({
+    'ubay-pai-quran-function': Object.freeze({ mudah: 1, sedang: 2 }),
+    'ubay-pai-sunnah-hadith': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-pai-hadith-function': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
+    'ubay-pai-ulil-amri': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
+    'ubay-pai-practice-faith': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-pai-qamariyyah': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
+    'ubay-pai-syamsiyah': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
+    'ubay-pai-qam-syam': Object.freeze({ sedang: 1, sulit: 1 }),
+    'ubay-pai-ra': Object.freeze({ mudah: 1, sedang: 2 }),
+  }),
+});
+
+const CUSTOM_BLUEPRINTS = Object.freeze([GLOBAL_BLUEPRINT, SCIENCE_BLUEPRINT, INFORMATIKA_BLUEPRINT, PAI_BLUEPRINT]);
 
 const TOPIC_ALIASES = Object.freeze({
   'ubay-gc-social-justice': ['social justice meaning & fair society'],
@@ -158,6 +191,16 @@ const TOPIC_ALIASES = Object.freeze({
   'ubay-inf-security': ['Keamanan Data & Enkripsi Dasar'],
   'ubay-inf-search': ['Browser & Search Engine'],
   'ubay-inf-email': ['Surel & Komunikasi Digital'],
+
+  'ubay-pai-quran-function': ["Kedudukan Al-Qur'an — Fungsi Al-Qur'an"],
+  'ubay-pai-sunnah-hadith': ['Sunnah & Hadis — Pengertian dan Kedudukan'],
+  'ubay-pai-hadith-function': ["Hadis terhadap Al-Qur'an — Fungsi dan Penerapan"],
+  'ubay-pai-ulil-amri': ["Ulil Amri & Q.S. An-Nisa' 4:59"],
+  'ubay-pai-practice-faith': ["Pengamalan Al-Qur'an & Hadis — Bukti Keimanan"],
+  'ubay-pai-qamariyyah': ['Tajwid — Alif Lam Qamariyyah'],
+  'ubay-pai-syamsiyah': ['Tajwid — Alif Lam Syamsiyah'],
+  'ubay-pai-qam-syam': ['Tajwid — Qamariyyah vs Syamsiyah'],
+  'ubay-pai-ra': ["Tajwid — Hukum Bacaan Ra'"],
 });
 
 function normalize(value) {
