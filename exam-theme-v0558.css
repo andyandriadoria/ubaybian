@@ -1,0 +1,401 @@
+/* UbayBian v0.5.58 — Mid Exam visual system aligned with Practice */
+
+/* Keep Mid Exam inside the same bright Adventure world used by Practice. */
+body:has(#main > .exam-shell),
+body:has(#main > .exam-result){
+  --exam-navy:#17354d;
+  --exam-text:#244b65;
+  --exam-muted:#68859a;
+  --exam-sky:#29b9f4;
+  --exam-sky-deep:#168bd2;
+  --exam-cyan:#35c3c7;
+  --exam-yellow:#ffd14b;
+  --exam-orange:#ff9b5c;
+  --exam-coral:#ff7180;
+  --exam-blue:#2a9ae8;
+  padding:0 !important;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 11% 8%,rgba(255,255,255,.94) 0 2px,transparent 3px),
+    radial-gradient(circle at 29% 14%,rgba(255,244,155,.88) 0 2px,transparent 3px),
+    radial-gradient(circle at 66% 9%,rgba(255,255,255,.88) 0 2px,transparent 3px),
+    radial-gradient(circle at 83% 19%,rgba(255,247,176,.86) 0 3px,transparent 4px),
+    radial-gradient(circle at 92% 46%,rgba(255,255,255,.78) 0 2px,transparent 3px),
+    radial-gradient(circle at 5% 74%,rgba(255,255,255,.66) 0 2px,transparent 3px),
+    linear-gradient(145deg,#2cbdf5 0%,#24a9ed 45%,#188bd1 100%) !important;
+}
+body:has(#main > .exam-shell)::before,
+body:has(#main > .exam-result)::before,
+body:has(#main > .exam-shell)::after,
+body:has(#main > .exam-result)::after{
+  content:"";
+  position:fixed;
+  pointer-events:none;
+  z-index:0;
+  border-radius:50%;
+}
+body:has(#main > .exam-shell)::before,
+body:has(#main > .exam-result)::before{
+  width:330px;height:330px;left:-120px;top:15%;opacity:.22;
+  background:radial-gradient(circle at 50% 50%,transparent 0 34%,rgba(255,255,255,.45) 35% 37%,transparent 38% 51%,rgba(255,255,255,.23) 52% 54%,transparent 55%);
+  transform:rotate(-20deg);
+}
+body:has(#main > .exam-shell)::after,
+body:has(#main > .exam-result)::after{
+  width:300px;height:300px;right:-95px;bottom:-80px;opacity:.14;
+  background:radial-gradient(circle at 48% 46%,#fff 0 5%,transparent 6%),radial-gradient(circle at 50% 50%,transparent 0 29%,#fff 30% 32%,transparent 33%);
+}
+
+/* Full-width Practice shell instead of the old dark exam frame. */
+body:has(#main > .exam-shell) .shell,
+body:has(#main > .exam-result) .shell{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:none;
+  min-height:100vh;
+  margin:0;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  backdrop-filter:none;
+  overflow:visible;
+}
+body:has(#main > .exam-shell) .topbar,
+body:has(#main > .exam-result) .topbar{
+  position:relative;
+  min-height:76px;
+  padding:13px 42px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  color:#fff;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body:has(#main > .exam-shell) .brand,
+body:has(#main > .exam-result) .brand{
+  font-size:22px;
+  font-weight:900;
+  text-shadow:0 2px 6px rgba(8,75,124,.28);
+}
+body:has(#main > .exam-shell) .brand-wordmark,
+body:has(#main > .exam-result) .brand-wordmark{color:#fff}
+body:has(#main > .exam-shell) .brand-wordmark span,
+body:has(#main > .exam-result) .brand-wordmark span{color:#fff0a6}
+body:has(#main > .exam-shell) .brand-icon,
+body:has(#main > .exam-result) .brand-icon{
+  font-size:28px;
+  filter:drop-shadow(0 4px 6px rgba(7,79,126,.24));
+}
+body:has(#main > .exam-shell) .top-nav,
+body:has(#main > .exam-result) .top-nav{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:2px;
+  padding:6px;
+  border:1px solid rgba(255,255,255,.58);
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(226,246,255,.57));
+  box-shadow:0 10px 22px rgba(18,103,158,.18),inset 0 1px 0 rgba(255,255,255,.86);
+  backdrop-filter:blur(12px);
+}
+body:has(#main > .exam-shell) .top-nav button,
+body:has(#main > .exam-result) .top-nav button{
+  color:var(--exam-navy);
+  opacity:1;
+  font-size:13px;
+  font-weight:800;
+  padding:9px 15px;
+  border-radius:999px;
+}
+body:has(#main > .exam-shell) .top-nav button.active,
+body:has(#main > .exam-result) .top-nav button.active{
+  color:var(--exam-navy);
+  background:rgba(255,255,255,.84);
+  box-shadow:0 5px 12px rgba(20,93,142,.13);
+}
+body.exam-mode-active #profile-nav,
+body.exam-mode-active #switch-profile{
+  opacity:1 !important;
+}
+body:has(#main > .exam-shell) .version,
+body:has(#main > .exam-result) .version{
+  margin-left:auto;
+  color:var(--exam-navy);
+  border:1px solid rgba(255,255,255,.70);
+  background:rgba(236,249,255,.68);
+  font-size:10px;
+  font-weight:700;
+  padding:5px 9px;
+  border-radius:999px;
+  box-shadow:0 5px 14px rgba(13,87,137,.13);
+  backdrop-filter:blur(8px);
+}
+body:has(#main > .exam-shell) .quiet,
+body:has(#main > .exam-result) .quiet,
+body:has(#main > .exam-shell) .family-logout,
+body:has(#main > .exam-result) .family-logout{
+  min-height:37px;
+  padding:8px 14px;
+  border:1px solid rgba(255,255,255,.72);
+  color:var(--exam-navy);
+  background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(226,245,255,.72));
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:0 5px 14px rgba(12,83,132,.14),inset 0 1px 0 #fff;
+}
+body:has(#main > .exam-shell) main,
+body:has(#main > .exam-result) main{
+  min-height:calc(100vh - 76px);
+  padding:14px 38px 32px;
+  background:transparent !important;
+}
+body:has(#main > .exam-shell) footer,
+body:has(#main > .exam-result) footer{display:none}
+
+/* Main exam board: same glassy pale-blue surface and soft radius as Practice. */
+.exam-shell,
+.exam-result{
+  width:min(1220px,100%);
+  max-width:1220px;
+  margin:28px auto !important;
+  padding:30px !important;
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:30px !important;
+  background:linear-gradient(150deg,rgba(247,252,255,.94),rgba(224,246,255,.91)) !important;
+  box-shadow:0 12px 28px rgba(16,91,142,.18),inset 0 1px 0 rgba(255,255,255,.96) !important;
+  color:var(--exam-navy) !important;
+  backdrop-filter:blur(10px);
+}
+.exam-shell .eyebrow,
+.exam-result .eyebrow{
+  color:#36627e;
+  font-size:.78rem;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.exam-heading h1{
+  color:var(--exam-navy);
+  font-size:clamp(2rem,3.2vw,2.7rem) !important;
+  letter-spacing:-.025em;
+}
+.exam-subtitle{color:#5f7d94 !important;font-weight:600}
+
+/* Practice-like metric cards. */
+.exam-timer-box,
+.exam-answered-box{
+  min-width:150px;
+  padding:14px 17px !important;
+  border:1px solid rgba(255,255,255,.86) !important;
+  border-radius:20px !important;
+  background:rgba(255,255,255,.88) !important;
+  box-shadow:0 8px 20px rgba(20,95,145,.10),inset 0 1px 0 #fff !important;
+}
+.exam-timer-box strong,
+.exam-answered-box strong{color:var(--exam-navy)}
+.exam-meta small{color:#6e8799 !important;font-weight:600}
+.exam-meta-icon{filter:saturate(.9)}
+.exam-progress{
+  height:9px !important;
+  margin:22px 0 !important;
+  background:rgba(255,255,255,.68) !important;
+  border:1px solid rgba(75,160,208,.12);
+  box-shadow:inset 0 1px 3px rgba(20,99,147,.08);
+}
+.exam-progress span{
+  background:linear-gradient(90deg,#35c3c7 0%,#5ccdda 48%,#ffd14b 100%) !important;
+  box-shadow:0 0 10px rgba(53,195,199,.18);
+}
+
+/* Question surface and chips use the same friendly Practice language. */
+.exam-question-card{
+  padding:28px !important;
+  border:1px solid rgba(255,255,255,.88);
+  border-radius:26px !important;
+  background:rgba(255,255,255,.92) !important;
+  box-shadow:0 10px 24px rgba(22,92,139,.10),inset 0 1px 0 #fff !important;
+}
+.exam-tags span{
+  padding:7px 12px !important;
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.70);
+}
+.exam-tags span:first-child{
+  background:#fff0bd !important;
+  color:#a86b00 !important;
+}
+.exam-tags span:nth-child(2){
+  background:#dff1ff !important;
+  color:#176aa3 !important;
+}
+.exam-writing-tag{
+  background:#fff2c9 !important;
+  color:#8a6411 !important;
+}
+.exam-question-number{color:#607d93 !important;font-weight:850}
+.exam-question-text{color:var(--exam-navy) !important}
+.exam-option{
+  min-height:68px;
+  border:1.5px solid #d7e8f2 !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.96) !important;
+  color:#24445c !important;
+  box-shadow:0 5px 13px rgba(20,87,132,.06);
+}
+.exam-option:hover{
+  transform:translateY(-2px) !important;
+  border-color:#8dd6e3 !important;
+  box-shadow:0 9px 18px rgba(20,98,145,.10);
+}
+.exam-option.selected{
+  border-color:#35c3c7 !important;
+  background:linear-gradient(135deg,#eefdfd,#e5f7ff) !important;
+  box-shadow:0 0 0 3px rgba(53,195,199,.13),0 8px 18px rgba(20,98,145,.08) !important;
+}
+.exam-option-letter{
+  background:linear-gradient(145deg,#f5d34c,#2aa7dd) !important;
+  color:#fff !important;
+  box-shadow:0 4px 10px rgba(28,118,167,.18);
+}
+.exam-option.selected .exam-option-letter{
+  background:linear-gradient(145deg,#35c3c7,#2a9ae8) !important;
+}
+.exam-answer textarea{
+  border:1.5px solid #cfe4ef !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.92);
+  color:var(--exam-navy) !important;
+  box-shadow:inset 0 1px 3px rgba(31,102,145,.04);
+}
+.exam-answer textarea:focus{
+  border-color:#35c3c7 !important;
+  box-shadow:0 0 0 3px rgba(53,195,199,.13) !important;
+}
+
+/* Button hierarchy mirrors Practice: calm secondary, cyan next, coral finish. */
+.exam-save-state{color:#638097 !important}
+.exam-nav button,
+.exam-home-btn{
+  min-height:44px;
+  border-radius:14px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34);
+}
+.exam-secondary{
+  background:rgba(255,255,255,.56) !important;
+  color:#63839a !important;
+  border:1px solid rgba(255,255,255,.68) !important;
+}
+.exam-primary{
+  background:linear-gradient(135deg,#35c3c7,#2ba9cf) !important;
+  color:#fff !important;
+  box-shadow:0 8px 16px rgba(34,156,184,.18),inset 0 1px 0 rgba(255,255,255,.30) !important;
+}
+.exam-finish-btn,
+.exam-home-btn{
+  background:linear-gradient(135deg,#ff9b5c,#ff7180) !important;
+  color:#fff !important;
+  box-shadow:0 8px 16px rgba(232,102,102,.17),inset 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+/* Result now shares the Practice result vocabulary. */
+.exam-result{
+  text-align:center;
+  max-width:1220px !important;
+}
+.exam-result-emoji{
+  margin:8px auto 2px;
+  font-size:3.2rem !important;
+  filter:drop-shadow(0 6px 8px rgba(28,98,146,.12));
+}
+.exam-result h1{color:var(--exam-navy);letter-spacing:-.02em}
+.exam-result-score{
+  width:174px;
+  height:174px;
+  margin:18px auto !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:10px solid transparent;
+  border-radius:50%;
+  background:linear-gradient(#fff,#fff) padding-box,conic-gradient(#cfefff 0 74%,#fff1bd 74% 100%) border-box;
+  box-shadow:0 14px 30px rgba(17,103,157,.12),inset 0 1px 0 #fff;
+}
+.exam-result-score strong{color:var(--exam-navy);font-size:4rem !important}
+.exam-result-score span{color:#6b8498 !important;font-weight:700}
+.exam-result-stats{gap:10px !important}
+.exam-result-stats span{
+  min-width:150px;
+  padding:11px 15px !important;
+  border:1px solid rgba(255,255,255,.82) !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.88) !important;
+  color:#31556c;
+  box-shadow:0 5px 14px rgba(20,89,135,.07),inset 0 1px 0 #fff;
+}
+.exam-result-note{color:#688399 !important;font-weight:600}
+.exam-review{max-width:920px}
+.exam-review h2{color:var(--exam-navy)}
+.exam-review-item{
+  border:1px solid rgba(77,151,193,.16) !important;
+  background:rgba(255,255,255,.88) !important;
+  box-shadow:0 5px 14px rgba(21,92,139,.05);
+}
+.exam-review-explanation{background:#edf8fd !important}
+.exam-unanswered-group{
+  border-color:rgba(77,151,193,.16) !important;
+  background:rgba(255,255,255,.68) !important;
+  box-shadow:0 5px 14px rgba(21,92,139,.05);
+}
+.exam-unanswered-action{
+  background:#dff2fb !important;
+  color:#2e6c88 !important;
+}
+
+@media(max-width:900px){
+  body:has(#main > .exam-shell) .topbar,
+  body:has(#main > .exam-result) .topbar{
+    min-height:auto;
+    padding:12px 18px;
+    flex-wrap:wrap;
+  }
+  body:has(#main > .exam-shell) .top-nav,
+  body:has(#main > .exam-result) .top-nav{
+    position:static;
+    transform:none;
+    order:3;
+    width:100%;
+    justify-content:center;
+  }
+  body:has(#main > .exam-shell) main,
+  body:has(#main > .exam-result) main{padding:8px 16px 24px}
+}
+
+@media(max-width:800px){
+  .exam-shell,.exam-result{
+    margin:10px auto !important;
+    padding:18px !important;
+    border-radius:24px !important;
+  }
+  .exam-question-card{padding:20px !important;border-radius:21px !important}
+  .exam-meta{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .exam-timer-box,.exam-answered-box{min-width:0}
+  .exam-result-score{width:148px;height:148px;border-width:8px}
+  .exam-result-score strong{font-size:3.3rem !important}
+  .exam-result-stats span{min-width:0;flex:1 1 140px}
+}
+
+@media(max-width:560px){
+  body:has(#main > .exam-shell) .brand,
+  body:has(#main > .exam-result) .brand{font-size:19px}
+  body:has(#main > .exam-shell) .version,
+  body:has(#main > .exam-result) .version{margin-left:0}
+  .exam-meta{grid-template-columns:1fr}
+  .exam-nav-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .exam-finish-btn{grid-column:1/-1}
+}
