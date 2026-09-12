@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getExamBlueprint, selectExamQuestions, topicCategory } from '../src/exam-blueprints.js';
+import { randomizeChoicePositions } from '../src/questions.js';
 
 const targets = [
   ['identifying animals',2],['colour vocabulary',2],['reading comprehension (place)',1],['reading comprehension (main idea)',1],
@@ -59,6 +60,28 @@ test('topic aliases map MHIS pointer labels to canonical categories',()=>{
   assert.equal(topicCategory(makeQuestion('1','Grammar (verbs in context)')),'verbs');
   assert.equal(topicCategory(makeQuestion('2','Reading comprehension (reasoning)')),'reading-reasoning');
   assert.equal(topicCategory(makeQuestion('3','Vocabulary (colours)')),'colour-vocabulary');
+});
+
+test('balanced option randomizer spreads 24 four-choice answers evenly across A-D',()=>{
+  const bank=Array.from({length:24},(_,index)=>({
+    id:`MC-${index+1}`,
+    type:'multiple-choice',
+    answerKey:'A',
+    choices:[
+      {id:'A',text:`correct-${index+1}`,imageUrl:''},
+      {id:'B',text:'wrong-b',imageUrl:''},
+      {id:'C',text:'wrong-c',imageUrl:''},
+      {id:'D',text:'wrong-d',imageUrl:''},
+    ],
+  }));
+  const randomized=randomizeChoicePositions(bank);
+  const counts={A:0,B:0,C:0,D:0};
+  randomized.forEach((question,index)=>{
+    counts[question.answerKey]+=1;
+    const correct=question.choices.find((choice)=>choice.id===question.answerKey);
+    assert.equal(correct.text,`correct-${index+1}`);
+  });
+  assert.deepEqual(counts,{A:6,B:6,C:6,D:6});
 });
 
 test('exam selector satisfies blueprint and keeps stimulus questions together',()=>{
