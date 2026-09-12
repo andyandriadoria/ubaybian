@@ -88,23 +88,27 @@ const BLUEPRINTS = Object.freeze({
     durationMinutes: 120,
     targetQuestions: 30,
     topicTargets: Object.freeze({
-      'ubay-english-reading': 9,
+      'ubay-english-reading-set': 6,
+      'ubay-english-reading': 3,
       'ubay-english-vocab-grammar': 4,
       'ubay-english-figurative': 4,
-      'ubay-english-tenses': 4,
-      'ubay-english-writing': 9,
+      'ubay-english-tenses': 3,
+      'ubay-english-productive-tenses': 2,
+      'ubay-english-writing': 8,
     }),
     topicDifficultyTargets: Object.freeze({
-      'ubay-english-reading': Object.freeze({ mudah: 2, sedang: 5, sulit: 2 }),
+      'ubay-english-reading': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
       'ubay-english-vocab-grammar': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
       'ubay-english-figurative': Object.freeze({ mudah: 1, sedang: 1, sulit: 2 }),
-      'ubay-english-tenses': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
-      'ubay-english-writing': Object.freeze({ mudah: 2, sedang: 6, sulit: 1 }),
+      'ubay-english-tenses': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+      'ubay-english-productive-tenses': Object.freeze({ sedang: 1, sulit: 1 }),
+      'ubay-english-writing': Object.freeze({ mudah: 2, sedang: 5, sulit: 1 }),
     }),
   }),
 });
 
 const TOPIC_ALIASES = Object.freeze({
+  'ubay-english-reading-set': ['reading set'],
   'ubay-english-reading': [
     'reading main idea', 'reading inference', 'reading evidence', "reading writer's purpose",
     'reading language effect', 'reading character response', 'reading detail', 'reading sequence',
@@ -125,6 +129,7 @@ const TOPIC_ALIASES = Object.freeze({
     'figurative language interpretation', 'figurative language distinguishing devices',
     "figurative language writer's choice",
   ],
+  'ubay-english-productive-tenses': ['grammar controlled production', 'grammar productive tense'],
   'ubay-english-tenses': [
     'grammar present simple', 'grammar past simple', 'grammar present vs past', 'grammar error correction',
     'grammar verb form', 'grammar meaning and tense', 'grammar context', 'grammar editing in context',
