@@ -1,7 +1,7 @@
 import { familyProfiles, login, logout, requireProfile, requireSession, setupFamily } from './auth.js';
 import { finishGame, gameStatus, requestReward, resolveReward, rewardShop, startGame } from './engagement.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
-import { parentAccessStatus, requireParentAccess, setParentPin, unlockParentAccess } from './parent-access.js';
+import { lockParentAccess, parentAccessStatus, requireParentAccess, setParentPin, unlockParentAccess } from './parent-access.js';
 import { dashboardForProfile, progressForFamily } from './progress.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
 
@@ -75,6 +75,10 @@ async function handler(request, env) {
     const session = await requireSession(request, env);
     const body = await readJson(request);
     return json(await unlockParentAccess(env, session.familyId, body?.pin));
+  }
+  if (request.method === 'POST' && path === '/v1/parent/lock') {
+    const session = await requireSession(request, env);
+    return json(await lockParentAccess(request, env, session.familyId));
   }
 
   const dashboardParams = routeMatch(path, '/v1/dashboard/:profileId');
