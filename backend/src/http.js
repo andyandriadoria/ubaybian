@@ -28,7 +28,7 @@ export function corsHeaders(request, env) {
   return {
     'Access-Control-Allow-Origin': origin,
     'Vary': 'Origin',
-    'Access-Control-Allow-Headers': 'Authorization, Content-Type, Idempotency-Key, X-Setup-Token',
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type, Idempotency-Key, X-Setup-Token, X-Parent-Token',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Max-Age': '86400',
   };
