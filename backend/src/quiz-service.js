@@ -63,6 +63,27 @@ function correctAnswerFor(question) {
   return String(question.answerKey || '').trim().toUpperCase();
 }
 
+function reindexStimulusContext(questions) {
+  const copy = questions.map((question) => ({
+    ...question,
+    stimulus: question.stimulus ? { ...question.stimulus } : null,
+  }));
+  const groups = new Map();
+  for (const question of copy) {
+    if (!question.stimulusId || !question.stimulus) continue;
+    if (!groups.has(question.stimulusId)) groups.set(question.stimulusId, []);
+    groups.get(question.stimulusId).push(question);
+  }
+  for (const group of groups.values()) {
+    const ordered = [...group].sort((a, b) => (a.stimulusOrder || 0) - (b.stimulusOrder || 0));
+    ordered.forEach((question, index) => {
+      question.stimulus.order = index + 1;
+      question.stimulus.total = ordered.length;
+    });
+  }
+  return copy;
+}
+
 export async function startQuiz(env, familyId, profile, subjectId, requestedLimit, requestedMode = 'normal') {
   const { profileSlug, sheetName } = sheetConfig(profile.slug, subjectId);
   const rows = await readSheetValues(env, profileSlug, sheetName);
@@ -77,14 +98,14 @@ export async function startQuiz(env, familyId, profile, subjectId, requestedLimi
 
   // Open-response/writing is intentionally excluded from daily practice until a manual
   // review workflow exists. Exam Simulation can still include and safely store it.
-  available = available.filter((question) => question.type !== 'open-response');
+  available = reindexStimulusContext(available.filter((question) => question.type !== 'open-response'));
   if (!available.length) throw new HttpError(422, 'NO_AUTO_SCORED_PRACTICE', 'Belum ada soal auto-scored yang siap untuk latihan harian ini.');
 
   const limit = normalizedLimit(requestedLimit, profile.slug);
   const mode = normalizedMode(requestedMode);
   if (mode === 'review') {
     const ids = await reviewQuestionIds(env, familyId, profile.id, subjectId);
-    available = available.filter((question) => ids.has(question.id));
+    available = reindexStimulusContext(available.filter((question) => ids.has(question.id)));
     if (!available.length) throw new HttpError(422, 'NO_REVIEW_QUESTIONS', 'Belum ada soal yang perlu diulang untuk pelajaran ini.');
   }
 
