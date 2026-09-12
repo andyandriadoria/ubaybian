@@ -27,7 +27,15 @@ export async function readSheetValues(env, profileSlug, sheetName) {
   const data = await response.json().catch(() => null);
   if (!response.ok || !data?.ok) {
     const code = typeof data?.code === 'string' ? data.code : 'GATEWAY_READ_FAILED';
-    throw new HttpError(503, code, 'Bank soal sementara tidak dapat dibaca.');
+    const detail = typeof data?.detail === 'string' ? data.detail : '';
+    console.error('SHEETS_GATEWAY_READ_FAILED', {
+      profileSlug,
+      sheetName,
+      status: response.status,
+      code,
+      detail,
+    });
+    throw new HttpError(503, code, `Bank soal sementara tidak dapat dibaca. [${code}]`);
   }
   return Array.isArray(data.values) ? data.values : [];
 }
