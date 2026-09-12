@@ -1,4 +1,4 @@
-// UbayBian v0.5.55 — Session selector bridge for Learning Deck + Exam Simulation
+// UbayBian v0.5.65 — Session selector bridge for Learning Deck + Assessment
 (() => {
   'use strict';
 
@@ -14,7 +14,7 @@
       { value: '10', label: '📚 Practice' },
     ];
     if (examAvailable(profileId, subjectId)) {
-      options.push({ value: 'exam', label: '📝 Mid Exam Simulation' });
+      options.push({ value: 'exam', label: '📝 Assessment' });
     }
     return options;
   }
@@ -117,9 +117,9 @@
     const start = panel.querySelector('.start-btn');
     const review = panel.querySelector('.review-btn');
     if (start) {
-      start.textContent = isExam ? 'Mulai Simulasi 📝' : 'Mulai Latihan ⚡';
+      start.textContent = isExam ? 'Mulai Assessment 📝' : 'Mulai Latihan ⚡';
       start.classList.toggle('exam-start-btn', isExam);
-      start.title = isExam ? 'Mulai simulasi Mid Exam' : 'Mulai sesi belajar';
+      start.title = isExam ? 'Mulai Assessment' : 'Mulai sesi belajar';
     }
     if (review) {
       if (isExam) review.style.setProperty('display', 'none', 'important');
