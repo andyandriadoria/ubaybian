@@ -1,4 +1,4 @@
-/* UbayBian v0.5.38 · Memory Grid Contrast & State Hierarchy Pass
+/* UbayBian v0.5.39 · Memory Grid Readability Hotfix
    Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid-v046.js.
    Loads the v0.5.36 clarity layer, v0.5.37 lock polish, then v0.5.38 hierarchy polish. */
 (() => {
@@ -16,24 +16,24 @@
   function loadClarityCSS(){
     appendCSS({
       selector:'link[data-memory-grid-v0536]',
-      href:'memory-grid-v0536.css?v=0.5.38',
+      href:'memory-grid-v0536.css?v=0.5.39',
       dataKey:'memoryGridV0536'
     });
     appendCSS({
       selector:'link[data-memory-grid-v0537]',
-      href:'memory-grid-v0537.css?v=0.5.38',
+      href:'memory-grid-v0537.css?v=0.5.39',
       dataKey:'memoryGridV0537'
     });
     appendCSS({
       selector:'link[data-memory-grid-v0538]',
-      href:'memory-grid-v0538.css?v=0.5.38',
+      href:'memory-grid-v0538.css?v=0.5.39',
       dataKey:'memoryGridV0538'
     });
   }
 
   function syncVersionLabel(){
     const version = document.querySelector('.version');
-    if(version) version.textContent = 'v0.5.38 · family';
+    if(version) version.textContent = 'v0.5.39 · family';
   }
 
   function addWorldDepth(overlay){
@@ -104,6 +104,7 @@
     shell.dataset.ng0536 = '1';
     shell.dataset.ng0537 = '1';
     shell.dataset.ng0538 = '1';
+    shell.dataset.ng0539 = '1';
     const overlay = shell.closest('.neural-overlay');
     addWorldDepth(overlay);
     addChamberDepth(shell);
@@ -113,6 +114,7 @@
       const feedback = shell.querySelector('.neural-feedback');
       const resultScore = shell.querySelector('.neural-score-ring strong');
       const mascotBubble = shell.querySelector('.neural-lab-bubble');
+      const resultNote = shell.querySelector('.neural-result .neural-note');
 
       let outcome = '';
       if(feedback?.classList.contains('success')) outcome = 'success';
@@ -125,6 +127,12 @@
       if(shell.dataset.neuralState === 'result'){
         const grade = score === 5 ? 'perfect' : score >= 4 ? 'great' : 'complete';
         if(shell.dataset.resultGrade !== grade) shell.dataset.resultGrade = grade;
+      }
+
+      /* The success-save caption adds no value to the child-facing result screen.
+         Keep quota notices and actual save errors visible. */
+      if(resultNote?.textContent.trim() === 'Hasil tersimpan ke profilmu.'){
+        resultNote.textContent = '';
       }
 
       if(mascotBubble){
