@@ -1,0 +1,132 @@
+/* UbayBian v0.5.38 · Memory Grid Contrast & State Hierarchy Pass
+   Final visual hierarchy pass: reduce central wash, separate states more clearly,
+   keep the chamber world visible, and preserve crisp gameplay readability. */
+
+/* 1) Global chamber contrast: less milk, more depth. */
+.neural-shell{
+  background:
+    linear-gradient(180deg,rgba(250,253,255,.91) 0 14%,rgba(211,229,244,.34) 14.2%,rgba(188,207,230,.18) 62%,rgba(173,192,220,.15) 100%),
+    radial-gradient(circle at 50% 43%,rgba(255,255,255,.16),transparent 38%)!important;
+  backdrop-filter:blur(5px) saturate(118%) contrast(108%)!important;
+  -webkit-backdrop-filter:blur(5px) saturate(118%) contrast(108%)!important;
+}
+.neural-stage{
+  background:
+    linear-gradient(90deg,rgba(6,28,58,.12),rgba(220,238,250,.055) 18%,rgba(244,249,255,.09) 48%,rgba(228,225,250,.06) 82%,rgba(29,24,77,.12)),
+    radial-gradient(ellipse at 50% 56%,rgba(238,247,255,.18),transparent 43%)!important;
+}
+.neural-overlay:before{opacity:.66!important;}
+.neural-overlay:after{opacity:.18!important;filter:blur(28px)!important;}
+.ng36-focus-field{opacity:.56!important;filter:none!important;}
+
+/* 2) READY is calm and readable: almost no rail, focused holographic plate. */
+.neural-shell[data-neural-state="ready"] .ng36-link{opacity:.04!important;filter:none!important;animation:none!important;}
+.neural-shell[data-neural-state="ready"] .ng36-focus-field{
+  width:520px!important;height:330px!important;top:53%!important;opacity:.70!important;
+  border-radius:42px!important;
+  background:
+    linear-gradient(180deg,rgba(238,252,255,.17),rgba(207,229,247,.08)),
+    radial-gradient(ellipse at center,rgba(247,252,255,.34) 0%,rgba(214,236,247,.10) 55%,transparent 74%)!important;
+  border:1px solid rgba(141,221,235,.10)!important;
+  box-shadow:0 18px 50px rgba(20,59,93,.06),inset 0 1px 0 rgba(255,255,255,.20)!important;
+}
+.neural-shell[data-neural-state="ready"] .neural-ready:after{opacity:.42!important;}
+.neural-shell[data-neural-state="ready"] .neural-ready h3{
+  color:#222a42!important;text-shadow:0 2px 18px rgba(210,240,255,.20)!important;
+}
+.neural-shell[data-neural-state="ready"] .neural-ready-copy{
+  color:#3e4e65!important;font-weight:850!important;text-shadow:none!important;
+}
+.neural-shell[data-neural-state="ready"] .neural-chips .neural-chip{filter:saturate(1.06) contrast(1.03);}
+
+/* 3) SCAN is luminous but the board wins. */
+.neural-shell[data-neural-state="scan"] .ng36-focus-field{
+  width:500px!important;height:390px!important;top:51%!important;opacity:.42!important;
+  background:radial-gradient(ellipse at center,rgba(111,238,215,.14) 0%,rgba(109,206,240,.06) 47%,transparent 72%)!important;
+}
+.neural-shell[data-neural-state="scan"] .ng36-link{opacity:.58!important;filter:brightness(1.04)!important;}
+.neural-shell[data-neural-state="scan"] .neural-board{
+  filter:contrast(1.05) saturate(1.08);
+  box-shadow:0 26px 46px rgba(8,27,61,.34),0 0 20px rgba(89,235,213,.20),inset 0 2px 0 rgba(255,255,255,.16)!important;
+}
+.neural-shell[data-neural-state="scan"] .neural-cell{filter:saturate(1.06) contrast(1.03);}
+
+/* 4) RECALL carries the active circuit language. */
+.neural-shell[data-neural-state="recall"] .ng36-focus-field{
+  width:510px!important;height:405px!important;top:52%!important;opacity:.44!important;
+  background:radial-gradient(ellipse at center,rgba(102,194,255,.12) 0%,rgba(136,112,255,.055) 50%,transparent 74%)!important;
+}
+.neural-shell[data-neural-state="recall"] .ng36-link{opacity:.62!important;filter:brightness(1.12) saturate(1.12)!important;}
+.neural-shell[data-neural-state="recall"] .neural-board{
+  box-shadow:0 26px 48px rgba(7,23,56,.38),0 0 26px rgba(95,211,255,.19),inset 0 2px 0 rgba(255,255,255,.14)!important;
+}
+.neural-shell[data-neural-state="recall"] .neural-prompt{color:#202c43!important;font-weight:950!important;}
+
+/* 5) RESULT celebrates with color rather than white haze. */
+.neural-shell[data-neural-state="result"] .ng36-focus-field{
+  width:390px!important;height:405px!important;top:49%!important;opacity:.60!important;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(255,215,91,.18),transparent 32%),
+    radial-gradient(circle at 35% 60%,rgba(255,128,167,.11),transparent 32%),
+    radial-gradient(circle at 68% 62%,rgba(94,231,213,.11),transparent 34%),
+    radial-gradient(ellipse at center,rgba(255,248,218,.12),transparent 72%)!important;
+}
+.neural-shell[data-neural-state="result"] .neural-result:after{opacity:.28!important;}
+.neural-shell[data-neural-state="result"] .ng36-link{
+  opacity:.34!important;
+  background-image:linear-gradient(90deg,transparent,#ffd763 24%,#ff8fad 50%,#73ead7 76%,transparent)!important;
+}
+.neural-shell[data-neural-state="result"] .ng36-celebration{opacity:1!important;filter:saturate(1.22) brightness(1.08);}
+.neural-shell[data-neural-state="result"] .neural-result h3{
+  color:#28263f!important;text-shadow:0 2px 16px rgba(255,220,120,.18)!important;
+}
+.neural-shell[data-neural-state="result"] .neural-score-ring{
+  box-shadow:0 0 0 7px rgba(255,255,255,.48),0 18px 42px rgba(90,58,95,.18),0 0 38px rgba(255,197,92,.34),inset 0 2px 0 rgba(255,255,255,.92)!important;
+}
+
+/* 6) Memory Energy must feel alive even at 0/50. */
+.neural-memory-energy{filter:drop-shadow(0 12px 24px rgba(29,49,92,.10));}
+.neural-energy-vessel{
+  background:
+    linear-gradient(180deg,rgba(235,250,255,.24),rgba(183,210,238,.10)),
+    radial-gradient(circle at 50% 84%,rgba(255,151,121,.10),transparent 36%)!important;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.38),0 0 18px rgba(103,205,234,.08)!important;
+}
+.neural-energy-fill{
+  min-height:8px!important;
+  box-shadow:0 0 18px rgba(255,128,135,.22),0 -8px 18px rgba(255,210,86,.12)!important;
+}
+.neural-energy-spark{opacity:.64!important;}
+.neural-energy-label{color:#42536d!important;font-weight:950!important;}
+.neural-energy-value{color:#42536d!important;font-weight:900!important;}
+.neural-shell[data-neural-state="scan"] .neural-memory-energy,
+.neural-shell[data-neural-state="recall"] .neural-memory-energy{filter:drop-shadow(0 12px 24px rgba(29,49,92,.10)) drop-shadow(0 0 10px rgba(91,220,232,.08));}
+
+/* 7) Mascot and bubble gain a little more presence without stealing focus. */
+.neural-lab-bubble{
+  min-width:122px!important;max-width:158px!important;padding:9px 13px!important;
+  background:linear-gradient(145deg,rgba(246,252,255,.88),rgba(219,236,249,.78))!important;
+  color:#2d425a!important;font-size:12px!important;font-weight:900!important;line-height:1.24!important;
+  box-shadow:0 9px 22px rgba(15,43,75,.11),inset 0 1px 0 rgba(255,255,255,.82)!important;
+}
+.neural-shell[data-neural-state="result"] .neural-lab-bubble{background:linear-gradient(145deg,rgba(255,250,226,.90),rgba(238,245,255,.80))!important;}
+
+/* 8) Learning feedback is never visually secondary. */
+.neural-feedback{
+  font-size:14px!important;line-height:1.28!important;font-weight:950!important;padding:8px 15px!important;
+  letter-spacing:0!important;min-height:32px!important;
+}
+.neural-feedback.success{color:#096247!important;background:linear-gradient(145deg,rgba(226,255,243,.96),rgba(163,241,207,.90))!important;}
+.neural-feedback.error{color:#8a3345!important;background:linear-gradient(145deg,rgba(255,239,242,.97),rgba(255,185,194,.90))!important;}
+
+/* 9) Keep hierarchy sharp on the HUD and control surfaces. */
+.neural-hud{filter:drop-shadow(0 9px 16px rgba(18,48,86,.07))!important;}
+.neural-stat strong,.neural-round{color:#263149!important;}
+.neural-phase{color:#385d6d!important;font-weight:950!important;}
+.neural-main-btn{filter:saturate(1.06);}
+.neural-ghost-btn{color:#43506a!important;}
+
+@media (max-width:1100px){
+  .neural-shell[data-neural-state="ready"] .ng36-focus-field{width:470px!important;height:305px!important;}
+  .neural-lab-bubble{min-width:108px!important;max-width:142px!important;font-size:11px!important;}
+}
