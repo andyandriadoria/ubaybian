@@ -1,5 +1,24 @@
-// UbayBian v0.5.41 — Reward Shop Chamber Depth & Toy Polish
+// UbayBian v0.5.42 — Reward Shop Chamber Lock Polish
 (() => {
+  const ensure542Style = () => {
+    if (document.querySelector('link[data-reward-v0542="1"]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './reward-shop-v0542.css?v=0.5.42';
+    link.dataset.rewardV0542 = '1';
+    document.head.appendChild(link);
+  };
+
+  const upgradeVersionLabel = () => {
+    document.querySelectorAll('body *').forEach((el) => {
+      if (el.children.length) return;
+      const text = (el.textContent || '').trim();
+      if (/^v0\.5\.4[01]\s*·\s*family$/i.test(text)) {
+        el.textContent = 'v0.5.42 · family';
+      }
+    });
+  };
+
   const svgSafe = (kind) => {
     const span = document.createElement('span');
     span.className = `reward-object ${kind}`;
@@ -8,7 +27,9 @@
   };
 
   const decorateWorld = (overlay) => {
-    if (!overlay || overlay.dataset.rewardWorld541 === '1') return;
+    if (!overlay) return;
+    overlay.classList.add('reward-chamber-overlay');
+    if (overlay.dataset.rewardWorld541 === '1') return;
     overlay.dataset.rewardWorld541 = '1';
 
     const world = document.createElement('div');
@@ -79,44 +100,71 @@
     });
   };
 
+  const normalizeViewport = (box) => {
+    if (!box) return;
+    box.classList.add('reward-chamber');
+    const overlay = box.closest('.ub-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('reward-chamber-overlay');
+      overlay.scrollTop = 0;
+      overlay.scrollLeft = 0;
+    }
+    box.scrollTop = 0;
+    box.scrollLeft = 0;
+  };
+
   const decorateTerminal = (box) => {
-    if (!box || box.dataset.rewardDepth541 === '1') return;
+    if (!box) return;
     const title = box.querySelector('.ub-modal-heading h2');
     if (!title || title.textContent.trim() !== 'Reward Shop') return;
-    box.dataset.rewardDepth541 = '1';
 
+    normalizeViewport(box);
     const overlay = box.closest('.ub-modal-overlay');
     decorateWorld(overlay);
 
-    const oldMascot = box.querySelector(':scope > .reward-chamber-mascot');
-    const oldOrb = box.querySelector(':scope > .reward-chamber-orb');
-    const oldConsole = box.querySelector(':scope > .reward-chamber-console');
-    oldMascot?.remove();
-    oldOrb?.remove();
-    oldConsole?.remove();
+    if (box.dataset.rewardDepth541 !== '1') {
+      box.dataset.rewardDepth541 = '1';
 
-    if (!box.querySelector('.reward-chamber-hardware')) {
-      const hardware = document.createElement('div');
-      hardware.className = 'reward-chamber-hardware';
-      hardware.setAttribute('aria-hidden', 'true');
-      hardware.innerHTML = '<span class="clamp left"></span><span class="clamp right"></span><span class="floor-glow"></span>';
-      box.append(hardware);
+      const oldMascot = box.querySelector(':scope > .reward-chamber-mascot');
+      const oldOrb = box.querySelector(':scope > .reward-chamber-orb');
+      const oldConsole = box.querySelector(':scope > .reward-chamber-console');
+      oldMascot?.remove();
+      oldOrb?.remove();
+      oldConsole?.remove();
+
+      if (!box.querySelector('.reward-chamber-hardware')) {
+        const hardware = document.createElement('div');
+        hardware.className = 'reward-chamber-hardware';
+        hardware.setAttribute('aria-hidden', 'true');
+        hardware.innerHTML = '<span class="clamp left"></span><span class="clamp right"></span><span class="floor-glow"></span>';
+        box.append(hardware);
+      }
     }
 
     const refresh = () => {
       decorateWallet(box.querySelector('.ub-wallet'));
       decorateCards(box);
+      normalizeViewport(box);
 
       const parent = box.querySelector('.reward-parent-panel');
       if (parent) parent.setAttribute('aria-label', 'Persetujuan orang tua');
     };
 
     refresh();
-    const mo = new MutationObserver(refresh);
-    mo.observe(box, { childList: true, subtree: true });
+    if (!box.__reward542Observer) {
+      const mo = new MutationObserver(refresh);
+      mo.observe(box, { childList: true, subtree: true });
+      box.__reward542Observer = mo;
+    }
   };
 
-  const scan = () => document.querySelectorAll('.ub-modal-box.reward-chamber, .ub-modal-box').forEach(decorateTerminal);
+  const scan = () => {
+    ensure542Style();
+    upgradeVersionLabel();
+    document.querySelectorAll('.ub-modal-box.reward-chamber, .ub-modal-box').forEach(decorateTerminal);
+  };
+
+  ensure542Style();
   scan();
   const observer = new MutationObserver(scan);
   observer.observe(document.documentElement, { childList: true, subtree: true });
