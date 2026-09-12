@@ -1,0 +1,35 @@
+/* UbayBian v0.5.56 — simplify learning sessions: Session owns difficulty behavior */
+
+/* Mode remains in the legacy/backend model for compatibility, but is no longer a user-facing choice. */
+.controls-panel.learning-deck .deck-control-mode,
+.controls-panel.learning-deck label.controls-pill:has(#quiz-mode){
+  display:none !important;
+}
+
+/* Subject + Session are now the only setup controls. */
+.controls-panel.learning-deck .controls-row,
+.controls-panel.learning-deck .learning-deck-controls{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+}
+
+/* Mid Exam has no Review action inside mission setup. */
+.controls-panel.learning-deck.exam-session-selected .review-btn,
+.controls-panel.learning-deck.exam-session-selected .review-info,
+.controls-panel.learning-deck.exam-session-selected .deck-review-info{
+  display:none !important;
+}
+
+.controls-panel.learning-deck.exam-session-selected .start-row{
+  grid-template-columns:minmax(190px,330px) minmax(0,1fr) !important;
+}
+
+@media (max-width:760px){
+  .controls-panel.learning-deck .controls-row,
+  .controls-panel.learning-deck .learning-deck-controls{
+    grid-template-columns:1fr !important;
+  }
+
+  .controls-panel.learning-deck.exam-session-selected .start-row{
+    grid-template-columns:1fr !important;
+  }
+}
