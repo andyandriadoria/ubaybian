@@ -231,6 +231,22 @@ async function finishExam(auto=false){
 
 function resultEmoji(score){if(score===null)return '📝';if(score>=80)return '🏆';if(score>=60)return '🚀';return '🌱';}
 
+function renderExamReward(card,reward){
+ if(!reward)return;
+ if(reward.eligible){
+  card.append(el('div',{class:'exam-result-rewards'},[
+   text('span',`⭐ +${reward.xpEarned} XP`),
+   text('span',`🪙 +${reward.coinsEarned} coins`),
+  ]));
+  const completionCopy=reward.completionQualified
+   ? `Termasuk +${reward.completionXp} XP completion bonus. Reward Mid Exam hanya diberikan pada percobaan pertama.`
+   : `Completion bonus +${reward.rule?.completionXp||50} XP membutuhkan minimal ${reward.completionThreshold} dari ${reward.total} soal terjawab. Reward hasil tetap sudah dihitung.`;
+  card.append(text('p',completionCopy,'exam-result-reward-note'));
+ }else{
+  card.append(text('p','Retake tetap bisa dipakai untuk latihan, tetapi XP dan coins hanya diberikan pada percobaan pertama Mid Exam ini.','exam-result-reward-note is-retake'));
+ }
+}
+
 function renderExamResult(result){
  document.body.classList.remove('exam-mode-active');
  const summary=result.summary;
@@ -253,6 +269,7 @@ function renderExamResult(result){
   hasWriting?text('span',`📝 ${summary.reviewPending} writing to review`):null,
   text('span',`⬜ ${summary.unanswered} unanswered`),
  ]));
+ renderExamReward(card,result.reward);
  if(hasWriting){
   card.append(text('p',`Auto-score dihitung hanya dari ${summary.autoTotal} soal yang bisa dinilai otomatis. ${summary.writingAnswered} dari ${summary.writingTotal} writing response tersimpan untuk review; nilai akhir belum ditetapkan.`,`exam-result-note exam-writing-result-note`));
  }else{
