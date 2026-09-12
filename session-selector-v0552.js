@@ -1,4 +1,4 @@
-// UbayBian v0.5.53 — Session selector bridge for Learning Deck + Exam Simulation
+// UbayBian v0.5.55 — Session selector bridge for Learning Deck + Exam Simulation
 (() => {
   'use strict';
 
@@ -101,14 +101,16 @@
     const deck = mode.closest('.deck-control-mode');
     if (deck) {
       deck.hidden = true;
-      deck.style.display = 'none';
+      deck.style.setProperty('display', 'none', 'important');
       deck.setAttribute('aria-hidden', 'true');
     }
     const legacy = mode.closest('label.controls-pill');
     if (legacy) {
       legacy.hidden = true;
-      legacy.style.display = 'none';
+      legacy.style.setProperty('display', 'none', 'important');
     }
+    const controlsRow = panel.querySelector('.controls-row, .learning-deck-controls');
+    controlsRow?.style.setProperty('grid-template-columns', 'minmax(0, 1fr) minmax(0, 1fr)', 'important');
   }
 
   function syncActions(panel, isExam) {
@@ -119,7 +121,10 @@
       start.classList.toggle('exam-start-btn', isExam);
       start.title = isExam ? 'Mulai simulasi Mid Exam' : 'Mulai sesi belajar';
     }
-    if (review) review.style.display = isExam ? 'none' : '';
+    if (review) {
+      if (isExam) review.style.setProperty('display', 'none', 'important');
+      else review.style.removeProperty('display');
+    }
     panel.classList.toggle('exam-session-selected', isExam);
   }
 
