@@ -54,6 +54,7 @@ function doPost(e) {
     return json_({ ok: true, values: values });
   } catch (error) {
     console.error(error);
-    return json_({ ok: false, code: 'GATEWAY_ERROR' });
+    const detail = error && error.message ? String(error.message) : String(error || 'Unknown gateway error');
+    return json_({ ok: false, code: 'GATEWAY_ERROR', detail: detail.slice(0, 300) });
   }
 }
