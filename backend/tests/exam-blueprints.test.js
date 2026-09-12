@@ -14,6 +14,40 @@ function makeQuestion(id,topic,{stimulusId='',stimulusOrder=0}={}){
   return {id,topic,semester:'1',difficulty:'Sedang',stimulusId,stimulusOrder};
 }
 
+function categoryCounts(questions){
+  const counts={};
+  for(const question of questions){
+    const category=topicCategory(question);
+    counts[category]=(counts[category]||0)+1;
+  }
+  return counts;
+}
+
+function expectedCounts(){
+  const counts={};
+  for(const [topic,count] of targets){
+    const category=topicCategory(makeQuestion('expected',topic));
+    counts[category]=count;
+  }
+  return counts;
+}
+
+function makeThreeVariantBank(){
+  const block1=['identifying animals','colour vocabulary','reading comprehension (place)','reading comprehension (main idea)','animal behaviour','prediction'];
+  const block2=['feelings','text evidence','sequence of events','vocabulary meaning','reading comprehension (detail)'];
+  const block3=['identifying animals','colour vocabulary','character identification','reading comprehension (counting)','reading comprehension (reasoning)'];
+  const standalone=['punctuation','punctuation','vocabulary meaning','vocabulary meaning','grammar (nouns)','grammar (sentence structure)','alphabet','alphabet','writing','writing','grammar (verbs)','grammar (verbs)','feelings','text evidence'];
+  const questions=[];
+  let id=1;
+  for(const variant of ['A','B','C']){
+    for(const [blockIndex,topics] of [block1,block2,block3].entries()){
+      topics.forEach((topic,index)=>questions.push(makeQuestion(String(id++),topic,{stimulusId:`${variant}-ST-${blockIndex+1}`,stimulusOrder:index+1})));
+    }
+    standalone.forEach((topic)=>questions.push(makeQuestion(String(id++),topic)));
+  }
+  return questions;
+}
+
 test('English Grade 2 Mid Exam blueprint has 30 questions and 90 minutes',()=>{
   const blueprint=getExamBlueprint('bian','english');
   assert.equal(blueprint.targetQuestions,30);
@@ -43,6 +77,22 @@ test('exam selector satisfies blueprint and keeps stimulus questions together',(
   assert.equal(storyPositions[1],storyPositions[0]+1);
   assert.equal(selected[storyPositions[0]].stimulusOrder,1);
   assert.equal(selected[storyPositions[1]].stimulusOrder,2);
+});
+
+test('90-question three-variant bank always assembles an exact 30-question paper',()=>{
+  const blueprint=getExamBlueprint('bian','english');
+  const bank=makeThreeVariantBank();
+  const expected=expectedCounts();
+  for(let run=0;run<60;run+=1){
+    const selected=selectExamQuestions(bank,blueprint);
+    assert.equal(selected.length,30);
+    assert.deepEqual(categoryCounts(selected),expected);
+    const stimulusIds=[...new Set(selected.map((q)=>q.stimulusId).filter(Boolean))];
+    for(const stimulusId of stimulusIds){
+      const positions=selected.map((q,index)=>q.stimulusId===stimulusId?index:-1).filter((index)=>index>=0);
+      for(let i=1;i<positions.length;i+=1) assert.equal(positions[i],positions[i-1]+1);
+    }
+  }
 });
 
 test('exam selector rejects an incomplete bank',()=>{
