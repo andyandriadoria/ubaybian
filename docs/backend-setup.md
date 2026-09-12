@@ -39,6 +39,8 @@ Script Properties cocok untuk konfigurasi aplikasi dan hanya tersedia di dalam p
 
 Walaupun endpoint Web App dapat diakses secara jaringan, kode menolak permintaan yang tidak membawa `GATEWAY_SECRET` yang benar. Worker tidak pernah memberikan secret ini ke browser.
 
+Jika `apps-script/Code.gs` di repo diperbarui, deployment Apps Script yang sudah aktif **tidak ikut berubah otomatis**. Salin kode terbaru ke project Apps Script, lalu buka **Deploy → Manage deployments → Edit**, pilih **New version**, dan deploy kembali agar URL `/exec` yang sama memakai kode terbaru.
+
 ## 4. Isi secret Worker
 
 Di Cloudflare Worker `ubaybian-api`, tambahkan secret berikut:
@@ -74,11 +76,24 @@ Setelah commit masuk ke `main`, GitHub Pages akan meminta login keluarga sebelum
 
 `FRONTEND_ORIGIN` pada `backend/wrangler.jsonc` harus tetap origin GitHub Pages tanpa path: `https://andyandriadoria.github.io`.
 
-## 7. Publikasikan soal
+## 7. Publikasikan soal dan stimulus
 
-Backend hanya membaca baris dengan kolom `Status` bernilai `Published` (tidak peka huruf besar/kecil). `Draft`, baris kosong, dan template tidak masuk latihan.
+Backend membaca baris soal dengan kolom `Status` bernilai `Aktif` atau `Published` (tidak peka huruf besar/kecil). `Draft`, baris kosong, dan status lain tidak masuk latihan.
 
-Satu baris `Published` yang tidak valid akan memblokir snapshot mapel tersebut agar backend tidak diam-diam menjalankan sebagian bank soal.
+Untuk soal yang berbagi satu bacaan/gambar/diagram, gunakan dua kolom tambahan pada tab pelajaran:
+
+- `Stimulus ID`
+- `Urutan Dalam Set`
+
+Isi konten bersama satu kali pada tab `STIMULUS`:
+
+`Stimulus ID | Mapel | Semester | Judul | Teks / Passage | Gambar | Status | Sumber / Catatan`
+
+Stimulus yang dipakai soal juga harus berstatus `Aktif` atau `Published`. Satu Stimulus ID hanya untuk satu mapel dan satu semester. Urutan pertanyaan harus `1, 2, 3, ...` tanpa lompatan.
+
+Pada mode Normal/Challenge, backend mengacak **blok stimulus**, bukan memecah pertanyaan di dalamnya. Pada mode Review, satu soal yang salah boleh muncul sendiri tetapi passage tetap ikut ditampilkan.
+
+Satu baris aktif yang tidak valid akan memblokir snapshot mapel tersebut agar backend tidak diam-diam menjalankan sebagian bank soal.
 
 ## Penyimpanan progres
 
