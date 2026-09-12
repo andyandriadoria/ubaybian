@@ -1,5 +1,5 @@
 const forbiddenQuestionFields=['answerKey','correctAnswer','kunciJawaban','correctOption','solutionKey'];
-const allowedTypes=new Set(['multiple-choice','text','image-choice']);
+const allowedTypes=new Set(['multiple-choice','text','image-choice','open-response']);
 
 function text(value,max=4000){return typeof value==='string'?value.trim().slice(0,max):'';}
 function safeHttpsUrl(value){
@@ -104,6 +104,7 @@ export function normalizeExamSave(input){
  const data=requireObject(input,'Penyimpanan jawaban ujian');
  return Object.freeze({
    saved:Boolean(data.saved),
+   needsReview:Boolean(data.needsReview),
    answeredCount:Math.max(0,Number(data.answeredCount)||0),
    deadlineAt:Math.max(0,Number(data.deadlineAt)||0),
    remainingSeconds:Math.max(0,Number(data.remainingSeconds)||0),
@@ -114,11 +115,16 @@ export function normalizeExamSave(input){
 export function normalizeExamResult(input){
  const data=requireObject(input,'Hasil simulasi ujian');
  const summary=requireObject(data.summary,'Ringkasan ujian');
+ const normalizedScore=summary.score===null||summary.score===undefined?null:Math.max(0,Math.min(100,Number(summary.score)||0));
+ const normalizedAutoScore=summary.autoScore===null||summary.autoScore===undefined?null:Math.max(0,Math.min(100,Number(summary.autoScore)||0));
  const results=Array.isArray(data.results)?data.results.map((item)=>Object.freeze({
    position:Math.max(1,Number(item.position)||1),
    questionId:text(item.questionId,120),
+   prompt:text(item.prompt,4000),
    answer:text(item.answer,1000),
-   correct:Boolean(item.correct),
+   manualReview:Boolean(item.manualReview),
+   needsReview:Boolean(item.needsReview),
+   correct:item.correct===null||item.correct===undefined?null:Boolean(item.correct),
    correctAnswer:text(item.correctAnswer,1000),
    explanation:text(item.explanation,4000),
  })):[];
@@ -127,12 +133,20 @@ export function normalizeExamResult(input){
    title:text(data.title,200)||'Exam Simulation',
    blueprintId:text(data.blueprintId,160),
    summary:Object.freeze({
-     score:Math.max(0,Math.min(100,Number(summary.score)||0)),
+     score:normalizedScore,
+     autoScore:normalizedAutoScore,
      correct:Math.max(0,Number(summary.correct)||0),
      wrong:Math.max(0,Number(summary.wrong)||0),
      unanswered:Math.max(0,Number(summary.unanswered)||0),
      answered:Math.max(0,Number(summary.answered)||0),
      total:Math.max(0,Number(summary.total)||0),
+     autoTotal:Math.max(0,Number(summary.autoTotal)||0),
+     autoAnswered:Math.max(0,Number(summary.autoAnswered)||0),
+     autoUnanswered:Math.max(0,Number(summary.autoUnanswered)||0),
+     writingTotal:Math.max(0,Number(summary.writingTotal)||0),
+     writingAnswered:Math.max(0,Number(summary.writingAnswered)||0),
+     writingUnanswered:Math.max(0,Number(summary.writingUnanswered)||0),
+     reviewPending:Math.max(0,Number(summary.reviewPending)||0),
    }),
    results:Object.freeze(results),
  });
