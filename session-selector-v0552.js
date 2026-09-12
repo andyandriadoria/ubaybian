@@ -152,7 +152,21 @@
     }
   }
 
+  function syncExamSubjectTags(root = document) {
+    const shells = [];
+    if (root.nodeType === 1 && root.matches?.('.exam-shell')) shells.push(root);
+    root.querySelectorAll?.('.exam-shell').forEach((shell) => shells.push(shell));
+    for (const shell of shells) {
+      const title = shell.querySelector('.exam-heading h1')?.textContent?.trim().toLowerCase() || '';
+      const subjectTag = shell.querySelector('.exam-tags span');
+      if (!subjectTag) continue;
+      if (title.startsWith('math ')) subjectTag.textContent = 'MATH';
+      else if (title.startsWith('english ')) subjectTag.textContent = 'ENGLISH';
+    }
+  }
+
   function scan(root = document) {
+    syncExamSubjectTags(root);
     const panels = new Set();
     if (root.nodeType === 1) {
       if (root.matches?.('.controls-panel')) panels.add(root);
@@ -181,7 +195,12 @@
         return;
       }
       for (const node of record.addedNodes) {
-        if (node.nodeType === 1 && (node.matches?.('.controls-panel') || node.closest?.('.controls-panel') || node.querySelector?.('.controls-panel'))) {
+        if (node.nodeType !== 1) continue;
+        if (node.matches?.('.exam-shell') || node.querySelector?.('.exam-shell')) {
+          schedule(node);
+          return;
+        }
+        if (node.matches?.('.controls-panel') || node.closest?.('.controls-panel') || node.querySelector?.('.controls-panel')) {
           schedule(node);
           return;
         }
