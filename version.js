@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.5.60';
+  const VERSION = '0.5.61';
   const CHANNEL = 'family';
   const LABEL = `v${VERSION} · ${CHANNEL}`;
 
@@ -15,12 +15,19 @@
   const appVersion = Object.freeze({
     version: VERSION,
     channel: CHANNEL,
-    label: LABEL,
+    label,
     asset
   });
 
+  function label(){ return `v${VERSION} · ${CHANNEL}`; }
+
   window.UBAYBIAN_VERSION = VERSION;
-  window.UBAYBIAN = appVersion;
+  window.UBAYBIAN = Object.freeze({
+    version: VERSION,
+    channel: CHANNEL,
+    label: label(),
+    asset
+  });
 
   const syncVersionUI = (root = document) => {
     const nodes = [];
@@ -28,7 +35,7 @@
     root.querySelectorAll?.('.version,[data-app-version]').forEach((node) => nodes.push(node));
 
     nodes.forEach((node) => {
-      if (node.textContent !== LABEL) node.textContent = LABEL;
+      if (node.textContent !== label()) node.textContent = label();
       node.dataset.appVersion = VERSION;
       node.dataset.appChannel = CHANNEL;
     });
