@@ -7,6 +7,7 @@ const SUBJECT_TABS = Object.freeze({
     'BAHASA INDONESIA', 'PAIBP', 'ENGLISH', 'SCIENCE', 'MATH', 'PANCASILA',
   ]),
 });
+const AUXILIARY_TABS = Object.freeze(['STIMULUS']);
 
 function json_(payload) {
   return ContentService
@@ -30,7 +31,8 @@ function doPost(e) {
     const profileSlug = String(body.profileSlug || '').trim();
     const sheetName = String(body.sheetName || '').trim();
     const allowedTabs = SUBJECT_TABS[profileSlug];
-    if (!allowedTabs || allowedTabs.indexOf(sheetName) === -1) {
+    const isAuxiliary = AUXILIARY_TABS.indexOf(sheetName) !== -1;
+    if (!allowedTabs || (!isAuxiliary && allowedTabs.indexOf(sheetName) === -1)) {
       return json_({ ok: false, code: 'SUBJECT_FORBIDDEN' });
     }
 
@@ -46,7 +48,9 @@ function doPost(e) {
     }
 
     const lastRow = Math.min(sheet.getLastRow(), 1000);
-    const values = lastRow > 0 ? sheet.getRange(1, 1, lastRow, 19).getDisplayValues() : [];
+    const columnLimit = sheetName === 'STIMULUS' ? 8 : 21;
+    const lastColumn = Math.min(Math.max(sheet.getLastColumn(), 1), columnLimit);
+    const values = lastRow > 0 ? sheet.getRange(1, 1, lastRow, lastColumn).getDisplayValues() : [];
     return json_({ ok: true, values: values });
   } catch (error) {
     console.error(error);
