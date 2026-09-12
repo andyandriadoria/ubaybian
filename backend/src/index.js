@@ -1,6 +1,7 @@
 import { familyProfiles, login, logout, requireProfile, requireSession, setupFamily } from './auth.js';
 import { finishGame, gameStatus, requestReward, resolveReward, rewardShop, startGame } from './engagement.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
+import { parentAccessStatus, requireParentAccess, setParentPin, unlockParentAccess } from './parent-access.js';
 import { dashboardForProfile, progressForFamily } from './progress.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
 
@@ -8,7 +9,7 @@ async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.4.2',
+    version: '0.4.3',
     db: { bound: Boolean(env.DB), schemaReady: false },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
@@ -59,6 +60,21 @@ async function handler(request, env) {
   if (request.method === 'GET' && path === '/v1/progress') {
     const session = await requireSession(request, env);
     return json({ items: await progressForFamily(env, session.familyId) });
+  }
+
+  if (request.method === 'GET' && path === '/v1/parent/status') {
+    const session = await requireSession(request, env);
+    return json(await parentAccessStatus(env, session.familyId));
+  }
+  if (request.method === 'POST' && path === '/v1/parent/pin') {
+    const session = await requireSession(request, env);
+    const body = await readJson(request);
+    return json(await setParentPin(env, session.familyId, body?.familyPassword, body?.pin));
+  }
+  if (request.method === 'POST' && path === '/v1/parent/unlock') {
+    const session = await requireSession(request, env);
+    const body = await readJson(request);
+    return json(await unlockParentAccess(env, session.familyId, body?.pin));
   }
 
   const dashboardParams = routeMatch(path, '/v1/dashboard/:profileId');
@@ -113,6 +129,7 @@ async function handler(request, env) {
   if (request.method === 'POST' && rewardResolveParams) {
     const session = await requireSession(request, env);
     const profile = await requireProfile(env, session.familyId, rewardResolveParams.profileId);
+    await requireParentAccess(request, env, session.familyId);
     const body = await readJson(request);
     return json(await resolveReward(env, session.familyId, profile, rewardResolveParams.requestId, String(body?.decision || '')));
   }
