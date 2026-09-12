@@ -43,12 +43,16 @@ Ringkasan: `attempted`, `correct`, dan `lastPracticedAt` per subject.
 Backend:
 1. memverifikasi akun keluarga dan profil,
 2. memetakan mapel ke tab Sheet yang diizinkan,
-3. membaca Sheet privat menggunakan service account,
-4. memvalidasi semua baris `Published`,
-5. membuat snapshot sesi di D1,
-6. mengirim soal pertama tanpa kunci jawaban.
+3. membaca Sheet privat melalui gateway Apps Script,
+4. memvalidasi semua baris `Aktif` / `Published`,
+5. jika ada `Stimulus ID`, membaca tab `STIMULUS` dan memvalidasi mapel, semester, serta urutan set,
+6. memilih soal; pada mode Normal/Challenge satu stimulus diperlakukan sebagai satu blok sehingga set tidak dipecah dan urutannya tetap,
+7. membuat snapshot sesi di D1,
+8. mengirim soal pertama tanpa kunci jawaban.
 
-Payload soal hanya berisi field tampilan: `id`, `type`, `prompt`, `imageUrl`, `difficulty`, dan `choices`.
+Payload soal tetap hanya berisi field tampilan: `id`, `type`, `prompt`, `imageUrl`, `difficulty`, dan `choices`. Pada versi stimulus awal, judul + passage + posisi soal dalam set digabung ke `prompt` ketika snapshot dibuat. Dengan demikian kontrak frontend lama tetap kompatibel.
+
+Mode Review boleh mengambil satu pertanyaan yang salah secara individual. Jika pertanyaan itu terhubung ke stimulus, konteks stimulus tetap dimasukkan ke `prompt` review.
 
 ### `POST /v1/quiz/sessions/:sessionId/answers`
 
@@ -72,8 +76,18 @@ Backend menilai jawaban dari snapshot privat, menyimpan hasil, memperbarui progr
 Frontend tidak mengetahui credential Google atau Sheet ID. Backend hanya menerima mapel dari daftar yang telah dipetakan; browser tidak boleh mengirim spreadsheet ID atau nama tab bebas.
 
 Status yang dipakai:
-- `Published`: boleh masuk sesi setelah seluruh validasi lulus.
+- `Aktif` atau `Published`: boleh masuk sesi setelah seluruh validasi lulus.
 - `Draft` / kosong / lainnya: tidak masuk sesi.
+
+Kolom opsional soal setelah `Sumber / Catatan`:
+- `Stimulus ID`
+- `Urutan Dalam Set`
+
+Tab `STIMULUS` menggunakan kolom:
+
+`Stimulus ID | Mapel | Semester | Judul | Teks / Passage | Gambar | Status | Sumber / Catatan`
+
+Satu `Stimulus ID` hanya boleh dipakai untuk satu mapel dan satu semester. Urutan pertanyaan untuk satu stimulus harus lengkap `1, 2, 3, ...` tanpa duplikat atau lompatan.
 
 ## Error penting
 
@@ -81,4 +95,5 @@ Status yang dipakai:
 - `403 PROFILE_FORBIDDEN` / `SUBJECT_FORBIDDEN`
 - `409 SESSION_COMPLETE` / `QUESTION_MISMATCH`
 - `422 NO_PUBLISHED_QUESTIONS` / `INVALID_PUBLISHED_BANK`
+- `422 INVALID_STIMULUS_BANK` / `STIMULUS_NOT_FOUND` / `STIMULUS_ORDER_INVALID`
 - `503 GOOGLE_NOT_CONFIGURED` / `SHEET_READ_FAILED`
