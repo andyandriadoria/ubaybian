@@ -75,6 +75,11 @@ export async function startQuiz(env, familyId, profile, subjectId, requestedLimi
     available = attachStimuli(available, stimuli, sheetName);
   }
 
+  // Open-response/writing is intentionally excluded from daily practice until a manual
+  // review workflow exists. Exam Simulation can still include and safely store it.
+  available = available.filter((question) => question.type !== 'open-response');
+  if (!available.length) throw new HttpError(422, 'NO_AUTO_SCORED_PRACTICE', 'Belum ada soal auto-scored yang siap untuk latihan harian ini.');
+
   const limit = normalizedLimit(requestedLimit, profile.slug);
   const mode = normalizedMode(requestedMode);
   if (mode === 'review') {
@@ -137,6 +142,7 @@ export async function submitAnswer(env, familyId, sessionId, body, idempotencyKe
   if (!skipped && !answer) throw new HttpError(422, 'ANSWER_REQUIRED', 'Jawaban belum diisi.');
 
   const question = questionFromDb(row);
+  if (question.type === 'open-response') throw new HttpError(409, 'WRITING_NOT_AVAILABLE_IN_PRACTICE', 'Writing digunakan di Exam Simulation dan belum dinilai otomatis di latihan harian.');
   const correct = skipped ? false : isCorrectAnswer(question, answer);
   const now = Date.now();
   const nextIndex = position + 1;
