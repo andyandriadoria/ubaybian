@@ -164,14 +164,13 @@ export async function saveExamAnswer(env, familyId, sessionId, body) {
   const autoResult = needsReview ? null : isCorrectAnswer(question, answer);
   const correct = autoResult === true;
   const now = Date.now();
-  await env.DB.prepare(`INSERT INTO exam_answers (session_id, question_id, answer, correct, updated_at, needs_review)
-    VALUES (?, ?, ?, ?, ?, ?)
+  await env.DB.prepare(`INSERT INTO exam_answers (session_id, question_id, answer, correct, updated_at)
+    VALUES (?, ?, ?, ?, ?)
     ON CONFLICT(session_id, question_id) DO UPDATE SET
       answer = excluded.answer,
       correct = excluded.correct,
-      updated_at = excluded.updated_at,
-      needs_review = excluded.needs_review`)
-    .bind(sessionId, questionId, answer.slice(0, 1000), correct ? 1 : 0, now, needsReview ? 1 : 0)
+      updated_at = excluded.updated_at`)
+    .bind(sessionId, questionId, answer.slice(0, 1000), correct ? 1 : 0, now)
     .run();
 
   return {
@@ -184,7 +183,7 @@ export async function saveExamAnswer(env, familyId, sessionId, body) {
 
 async function completedExamResult(env, session) {
   const rows = await env.DB.prepare(`SELECT q.position, q.question_id, q.question_type, q.prompt, q.answer_key, q.explanation,
-      a.answer, a.correct, a.needs_review
+      a.answer, a.correct
     FROM exam_session_questions q
     LEFT JOIN exam_answers a ON a.session_id = q.session_id AND a.question_id = q.question_id
     WHERE q.session_id = ?
@@ -208,7 +207,7 @@ async function completedExamResult(env, session) {
   const writingTotal = writingItems.length;
   const writingAnswered = writingItems.reduce((sum, item) => sum + (isAnswered(item) ? 1 : 0), 0);
   const writingUnanswered = Math.max(0, writingTotal - writingAnswered);
-  const reviewPending = writingItems.reduce((sum, item) => sum + (isAnswered(item) && Number(item.needs_review) === 1 ? 1 : 0), 0);
+  const reviewPending = writingAnswered;
   const score = writingTotal ? null : autoScore;
 
   return {
@@ -241,7 +240,7 @@ async function completedExamResult(env, session) {
         prompt: String(item.prompt || ''),
         answer: String(item.answer || ''),
         manualReview,
-        needsReview: manualReview && answeredItem && Number(item.needs_review) === 1,
+        needsReview: manualReview && answeredItem,
         correct: manualReview ? null : Number(item.correct) === 1,
         correctAnswer: manualReview ? '' : correctAnswerFor(question),
         explanation: String(item.explanation || ''),
@@ -254,8 +253,10 @@ export async function finishExam(env, familyId, sessionId) {
   const session = await examSession(env, familyId, sessionId);
   if (session.completed_at) return completedExamResult(env, session);
 
-  const counts = await env.DB.prepare(`SELECT COALESCE(SUM(CASE WHEN needs_review = 0 THEN correct ELSE 0 END), 0) AS correct
-    FROM exam_answers WHERE session_id = ?`).bind(sessionId).first();
+  const counts = await env.DB.prepare(`SELECT COALESCE(SUM(a.correct), 0) AS correct
+    FROM exam_answers a
+    JOIN exam_session_questions q ON q.session_id = a.session_id AND q.question_id = a.question_id
+    WHERE a.session_id = ? AND q.question_type <> 'open-response'`).bind(sessionId).first();
   const correct = Number(counts?.correct || 0);
   const now = Date.now();
   await env.DB.prepare(`UPDATE exam_sessions
