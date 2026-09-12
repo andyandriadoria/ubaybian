@@ -1,4 +1,5 @@
 import { HttpError } from './http.js';
+import { examRewardTotals } from './exam-rewards.js';
 import { randomToken } from './security.js';
 
 const GAME_DAILY_XP_CAP = 50;
@@ -134,18 +135,22 @@ export async function finishGame(env, familyId, profile, sessionId, scoreValue) 
 
 export async function rewardShop(env, familyId, profile) {
   await ensureEngagementSchema(env);
-  const [earned, totals, history] = await Promise.all([
+  const [quizEarned, examRewards, totals, history] = await Promise.all([
     quizCoinsEarned(env, familyId, profile.id),
+    examRewardTotals(env, familyId, profile.id),
     rewardTotals(env, familyId, profile.id),
     env.DB.prepare(`SELECT id, reward_id AS rewardId, reward_name AS rewardName, cost, status,
       requested_at AS requestedAt, resolved_at AS resolvedAt
       FROM reward_requests WHERE family_id = ? AND profile_id = ? ORDER BY requested_at DESC LIMIT 20`)
       .bind(familyId, profile.id).all(),
   ]);
+  const earned = quizEarned + examRewards.coins;
   const balance = Math.max(0, earned - totals.approved);
   const available = Math.max(0, balance - totals.pending);
   return {
     earnedCoins: earned,
+    quizCoins: quizEarned,
+    examCoins: examRewards.coins,
     balance,
     reserved: totals.pending,
     available,
