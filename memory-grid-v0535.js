@@ -32,8 +32,16 @@
   }
 
   function syncVersionLabel(){
+    /* This feature file belongs to v0.5.39, but it may still be loaded by newer
+       app releases. Never downgrade a newer global app version label. */
     const version = document.querySelector('.version');
-    if(version) version.textContent = 'v0.5.39 · family';
+    if(!version) return;
+    const current = (version.textContent || '').trim();
+    const match = current.match(/^v(\d+)\.(\d+)\.(\d+)\s*·\s*family$/i);
+    if(!match) return;
+    const [, major, minor, patch] = match.map((part, index) => index === 0 ? part : Number(part));
+    const isOlderThan539 = major < 0 || (major === 0 && (minor < 5 || (minor === 5 && patch < 39)));
+    if(isOlderThan539) version.textContent = 'v0.5.39 · family';
   }
 
   function addWorldDepth(overlay){
