@@ -10,6 +10,7 @@ import {
   selectGroupedQuestions,
   sheetConfig,
 } from './questions.js';
+import { reviewQuestionIds } from './review-queue.js';
 import { randomToken } from './security.js';
 
 const ALLOWED_LIMITS = new Set([5, 10, 15]);
@@ -41,21 +42,6 @@ function normalizedLimit(requestedLimit, profileSlug) {
 function normalizedMode(value) {
   const mode = String(value || 'normal').toLowerCase();
   return ALLOWED_MODES.has(mode) ? mode : 'normal';
-}
-
-async function reviewQuestionIds(env, familyId, profileId, subjectId) {
-  const result = await env.DB.prepare(`
-    SELECT qa.question_id, qa.correct
-    FROM quiz_answers qa
-    JOIN quiz_sessions qs ON qs.id = qa.session_id
-    WHERE qs.family_id = ? AND qs.profile_id = ? AND qs.subject_id = ?
-    ORDER BY qa.answered_at DESC
-  `).bind(familyId, profileId, subjectId).all();
-  const latest = new Map();
-  for (const row of result.results || []) {
-    if (!latest.has(row.question_id)) latest.set(row.question_id, Number(row.correct));
-  }
-  return new Set([...latest.entries()].filter(([, correct]) => correct !== 1).map(([id]) => id));
 }
 
 function correctAnswerFor(question) {
@@ -96,8 +82,8 @@ export async function startQuiz(env, familyId, profile, subjectId, requestedLimi
     available = attachStimuli(available, stimuli, sheetName);
   }
 
-  // Open-response/writing is intentionally excluded from daily practice until a manual
-  // review workflow exists. Exam Simulation can still include and safely store it.
+  // Open-response/writing is intentionally excluded from daily practice and the automatic
+  // Review queue. Exam Simulation can still include and safely store it for manual review.
   available = reindexStimulusContext(available.filter((question) => question.type !== 'open-response'));
   if (!available.length) throw new HttpError(422, 'NO_AUTO_SCORED_PRACTICE', 'Belum ada soal auto-scored yang siap untuk latihan harian ini.');
 
