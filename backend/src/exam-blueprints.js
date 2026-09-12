@@ -1,4 +1,5 @@
 import { HttpError } from './http.js';
+import { randomizeChoicePositions } from './questions.js';
 
 const BLUEPRINTS = Object.freeze({
   'bian-english-mid-s1-2026': Object.freeze({
@@ -248,5 +249,5 @@ export function selectExamQuestions(questions, blueprint) {
       : `jumlah soal ${selected.length}/${blueprint.targetQuestions}`;
     throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: ${detail}.`);
   }
-  return selected;
+  return randomizeChoicePositions(selected);
 }
