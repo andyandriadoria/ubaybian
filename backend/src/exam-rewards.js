@@ -1,3 +1,5 @@
+export const EXAM_REWARD_POLICY_START_AT = Date.parse('2026-09-12T11:00:00Z');
+
 export const EXAM_REWARD_RULES = Object.freeze({
   correctXp: 5,
   correctCoins: 20,
@@ -49,14 +51,22 @@ async function firstCompletedAttempt(env, session) {
   return env.DB.prepare(`SELECT id
     FROM exam_sessions
     WHERE family_id = ? AND profile_id = ? AND subject_id = ? AND blueprint_id = ?
-      AND completed_at IS NOT NULL
+      AND completed_at IS NOT NULL AND completed_at >= ?
     ORDER BY completed_at ASC, created_at ASC, id ASC
     LIMIT 1`)
-    .bind(session.family_id, session.profile_id, session.subject_id, session.blueprint_id)
+    .bind(
+      session.family_id,
+      session.profile_id,
+      session.subject_id,
+      session.blueprint_id,
+      EXAM_REWARD_POLICY_START_AT,
+    )
     .first();
 }
 
 export async function examRewardForSession(env, session, stats) {
+  const completedAt = Number(session.completed_at || 0);
+  if (completedAt < EXAM_REWARD_POLICY_START_AT) return rewardFromExamStats(stats, false);
   const first = await firstCompletedAttempt(env, session);
   const eligible = Boolean(first?.id && String(first.id) === String(session.id));
   return rewardFromExamStats(stats, eligible);
@@ -67,9 +77,9 @@ export async function examRewardTotals(env, familyId, profileId) {
       es.correct_count, es.created_at, es.completed_at,
       (SELECT COUNT(*) FROM exam_answers ea WHERE ea.session_id = es.id) AS answered_count
     FROM exam_sessions es
-    WHERE es.family_id = ? AND es.profile_id = ? AND es.completed_at IS NOT NULL
+    WHERE es.family_id = ? AND es.profile_id = ? AND es.completed_at IS NOT NULL AND es.completed_at >= ?
     ORDER BY es.completed_at ASC, es.created_at ASC, es.id ASC`)
-    .bind(familyId, profileId)
+    .bind(familyId, profileId, EXAM_REWARD_POLICY_START_AT)
     .all();
 
   const seen = new Set();
