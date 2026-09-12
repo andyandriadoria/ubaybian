@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.5.55';
+  const VERSION = '0.5.56';
   const CHANNEL = 'family';
   const LABEL = `v${VERSION} · ${CHANNEL}`;
 
@@ -19,7 +19,6 @@
     asset
   });
 
-  // Backwards-friendly globals for feature files that only need the number.
   window.UBAYBIAN_VERSION = VERSION;
   window.UBAYBIAN = appVersion;
 
@@ -40,8 +39,6 @@
 
   const boot = () => {
     syncVersionUI();
-
-    // Keep late-rendered badges aligned without letting feature modules own the version.
     const observer = new MutationObserver((records) => {
       for (const record of records) {
         for (const node of record.addedNodes) {
