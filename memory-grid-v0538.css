@@ -126,6 +126,27 @@
 .neural-main-btn{filter:saturate(1.06);}
 .neural-ghost-btn{color:#43506a!important;}
 
+/* 10) v0.5.39 readability hotfix: keep intro copy crisp over the chamber. */
+.neural-shell[data-neural-state="ready"] .neural-ready,
+.neural-shell[data-neural-state="ready"] .neural-ready *{
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+}
+.neural-shell[data-neural-state="ready"] .neural-ready h3{
+  color:#16233d!important;
+  font-weight:950!important;
+  opacity:1!important;
+  filter:none!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.30),0 4px 18px rgba(8,25,50,.08)!important;
+}
+.neural-shell[data-neural-state="ready"] .neural-ready-copy{
+  color:#2d3b52!important;
+  font-weight:850!important;
+  opacity:1!important;
+  filter:none!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.18)!important;
+}
+
 @media (max-width:1100px){
   .neural-shell[data-neural-state="ready"] .ng36-focus-field{width:470px!important;height:305px!important;}
   .neural-lab-bubble{min-width:108px!important;max-width:142px!important;font-size:11px!important;}
