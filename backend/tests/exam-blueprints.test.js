@@ -29,8 +29,26 @@ const mathTargets = [
   ['Extension (S) Number Words to 1000',1],
 ];
 
-function makeQuestion(id,topic,{stimulusId='',stimulusOrder=0}={}){
-  return {id,topic,semester:'1',difficulty:'Sedang',stimulusId,stimulusOrder};
+const mathDifficultyProfiles = new Map([
+  ['N2.2D Mental Subtraction',['Mudah','Mudah','Mudah','Sedang','Sedang']],
+  ['N2.1D Number Words',['Mudah','Mudah']],
+  ['N2.2E Add Three 1-digit Numbers',['Mudah','Mudah']],
+  ['N2.1B Number Line and Zero',['Mudah']],
+  ['N2.1F Compare and Order',['Mudah','Sedang','Sedang','Sedang']],
+  ['N2.2F Mathematical Statements',['Sedang','Sedang']],
+  ['N2.1E Place Value and Expanded Form',['Mudah','Sedang']],
+  ['N2.2C Mental Addition',['Sedang','Mudah']],
+  ['N2.1G Rounding to Nearest 10',['Sedang']],
+  ['N2.2A Number Bonds to 20',['Mudah','Mudah']],
+  ['N2.1H Ordinal Numbers',['Sedang','Sedang']],
+  ['N2.1C Number Patterns',['Sedang','Mudah']],
+  ['Extension (S) 3-digit Mental Calculation',['Sulit']],
+  ['Extension (S) 3-digit Algorithm',['Sulit']],
+  ['Extension (S) Number Words to 1000',['Sulit']],
+]);
+
+function makeQuestion(id,topic,{stimulusId='',stimulusOrder=0,difficulty='Sedang'}={}){
+  return {id,topic,semester:'1',difficulty,stimulusId,stimulusOrder};
 }
 
 function categoryCounts(questions){
@@ -38,6 +56,14 @@ function categoryCounts(questions){
   for(const question of questions){
     const category=topicCategory(question);
     counts[category]=(counts[category]||0)+1;
+  }
+  return counts;
+}
+
+function difficultyCounts(questions){
+  const counts={Mudah:0,Sedang:0,Sulit:0};
+  for(const question of questions){
+    if(question.difficulty in counts)counts[question.difficulty]+=1;
   }
   return counts;
 }
@@ -72,9 +98,9 @@ function makeThreeVariantMathBank(){
   let id=1;
   for(const variant of ['A','B','C']){
     for(const [topic,count] of mathTargets){
-      for(let index=0;index<count;index+=1){
-        questions.push(makeQuestion(`M-${variant}-${id++}`,topic));
-      }
+      const difficulties=mathDifficultyProfiles.get(topic);
+      assert.equal(difficulties.length,count);
+      difficulties.forEach((difficulty)=>questions.push(makeQuestion(`M-${variant}-${id++}`,topic,{difficulty})));
     }
   }
   return questions;
@@ -87,12 +113,20 @@ test('English Grade 2 Mid Exam blueprint has 30 questions and 90 minutes',()=>{
   assert.equal(Object.values(blueprint.topicTargets).reduce((a,b)=>a+b,0),30);
 });
 
-test('Math Grade 2 Mid Exam blueprint has 30 questions and 90 minutes',()=>{
+test('Math Grade 2 Mid Exam blueprint locks 30 questions, 90 minutes, and 14/13/3 difficulty mix',()=>{
   const blueprint=getExamBlueprint('bian','math');
   assert.equal(blueprint.id,'bian-math-mid-s1-2026');
   assert.equal(blueprint.targetQuestions,30);
   assert.equal(blueprint.durationMinutes,90);
   assert.equal(Object.values(blueprint.topicTargets).reduce((a,b)=>a+b,0),30);
+  const totals={mudah:0,sedang:0,sulit:0};
+  for(const [category,target] of Object.entries(blueprint.topicTargets)){
+    const difficultyTargets=blueprint.topicDifficultyTargets[category];
+    assert.ok(difficultyTargets,`missing difficulty target for ${category}`);
+    assert.equal(Object.values(difficultyTargets).reduce((a,b)=>a+b,0),target);
+    for(const [difficulty,count] of Object.entries(difficultyTargets))totals[difficulty]+=count;
+  }
+  assert.deepEqual(totals,{mudah:14,sedang:13,sulit:3});
 });
 
 test('topic aliases map MHIS pointer labels to canonical categories',()=>{
@@ -160,15 +194,22 @@ test('English 90-question three-variant bank always assembles an exact 30-questi
   }
 });
 
-test('Math 90-question three-variant bank always assembles exact pointer coverage',()=>{
+test('Math 90-question bank always assembles exact pointer coverage and 14/13/3 difficulty',()=>{
   const blueprint=getExamBlueprint('bian','math');
   const bank=makeThreeVariantMathBank();
   const expected=expectedCounts(mathTargets);
-  for(let run=0;run<60;run+=1){
+  for(let run=0;run<120;run+=1){
     const selected=selectExamQuestions(bank,blueprint);
     assert.equal(selected.length,30);
     assert.deepEqual(categoryCounts(selected),expected);
+    assert.deepEqual(difficultyCounts(selected),{Mudah:14,Sedang:13,Sulit:3});
   }
+});
+
+test('Math selector rejects topic-complete bank with the wrong difficulty inventory',()=>{
+  const blueprint=getExamBlueprint('bian','math');
+  const bank=makeThreeVariantMathBank().map((question)=>({ ...question, difficulty:'Sedang' }));
+  assert.throws(()=>selectExamQuestions(bank,blueprint),/kekurangan .*mudah/i);
 });
 
 test('exam selector rejects an incomplete bank',()=>{
