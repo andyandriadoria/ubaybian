@@ -41,7 +41,46 @@ const GLOBAL_BLUEPRINT = Object.freeze({
   }),
 });
 
-const GLOBAL_ALIASES = Object.freeze({
+const SCIENCE_BLUEPRINT = Object.freeze({
+  id: 'ubay-science-mid-s1-2026',
+  profileSlug: 'ubay',
+  subjectId: 'science',
+  semester: '1',
+  title: 'Science Mid Exam S1',
+  subtitle: 'Grade 7 · Semester 1 · 2026/2027',
+  durationMinutes: 120,
+  targetQuestions: 30,
+  topicTargets: Object.freeze({
+    'ubay-science-life-organisation': 2,
+    'ubay-science-cells': 3,
+    'ubay-science-microscope': 2,
+    'ubay-science-organ-systems': 1,
+    'ubay-science-plants': 3,
+    'ubay-science-skeleton-muscles': 4,
+    'ubay-science-ecology': 3,
+    'ubay-science-particles': 3,
+    'ubay-science-separation': 4,
+    'ubay-science-hazards-acids': 2,
+    'ubay-science-metals': 3,
+  }),
+  topicDifficultyTargets: Object.freeze({
+    'ubay-science-life-organisation': Object.freeze({ sedang: 2 }),
+    'ubay-science-cells': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-science-microscope': Object.freeze({ mudah: 1, sedang: 1 }),
+    'ubay-science-organ-systems': Object.freeze({ sedang: 1 }),
+    'ubay-science-plants': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-science-skeleton-muscles': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
+    'ubay-science-ecology': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-science-particles': Object.freeze({ mudah: 1, sedang: 1, sulit: 1 }),
+    'ubay-science-separation': Object.freeze({ mudah: 1, sedang: 2, sulit: 1 }),
+    'ubay-science-hazards-acids': Object.freeze({ mudah: 1, sedang: 1 }),
+    'ubay-science-metals': Object.freeze({ sedang: 2, sulit: 1 }),
+  }),
+});
+
+const CUSTOM_BLUEPRINTS = Object.freeze([GLOBAL_BLUEPRINT, SCIENCE_BLUEPRINT]);
+
+const TOPIC_ALIASES = Object.freeze({
   'ubay-gc-social-justice': ['social justice meaning & fair society'],
   'ubay-gc-types-justice': ['social justice types of justice'],
   'ubay-gc-case-analysis': ['justice & injustice case analysis'],
@@ -54,16 +93,34 @@ const GLOBAL_ALIASES = Object.freeze({
   'ubay-gc-equity': ['equality of opportunity equality, equity & formal/substantive'],
   'ubay-gc-barriers-support': ['equality of opportunity barriers & support'],
   'ubay-gc-policy': ['social justice policy & critical thinking'],
+
+  'ubay-science-life-organisation': ['life processes & levels of organisation'],
+  'ubay-science-cells': ['cells & organelles'],
+  'ubay-science-microscope': ['microscope & scientific observation'],
+  'ubay-science-organ-systems': ['human organ systems'],
+  'ubay-science-plants': ['plant structure, function & grouping'],
+  'ubay-science-skeleton-muscles': ['human skeleton & antagonistic muscles'],
+  'ubay-science-ecology': ['habitats, food chains & biotic/abiotic factors'],
+  'ubay-science-particles': ['particles, solutions & suspensions'],
+  'ubay-science-separation': ['separation methods'],
+  'ubay-science-hazards-acids': ['hazard symbols, acids & alkalis'],
+  'ubay-science-metals': ['metals & non-metals'],
 });
 
 function normalize(value) {
-  return String(value || '').normalize('NFKC').toLowerCase().replace(/[–—/_-]+/g, ' ').replace(/[()]/g, (match) => ` ${match} `).replace(/\s+/g, ' ').trim();
+  return String(value || '')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[–—/_-]+/g, ' ')
+    .replace(/[()]/g, (match) => ` ${match} `)
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-function globalTopicCategory(question) {
+function customTopicCategory(question) {
   const topic = normalize(question?.topic);
   if (!topic) return '';
-  for (const [category, aliases] of Object.entries(GLOBAL_ALIASES)) {
+  for (const [category, aliases] of Object.entries(TOPIC_ALIASES)) {
     if (aliases.some((alias) => topic === normalize(alias))) return category;
   }
   return '';
@@ -77,7 +134,7 @@ function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
-function selectGlobalQuestions(questions, blueprint) {
+function selectCustomQuestions(questions, blueprint) {
   const eligible = questions.filter((question) => String(question.semester) === String(blueprint.semester));
   if (eligible.length < blueprint.targetQuestions) {
     throw new HttpError(422, 'EXAM_BANK_INCOMPLETE', `Bank soal belum cukup untuk simulasi ${blueprint.title}. Dibutuhkan ${blueprint.targetQuestions} soal, tersedia ${eligible.length}.`);
@@ -85,10 +142,11 @@ function selectGlobalQuestions(questions, blueprint) {
 
   const selected = [];
   for (const [category, target] of Object.entries(blueprint.topicTargets)) {
-    const pool = eligible.filter((question) => globalTopicCategory(question) === category);
+    const pool = eligible.filter((question) => customTopicCategory(question) === category);
     if (pool.length < target) {
       throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam kekurangan ${category}: butuh ${target}, tersedia ${pool.length}.`);
     }
+
     const targets = blueprint.topicDifficultyTargets?.[category] || {};
     let categoryPicked = 0;
     for (const [difficulty, difficultyTarget] of Object.entries(targets)) {
@@ -99,6 +157,7 @@ function selectGlobalQuestions(questions, blueprint) {
       selected.push(...matching.slice(0, difficultyTarget));
       categoryPicked += difficultyTarget;
     }
+
     if (categoryPicked !== target) {
       throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Target tingkat kesulitan ${category} tidak cocok dengan target topik (${categoryPicked}/${target}).`);
     }
@@ -107,27 +166,35 @@ function selectGlobalQuestions(questions, blueprint) {
   if (selected.length !== blueprint.targetQuestions) {
     throw new HttpError(422, 'EXAM_BLUEPRINT_INCOMPLETE', `Blueprint Mid Exam belum terpenuhi: jumlah soal ${selected.length}/${blueprint.targetQuestions}.`);
   }
+
   return randomizeChoicePositions(shuffle(selected));
 }
 
 export function getExamBlueprint(profileSlug, subjectId, requestedId = '') {
   const requested = String(requestedId || '').trim();
-  if (profileSlug === GLOBAL_BLUEPRINT.profileSlug && subjectId === GLOBAL_BLUEPRINT.subjectId) {
-    if (requested && requested !== GLOBAL_BLUEPRINT.id) {
+  const custom = CUSTOM_BLUEPRINTS.find((blueprint) => (
+    profileSlug === blueprint.profileSlug && subjectId === blueprint.subjectId
+  ));
+
+  if (custom) {
+    if (requested && requested !== custom.id) {
       throw new HttpError(404, 'EXAM_BLUEPRINT_NOT_FOUND', 'Simulasi ujian belum tersedia untuk pelajaran ini.');
     }
-    return GLOBAL_BLUEPRINT;
+    return custom;
   }
+
   return base.getExamBlueprint(profileSlug, subjectId, requestedId);
 }
 
 export const publicExamBlueprint = base.publicExamBlueprint;
 
 export function topicCategory(question) {
-  return globalTopicCategory(question) || base.topicCategory(question);
+  return customTopicCategory(question) || base.topicCategory(question);
 }
 
 export function selectExamQuestions(questions, blueprint) {
-  if (blueprint?.id === GLOBAL_BLUEPRINT.id) return selectGlobalQuestions(questions, blueprint);
+  if (CUSTOM_BLUEPRINTS.some((custom) => custom.id === blueprint?.id)) {
+    return selectCustomQuestions(questions, blueprint);
+  }
   return base.selectExamQuestions(questions, blueprint);
 }
