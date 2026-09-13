@@ -1,11 +1,11 @@
-// UbayBian v0.5.80 — Session selector bridge for Learning Deck + Assessment
+// UbayBian v0.5.81 — Session selector bridge for Learning Deck + Assessment
 (() => {
   'use strict';
 
   let scheduled = false;
 
   function examAvailable(profileId, subjectId) {
-    if (profileId === 'bian') return ['bahasa-indonesia', 'english', 'math', 'pancasila', 'science'].includes(subjectId);
+    if (profileId === 'bian') return ['bahasa-indonesia', 'english', 'math', 'paibp', 'pancasila', 'science'].includes(subjectId);
     if (profileId === 'ubay') return ['bahasa-indonesia', 'english', 'global-citizenship', 'informatika', 'math', 'pai', 'pancasila', 'science'].includes(subjectId);
     return false;
   }
@@ -172,6 +172,7 @@
       else if (title.startsWith('informatika ')) subjectTag.textContent = 'INFORMATIKA';
       else if (title.startsWith('math ')) subjectTag.textContent = 'MATH';
       else if (title.startsWith('english ')) subjectTag.textContent = 'ENGLISH';
+      else if (title.startsWith('paibp ')) subjectTag.textContent = 'PAIBP';
       else if (title.startsWith('pai ')) subjectTag.textContent = 'PAI';
       else if (title.startsWith('pancasila ')) subjectTag.textContent = 'PANCASILA';
       else if (title.startsWith('science ')) subjectTag.textContent = 'SCIENCE';
