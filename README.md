@@ -2,35 +2,57 @@
 
 Ruang belajar keluarga untuk Ubay (Grade 7 / Junior High) dan Bian (Grade 2 / Primary).
 
-## Versi 0.3 — family backend foundation
+UbayBian memakai frontend GitHub Pages, backend Cloudflare Worker + D1, dan bank soal privat yang dibaca melalui gateway Google Apps Script.
 
-Frontend GitHub Pages kini siap memakai backend privat untuk tiga kebutuhan utama:
+## Status aplikasi
 
-1. **Login keluarga** — username/password diverifikasi server, sesi memakai opaque token yang hash-nya disimpan di database.
-2. **Google Sheets privat** — bank soal dibaca oleh Cloudflare Worker melalui service account Google. Browser tidak menerima credential atau Sheet ID.
-3. **Progres online** — sesi kuis, jawaban, jumlah benar, jumlah dikerjakan, dan waktu latihan terakhir disimpan di Cloudflare D1.
+Mulai v0.6.0, repo masuk fase **frontend consolidation**. Perilaku belajar yang sudah stabil dipertahankan, sementara file legacy yang benar-benar tidak dipakai dihapus dan pola pengembangan baru tidak lagi membuat file baru untuk setiap patch kecil.
 
-Quiz engine tetap mendukung pilihan ganda, isian teks, pilihan gambar, progres sesi, feedback, dan pembahasan setelah menjawab. XP masih `0` sampai aturan XP keluarga ditentukan; backend tidak mengarang aturan reward.
+Fitur utama saat ini:
 
-## Status saat repo ini di-clone
+- Practice + Review
+- Assessment dengan registry/blueprint
+- XP, coins, streak, Report, dan Achievement System
+- Brain Games + Memory Grid
+- Reward Shop + Parent Access
+- responsive layout untuk desktop, tablet, dan HP
 
-Kode backend sudah tersedia di `backend/`, tetapi deployment membutuhkan akun Cloudflare, D1 database, Google service account, dan secret milik keluarga. Selama `public-config.js` belum berisi URL backend, frontend tetap masuk **mode persiapan** dan tidak meminta login.
+## Entry point aktif
 
-## Struktur
+Frontend saat ini masuk melalui:
 
-- `index.html`, `app.js`, `bootstrap.js` — frontend GitHub Pages.
-- `api.js`, `quiz.js` — client API dan validasi payload aman.
-- `backend/src/` — login, session, Google Sheets connector, quiz service, progress.
-- `backend/migrations/` — schema D1.
-- `docs/api-contract.md` — kontrak frontend ↔ backend.
-- `docs/backend-setup.md` — langkah deployment dan konfigurasi secret.
+- `index.html`
+- `version.js` — single source of truth versi frontend
+- `bootstrap.js`
+- `app-v040.js` — core app aktif; nama lama dipertahankan sementara sampai konsolidasi modul selesai
+- `api-v040.js` — API client aktif
+- `quiz.js`, `profiles.js`, `config.js`
 
-## Menjalankan pemeriksaan frontend
+Backend aktif berada di `backend/`. Entry Worker mengikuti `backend/wrangler.jsonc`.
+
+> Catatan: masih ada beberapa file bernama `*-v0xxx.*` yang **masih aktif sebagai cascade/polish layer**. Jangan menghapus file hanya karena nomor versinya lama. Lihat [`docs/frontend-maintenance.md`](docs/frontend-maintenance.md).
+
+## Aturan file mulai v0.6.0
+
+**Release baru tidak berarti file baru.**
+
+- Perbaikan/polish fitur yang sudah ada → edit modul yang sama.
+- File baru hanya untuk fitur/modul baru yang memang berbeda tanggung jawab.
+- Histori versi disimpan oleh Git, bukan dengan menumpuk salinan file bernomor versi.
+- `version.js` menjadi sumber versi aplikasi yang tampil ke pengguna.
+- File versioned lama akan dikonsolidasikan bertahap tanpa mengubah behavior/visual yang sudah stabil.
+
+## Pemeriksaan frontend
 
 ```bash
 npm run check
 npm test
 ```
+
+`npm run check` otomatis:
+
+1. melakukan syntax check seluruh file JavaScript frontend di root; dan
+2. memastikan asset lokal (`.js`, `.css`, `.svg`) yang direferensikan frontend benar-benar tersedia.
 
 Backend:
 
@@ -41,12 +63,18 @@ npm run check
 npm test
 ```
 
-## Mengaktifkan backend
+## Backend & data
 
-Ikuti [docs/backend-setup.md](docs/backend-setup.md). Setelah Worker aktif, set URL HTTPS-nya pada `public-config.js` lalu commit ke `main`.
+Backend menangani login keluarga, progress online, Practice, Assessment, rewards, achievements, games, Review, dan akses bank soal. Schema D1 berada di `backend/migrations/`.
+
+Dokumentasi penting:
+
+- `docs/backend-setup.md`
+- `docs/api-contract.md`
+- `docs/assessment-architecture-v0583.md`
+- `docs/achievement-system-v0584.md`
+- `docs/frontend-maintenance.md`
 
 ## Keamanan
 
-Repo ini publik. Jangan pernah menyimpan password keluarga, token sesi, Google private key, setup token, atau ID Sheet privat pada file frontend / commit GitHub. Secret backend dimasukkan melalui `wrangler secret put`.
-
-Website UbaidBits dan FabianBits lama tidak diubah.
+Repo ini publik. Jangan pernah menyimpan password keluarga, token sesi, Google private key, setup token, Apps Script secret, atau credential privat lain dalam frontend/commit GitHub. Secret backend harus disimpan melalui konfigurasi/secret Cloudflare.
