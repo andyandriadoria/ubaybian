@@ -1,6 +1,6 @@
-/* UbayBian v0.5.39 · Memory Grid Readability Hotfix
+/* UbayBian v0.5.87 · Memory Grid Readability + Tablet Layout Loader
    Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid-v046.js.
-   Loads the v0.5.36 clarity layer, v0.5.37 lock polish, then v0.5.38 hierarchy polish. */
+   Loads the clarity layers first, then the tablet-specific composition last. */
 (() => {
   const SELECTOR = '.neural-shell';
 
@@ -29,19 +29,24 @@
       href:'memory-grid-v0538.css?v=0.5.39',
       dataKey:'memoryGridV0538'
     });
+    appendCSS({
+      selector:'link[data-memory-grid-tablet-v0587]',
+      href:'memory-grid-tablet-v0587.css?v=0.5.87',
+      dataKey:'memoryGridTabletV0587'
+    });
   }
 
   function syncVersionLabel(){
-    /* This feature file belongs to v0.5.39, but it may still be loaded by newer
-       app releases. Never downgrade a newer global app version label. */
+    /* This feature file can still be loaded by newer app releases.
+       Never downgrade a newer global app version label. */
     const version = document.querySelector('.version');
     if(!version) return;
     const current = (version.textContent || '').trim();
     const match = current.match(/^v(\d+)\.(\d+)\.(\d+)\s*·\s*family$/i);
     if(!match) return;
     const [, major, minor, patch] = match.map((part, index) => index === 0 ? part : Number(part));
-    const isOlderThan539 = major < 0 || (major === 0 && (minor < 5 || (minor === 5 && patch < 39)));
-    if(isOlderThan539) version.textContent = 'v0.5.39 · family';
+    const isOlderThan587 = major < 0 || (major === 0 && (minor < 5 || (minor === 5 && patch < 87)));
+    if(isOlderThan587) version.textContent = 'v0.5.87 · family';
   }
 
   function addWorldDepth(overlay){
@@ -113,6 +118,7 @@
     shell.dataset.ng0537 = '1';
     shell.dataset.ng0538 = '1';
     shell.dataset.ng0539 = '1';
+    shell.dataset.ng0587 = '1';
     const overlay = shell.closest('.neural-overlay');
     addWorldDepth(overlay);
     addChamberDepth(shell);
@@ -137,8 +143,6 @@
         if(shell.dataset.resultGrade !== grade) shell.dataset.resultGrade = grade;
       }
 
-      /* The success-save caption adds no value to the child-facing result screen.
-         Keep quota notices and actual save errors visible. */
       if(resultNote?.textContent.trim() === 'Hasil tersimpan ke profilmu.'){
         resultNote.textContent = '';
       }
