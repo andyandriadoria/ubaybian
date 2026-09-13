@@ -1,6 +1,6 @@
 {
   "name": "ubaybian-api",
-  "version": "0.5.69",
+  "version": "0.5.82",
   "private": true,
   "type": "module",
   "scripts": {
