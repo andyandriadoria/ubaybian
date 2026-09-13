@@ -66,7 +66,7 @@ Reward accounting remains source-specific: Practice keeps its existing reward ru
 
 ## Achievement system
 
-Since v0.5.84, dashboard badges are produced by `src/achievements.js` and exposed through `src/progress-v0584.js`. Similar achievements upgrade in place instead of stacking duplicates.
+Since v0.5.84, dashboard badges are produced by `src/achievements.js` and exposed through `src/progress-dashboard.js`. Similar achievements upgrade in place instead of stacking duplicates.
 
 Achievement families:
 
