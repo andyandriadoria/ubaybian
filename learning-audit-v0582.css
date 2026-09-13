@@ -1,0 +1,53 @@
+/* UbayBian v0.5.82 — Practice + Assessment analytics polish */
+.report-subject-cell + .report-session-type,
+.report-table td .report-session-type{
+  display:inline-flex;
+  align-items:center;
+  margin-left:8px;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:10px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:#57758f;
+  background:#edf5fb;
+  border:1px solid rgba(74,137,183,.14);
+  vertical-align:middle;
+}
+.report-table td .report-session-type.assessment{
+  color:#6d55a4;
+  background:#f3efff;
+  border-color:rgba(109,85,164,.16);
+}
+.report-score-pill.is-provisional{
+  border-style:dashed;
+}
+.report-bar.is-provisional{
+  opacity:.72;
+  background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.22) 0 6px,transparent 6px 12px);
+}
+.report-auto-note{
+  max-width:880px;
+  margin:12px auto 0;
+  padding:10px 14px;
+  border-radius:14px;
+  color:#667f95;
+  background:rgba(238,246,252,.82);
+  border:1px solid rgba(78,137,177,.12);
+  font-size:12px;
+  line-height:1.5;
+  text-align:center;
+}
+.rules-strip[data-reward-mode="assessment"]{
+  border-color:rgba(121,94,185,.14);
+  background:linear-gradient(180deg,rgba(249,247,255,.96),rgba(243,239,255,.9));
+}
+@media (max-width:760px){
+  .report-table td .report-session-type{
+    margin-left:4px;
+    padding:3px 6px;
+    font-size:9px;
+  }
+}
