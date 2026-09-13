@@ -52,6 +52,56 @@ function scoreForSession(row) {
   return Math.round(((Number(row.correct_count) || 0) / total) * 100);
 }
 function badge(id, name, description, emoji, extra = {}) { return { id, name, description, emoji, ...extra }; }
+function safeCount(value) { return Math.max(0, Math.floor(Number(value) || 0)); }
+
+export function assessmentReportEntry(row) {
+  const questionTotal = safeCount(row?.total_questions);
+  const autoTotal = safeCount(row?.auto_total);
+  const openResponseTotal = safeCount(row?.open_response_total);
+  const openResponseAnswered = Math.min(openResponseTotal, safeCount(row?.open_response_answered));
+  const autoAnswered = Math.min(autoTotal, safeCount(row?.auto_answered_count));
+  const correct = Math.min(autoTotal, safeCount(row?.correct_count));
+  const score = autoTotal ? Math.round((correct / autoTotal) * 100) : null;
+  return {
+    sessionId: String(row?.id || ''),
+    subjectId: String(row?.subject_id || ''),
+    kind: 'assessment',
+    title: String(row?.title || ''),
+    blueprintId: String(row?.blueprint_id || ''),
+    total: autoTotal || questionTotal,
+    questionTotal,
+    correct,
+    score,
+    scoreStatus: openResponseTotal > 0 ? 'auto' : 'final',
+    autoAnswered,
+    answered: Math.min(questionTotal, safeCount(row?.answered_count)),
+    openResponseTotal,
+    reviewPending: openResponseAnswered,
+    completedAt: safeCount(row?.completed_at),
+  };
+}
+
+export function mergeLearningReport(practiceRows = [], assessmentRows = [], limit = 10) {
+  const practice = practiceRows.map((row) => ({
+    sessionId: String(row?.id || row?.sessionId || ''),
+    subjectId: String(row?.subject_id || row?.subjectId || ''),
+    kind: 'practice',
+    total: safeCount(row?.total_questions ?? row?.total),
+    questionTotal: safeCount(row?.total_questions ?? row?.total),
+    correct: safeCount(row?.correct_count ?? row?.correct),
+    score: Number.isFinite(Number(row?.score)) ? Number(row.score) : scoreForSession(row),
+    scoreStatus: 'final',
+    reviewPending: 0,
+    completedAt: safeCount(row?.completed_at ?? row?.completedAt),
+  }));
+  const assessment = assessmentRows.map((row) => (
+    row?.kind === 'assessment' ? row : assessmentReportEntry(row)
+  ));
+  return [...practice, ...assessment]
+    .filter((row) => row.sessionId && row.subjectId && row.completedAt)
+    .sort((a, b) => b.completedAt - a.completedAt)
+    .slice(0, Math.max(0, safeCount(limit)));
+}
 
 async function liveReviewQuestionKeys(env, profile, pendingStates) {
   const pendingBySubject = new Map();
@@ -107,26 +157,47 @@ export async function progressForFamily(env, familyId, profileId = null) {
 }
 
 export async function dashboardForProfile(env, familyId, profile) {
-  const [sessionResult, answerResult, engagement, examRewards] = await Promise.all([
+  const [sessionResult, answerResult, assessmentResult, engagement, examRewards] = await Promise.all([
     env.DB.prepare(`SELECT id, subject_id, total_questions, correct_count, created_at, completed_at
       FROM quiz_sessions WHERE family_id = ? AND profile_id = ? AND completed_at IS NOT NULL ORDER BY completed_at DESC`).bind(familyId, profile.id).all(),
     env.DB.prepare(`SELECT qa.question_id, qa.answer, qa.correct, qa.answered_at, qs.subject_id
       FROM quiz_answers qa JOIN quiz_sessions qs ON qs.id = qa.session_id
       WHERE qs.family_id = ? AND qs.profile_id = ? ORDER BY qa.answered_at DESC`).bind(familyId, profile.id).all(),
+    env.DB.prepare(`SELECT es.id, es.subject_id, es.blueprint_id, es.title, es.total_questions, es.correct_count, es.created_at, es.completed_at,
+        (SELECT COUNT(*) FROM exam_answers ea WHERE ea.session_id = es.id) AS answered_count,
+        (SELECT COUNT(*) FROM exam_session_questions eq WHERE eq.session_id = es.id AND eq.question_type <> 'open-response') AS auto_total,
+        (SELECT COUNT(*) FROM exam_session_questions eq WHERE eq.session_id = es.id AND eq.question_type = 'open-response') AS open_response_total,
+        (SELECT COUNT(*) FROM exam_answers ea JOIN exam_session_questions eq ON eq.session_id = ea.session_id AND eq.question_id = ea.question_id
+          WHERE ea.session_id = es.id AND eq.question_type <> 'open-response') AS auto_answered_count,
+        (SELECT COUNT(*) FROM exam_answers ea JOIN exam_session_questions eq ON eq.session_id = ea.session_id AND eq.question_id = ea.question_id
+          WHERE ea.session_id = es.id AND eq.question_type = 'open-response') AS open_response_answered
+      FROM exam_sessions es
+      WHERE es.family_id = ? AND es.profile_id = ? AND es.completed_at IS NOT NULL
+      ORDER BY es.completed_at DESC`).bind(familyId, profile.id).all(),
     engagementTotals(env, familyId, profile.id),
     examRewardTotals(env, familyId, profile.id),
   ]);
 
   const sessions = sessionResult.results || [];
   const answersDesc = answerResult.results || [];
-  const totalCorrect = answersDesc.reduce((sum, row) => sum + (Number(row.correct) === 1 ? 1 : 0), 0);
-  const totalAnswered = answersDesc.length;
+  const assessments = (assessmentResult.results || []).map(assessmentReportEntry);
+  const quizTotalCorrect = answersDesc.reduce((sum, row) => sum + (Number(row.correct) === 1 ? 1 : 0), 0);
+  const quizTotalAnswered = answersDesc.length;
+  const assessmentAnswered = assessments.reduce((sum, row) => sum + row.answered, 0);
+  const assessmentAutoAnswered = assessments.reduce((sum, row) => sum + row.autoAnswered, 0);
+  const assessmentCorrect = assessments.reduce((sum, row) => sum + row.correct, 0);
+  const totalAnswered = quizTotalAnswered + assessmentAnswered;
+  const totalCorrect = quizTotalCorrect + assessmentCorrect;
   const perfectSessions = sessions.filter((row) => scoreForSession(row) === 100).length;
-  const streak = streakInfo(sessions.map((row) => row.completed_at));
+  const completedAtValues = [
+    ...sessions.map((row) => row.completed_at),
+    ...assessments.map((row) => row.completedAt),
+  ];
+  const streak = streakInfo(completedAtValues);
   const streakXpBonus = (streak.longest >= 3 ? 30 : 0) + (streak.longest >= 7 ? 70 : 0);
-  const quizXp = (totalCorrect * 10) + (sessions.length * 20);
+  const quizXp = (quizTotalCorrect * 10) + (sessions.length * 20);
   const xp = quizXp + examRewards.xp + engagement.gameXp + streakXpBonus;
-  const quizCoinsEarned = (totalCorrect * 50) + (perfectSessions * 100);
+  const quizCoinsEarned = (quizTotalCorrect * 50) + (perfectSessions * 100);
   const coinsEarned = quizCoinsEarned + examRewards.coins;
   const coins = Math.max(0, coinsEarned - engagement.rewardSpent);
   const level = levelForXp(xp);
@@ -137,6 +208,14 @@ export async function dashboardForProfile(env, familyId, profile) {
     const item = subjectStats.get(id) || { subjectId: id, attempted: 0, correct: 0, review: 0 };
     item.attempted += 1;
     if (Number(row.correct) === 1) item.correct += 1;
+    subjectStats.set(id, item);
+  }
+  for (const row of assessments) {
+    const id = String(row.subjectId || '');
+    if (!id) continue;
+    const item = subjectStats.get(id) || { subjectId: id, attempted: 0, correct: 0, review: 0 };
+    item.attempted += row.autoAnswered;
+    item.correct += row.correct;
     subjectStats.set(id, item);
   }
 
@@ -160,22 +239,26 @@ export async function dashboardForProfile(env, familyId, profile) {
     if (Number(row.correct) === 1) { if (previouslyWrong.has(key)) comeback.add(key); } else previouslyWrong.add(key);
   }
 
+  const totalSessions = sessions.length + assessments.length;
   const badges = [];
-  if (perfectSessions >= 1) badges.push(badge('perfect-1', 'Perfect Score x1', 'Mendapat nilai 100% dalam 1 sesi.', '🌟'));
-  if (perfectSessions >= 3) badges.push(badge('perfect-3', 'Perfect Score x3', 'Mendapat nilai 100% dalam 3 sesi.', '🌟🌟'));
-  if (perfectSessions >= 5) badges.push(badge('perfect-5', 'Perfect Score x5', 'Mendapat nilai 100% dalam 5 sesi.', '🌟🌟🌟'));
-  if (perfectSessions >= 10) badges.push(badge('perfect-10', 'Perfect Score x10', 'Mendapat nilai 100% dalam 10 sesi.', '👑'));
+  if (perfectSessions >= 1) badges.push(badge('perfect-1', 'Perfect Score x1', 'Mendapat nilai 100% dalam 1 sesi Practice.', '🌟'));
+  if (perfectSessions >= 3) badges.push(badge('perfect-3', 'Perfect Score x3', 'Mendapat nilai 100% dalam 3 sesi Practice.', '🌟🌟'));
+  if (perfectSessions >= 5) badges.push(badge('perfect-5', 'Perfect Score x5', 'Mendapat nilai 100% dalam 5 sesi Practice.', '🌟🌟🌟'));
+  if (perfectSessions >= 10) badges.push(badge('perfect-10', 'Perfect Score x10', 'Mendapat nilai 100% dalam 10 sesi Practice.', '👑'));
   if (streak.longest >= 3) badges.push(badge('on-fire', 'On Fire', 'Belajar pada 3 hari berturut-turut.', '🔥'));
   if (streak.longest >= 14) badges.push(badge('steady-14', 'Steady Learner', 'Menjaga kebiasaan belajar selama 14 hari berturut-turut.', '🗓️'));
-  if (sessions.length >= 10) badges.push(badge('study-habit', 'Study Habit', 'Menyelesaikan 10 sesi latihan.', '📚'));
-  if (totalAnswered >= 100) badges.push(badge('hundred-questions', '100 Questions', 'Menjawab 100 soal latihan.', '🧠'));
-  if (sessions.some((row) => Number(row.total_questions) >= 15)) badges.push(badge('challenge-accepted', 'Challenge Accepted', 'Menyelesaikan sesi 15 soal.', '🚀'));
+  if (totalSessions >= 10) badges.push(badge('study-habit', 'Study Habit', 'Menyelesaikan 10 sesi Practice atau Assessment.', '📚'));
+  if (totalAnswered >= 100) badges.push(badge('hundred-questions', '100 Questions', 'Menjawab 100 soal Practice atau Assessment.', '🧠'));
+  if (sessions.some((row) => Number(row.total_questions) >= 15)) badges.push(badge('challenge-accepted', 'Challenge Accepted', 'Menyelesaikan sesi Practice 15 soal.', '🚀'));
   if (comeback.size >= 10) badges.push(badge('comeback', 'Comeback', 'Menguasai 10 soal yang sebelumnya masih salah.', '🔁'));
   const masteredSubjects = new Set();
   for (const row of sessions) if (scoreForSession(row) >= 90 && row.subject_id && row.subject_id !== 'mix') masteredSubjects.add(String(row.subject_id));
-  for (const subjectId of masteredSubjects) badges.push(badge(`master-${subjectId}`, 'Subject Master', 'Mencapai nilai minimal 90% pada satu mata pelajaran.', '🏆', { subjectId }));
+  for (const row of assessments) {
+    if (row.scoreStatus === 'final' && Number(row.score) >= 90 && row.subjectId && row.subjectId !== 'mix') masteredSubjects.add(String(row.subjectId));
+  }
+  for (const subjectId of masteredSubjects) badges.push(badge(`master-${subjectId}`, 'Subject Master', 'Mencapai nilai final minimal 90% pada satu mata pelajaran.', '🏆', { subjectId }));
 
-  const report = sessions.slice(0, 10).map((row) => ({ sessionId: row.id, subjectId: row.subject_id, total: Number(row.total_questions), correct: Number(row.correct_count), score: scoreForSession(row), completedAt: Number(row.completed_at) }));
+  const report = mergeLearningReport(sessions, assessments, 10);
   return {
     stats: {
       xp,
@@ -192,9 +275,16 @@ export async function dashboardForProfile(env, familyId, profile) {
       level,
       streak,
       streakXpBonus,
-      totalSessions: sessions.length,
+      totalSessions,
+      practiceSessions: sessions.length,
+      assessmentSessions: assessments.length,
       totalAnswered,
+      practiceAnswered: quizTotalAnswered,
+      assessmentAnswered,
+      assessmentAutoAnswered,
       totalCorrect,
+      practiceCorrect: quizTotalCorrect,
+      assessmentCorrect,
       perfectSessions,
       reviewTotal,
     },
