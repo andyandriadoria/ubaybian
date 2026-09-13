@@ -123,11 +123,11 @@ export const ASSESSMENT_DEFINITIONS = Object.freeze([
 ]);
 
 const BLUEPRINT_LOADERS = Object.freeze({
-  'exam-blueprints': (definition, requestedId) => getExamBlueprint(definition.profileSlug, definition.subjectId, requestedId),
-  'bian-science': (_definition, requestedId) => getBianScienceBlueprint(requestedId),
-  'bian-bahasa-indonesia': (_definition, requestedId) => getBianBahasaIndonesiaBlueprint(requestedId),
-  'bian-pancasila': (_definition, requestedId) => getBianPancasilaBlueprint(requestedId),
-  'bian-paibp': (_definition, requestedId) => getBianPaibpBlueprint(requestedId),
+  'exam-blueprints': (item, requestedId) => getExamBlueprint(item.profileSlug, item.subjectId, requestedId),
+  'bian-science': (_item, requestedId) => getBianScienceBlueprint(requestedId),
+  'bian-bahasa-indonesia': (_item, requestedId) => getBianBahasaIndonesiaBlueprint(requestedId),
+  'bian-pancasila': (_item, requestedId) => getBianPancasilaBlueprint(requestedId),
+  'bian-paibp': (_item, requestedId) => getBianPaibpBlueprint(requestedId),
 });
 
 export function listAssessmentDefinitions({ profileSlug = '', status = 'active' } = {}) {
@@ -142,40 +142,60 @@ export function assessmentDefinitionForBlueprint(blueprintId) {
   return ASSESSMENT_DEFINITIONS.find((item) => item.blueprintId === id) || null;
 }
 
-export function publicAssessmentDefinition(definition) {
-  if (!definition) return null;
+export function publicAssessmentDefinition(item) {
+  if (!item) return null;
   return Object.freeze({
-    id: definition.id,
-    profile: definition.profileSlug,
-    grade: definition.grade,
-    academicYear: definition.academicYear,
-    semester: definition.semester,
-    assessmentType: definition.assessmentType,
-    subjectId: definition.subjectId,
-    blueprintId: definition.blueprintId,
-    blueprintVersion: definition.blueprintVersion,
-    selectionStrategy: definition.selectionStrategy.type,
-    status: definition.status,
+    id: item.id,
+    profile: item.profileSlug,
+    grade: item.grade,
+    academicYear: item.academicYear,
+    semester: item.semester,
+    assessmentType: item.assessmentType,
+    subjectId: item.subjectId,
+    blueprintId: item.blueprintId,
+    blueprintVersion: item.blueprintVersion,
+    selectionStrategy: item.selectionStrategy.type,
+    status: item.status,
   });
 }
 
-export function resolveAssessmentDefinition(profileSlug, subjectId, requestedId = '') {
-  const profile = String(profileSlug || '').trim();
+function resolveContext(profileOrContext) {
+  if (profileOrContext && typeof profileOrContext === 'object') {
+    return {
+      profileSlug: String(profileOrContext.profileSlug || profileOrContext.profile || '').trim(),
+      grade: Number(profileOrContext.grade) || null,
+      academicYear: String(profileOrContext.academicYear || '').trim(),
+      semester: Number(profileOrContext.semester) || null,
+      assessmentType: String(profileOrContext.assessmentType || '').trim(),
+    };
+  }
+  return { profileSlug: String(profileOrContext || '').trim(), grade: null, academicYear: '', semester: null, assessmentType: '' };
+}
+
+export function resolveAssessmentDefinition(profileOrContext, subjectId, requestedId = '') {
+  const context = resolveContext(profileOrContext);
   const subject = String(subjectId || '').trim();
   const requested = String(requestedId || '').trim();
   const candidates = ASSESSMENT_DEFINITIONS.filter((item) => (
-    item.status === 'active' && item.profileSlug === profile && item.subjectId === subject
+    item.status === 'active'
+    && item.profileSlug === context.profileSlug
+    && item.subjectId === subject
+    && (!context.grade || Number(item.grade) === context.grade)
+    && (!context.academicYear || item.academicYear === context.academicYear)
+    && (!context.semester || Number(item.semester) === context.semester)
+    && (!context.assessmentType || item.assessmentType === context.assessmentType)
   ));
-  const definition = requested
-    ? candidates.find((item) => item.blueprintId === requested || item.id === requested)
+  const item = requested
+    ? candidates.find((candidate) => candidate.blueprintId === requested || candidate.id === requested)
     : candidates[0];
 
-  if (!definition) {
+  if (!item) {
+    if (requested) throw new HttpError(404, 'EXAM_BLUEPRINT_NOT_FOUND', 'Assessment belum tersedia untuk blueprint dan academic context ini.');
     throw new HttpError(404, 'ASSESSMENT_NOT_FOUND', 'Assessment belum tersedia untuk profil, grade, semester, dan pelajaran ini.');
   }
 
-  const loader = BLUEPRINT_LOADERS[definition.blueprintSource];
+  const loader = BLUEPRINT_LOADERS[item.blueprintSource];
   if (!loader) throw new HttpError(500, 'ASSESSMENT_BLUEPRINT_SOURCE_INVALID', 'Sumber blueprint Assessment tidak dikenali.');
-  const blueprint = loader(definition, definition.blueprintId);
-  return Object.freeze({ definition, blueprint });
+  const blueprint = loader(item, item.blueprintId);
+  return Object.freeze({ definition: item, blueprint });
 }
