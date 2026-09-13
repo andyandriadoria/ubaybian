@@ -20,6 +20,8 @@ jobs:
           node-version: 22
       - run: npm run check
       - run: npm test
+      - name: Legacy reference inventory
+        run: npm run audit:legacy
 
   backend:
     name: Backend checks
