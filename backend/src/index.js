@@ -1,6 +1,7 @@
 import { familyProfiles, login, logout, requireProfile, requireSession, setupFamily } from './auth.js';
 import { finishGame, gameStatus, requestReward, resolveReward, rewardShop, startGame } from './engagement.js';
 import { finishExam, getExamQuestion, saveExamAnswer, startExam } from './exam-service.js';
+import { listAssessmentDefinitions, publicAssessmentDefinition } from './assessment/registry.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
 import { lockParentAccess, parentAccessStatus, requireParentAccess, setParentPin, unlockParentAccess } from './parent-access.js';
 import { dashboardForProfile, progressForFamily } from './progress.js';
@@ -111,6 +112,24 @@ async function handler(request, env) {
     return json({ items: await progressForFamily(env, session.familyId, profile.id) });
   }
 
+  const assessmentCatalogParams = routeMatch(path, '/v1/assessments/:profileId');
+  if (request.method === 'GET' && assessmentCatalogParams) {
+    const session = await requireSession(request, env);
+    const profile = await requireProfile(env, session.familyId, assessmentCatalogParams.profileId);
+    const subjectId = String(url.searchParams.get('subjectId') || '').trim();
+    const academicYear = String(url.searchParams.get('academicYear') || '').trim();
+    const semester = Number(url.searchParams.get('semester')) || null;
+    const assessmentType = String(url.searchParams.get('assessmentType') || '').trim();
+    const items = listAssessmentDefinitions({ profileSlug: profile.slug })
+      .filter((item) => Number(item.grade) === Number(profile.grade))
+      .filter((item) => !subjectId || item.subjectId === subjectId)
+      .filter((item) => !academicYear || item.academicYear === academicYear)
+      .filter((item) => !semester || Number(item.semester) === semester)
+      .filter((item) => !assessmentType || item.assessmentType === assessmentType)
+      .map(publicAssessmentDefinition);
+    return json({ items });
+  }
+
   const gameStatusParams = routeMatch(path, '/v1/games/:profileId/status');
   if (request.method === 'GET' && gameStatusParams) {
     const session = await requireSession(request, env);
@@ -183,7 +202,7 @@ async function handler(request, env) {
       session.familyId,
       profile,
       String(body?.subjectId || ''),
-      String(body?.blueprintId || ''),
+      String(body?.assessmentId || body?.blueprintId || ''),
     ), 201);
   }
   const examQuestionParams = routeMatch(path, '/v1/exam/sessions/:sessionId/questions/:position');
