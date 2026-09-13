@@ -10,7 +10,7 @@ async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.5.68',
+    version: '0.5.69',
     db: { bound: Boolean(env.DB), schemaReady: false, examSchemaReady: false },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
