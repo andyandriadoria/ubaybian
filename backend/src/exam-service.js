@@ -10,6 +10,7 @@ import {
   sheetConfig,
 } from './questions.js';
 import { getExamBlueprint, publicExamBlueprint, selectExamQuestions } from './exam-blueprints.js';
+import { getBianScienceBlueprint, selectBianScienceQuestions } from './bian-science-assessment.js';
 import { examRewardForSession } from './exam-rewards.js';
 import { randomToken } from './security.js';
 
@@ -95,9 +96,16 @@ async function loadQuestionBank(env, profileSlug, subjectId) {
 }
 
 export async function startExam(env, familyId, profile, subjectId, requestedBlueprintId = '') {
-  const blueprint = getExamBlueprint(profile.slug, subjectId, requestedBlueprintId);
+  const isBianScience = profile.slug === 'bian' && subjectId === 'science';
+  const blueprint = isBianScience
+    ? getBianScienceBlueprint(requestedBlueprintId)
+    : getExamBlueprint(profile.slug, subjectId, requestedBlueprintId);
   const available = await loadQuestionBank(env, profile.slug, subjectId);
-  const selected = selectExamQuestions(available, blueprint).map(questionForSnapshot);
+  const selected = (
+    isBianScience
+      ? selectBianScienceQuestions(available, blueprint)
+      : selectExamQuestions(available, blueprint)
+  ).map(questionForSnapshot);
 
   const sessionId = randomToken(24);
   const now = Date.now();
