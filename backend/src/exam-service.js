@@ -19,6 +19,10 @@ import {
   getBianPancasilaBlueprint,
   selectBianPancasilaQuestions,
 } from './bian-pancasila-assessment.js';
+import {
+  getBianPaibpBlueprint,
+  selectBianPaibpQuestions,
+} from './bian-paibp-assessment.js';
 import { examRewardForSession } from './exam-rewards.js';
 import { randomToken } from './security.js';
 
@@ -107,13 +111,16 @@ export async function startExam(env, familyId, profile, subjectId, requestedBlue
   const isBianScience = profile.slug === 'bian' && subjectId === 'science';
   const isBianBahasaIndonesia = profile.slug === 'bian' && subjectId === 'bahasa-indonesia';
   const isBianPancasila = profile.slug === 'bian' && subjectId === 'pancasila';
+  const isBianPaibp = profile.slug === 'bian' && subjectId === 'paibp';
   const blueprint = isBianScience
     ? getBianScienceBlueprint(requestedBlueprintId)
     : isBianBahasaIndonesia
       ? getBianBahasaIndonesiaBlueprint(requestedBlueprintId)
       : isBianPancasila
         ? getBianPancasilaBlueprint(requestedBlueprintId)
-        : getExamBlueprint(profile.slug, subjectId, requestedBlueprintId);
+        : isBianPaibp
+          ? getBianPaibpBlueprint(requestedBlueprintId)
+          : getExamBlueprint(profile.slug, subjectId, requestedBlueprintId);
   const available = await loadQuestionBank(env, profile.slug, subjectId);
   const selected = (
     isBianScience
@@ -122,7 +129,9 @@ export async function startExam(env, familyId, profile, subjectId, requestedBlue
         ? selectBianBahasaIndonesiaQuestions(available, blueprint)
         : isBianPancasila
           ? selectBianPancasilaQuestions(available, blueprint)
-          : selectExamQuestions(available, blueprint)
+          : isBianPaibp
+            ? selectBianPaibpQuestions(available, blueprint)
+            : selectExamQuestions(available, blueprint)
   ).map(questionForSnapshot);
 
   const sessionId = randomToken(24);
