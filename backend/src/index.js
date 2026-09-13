@@ -4,15 +4,21 @@ import { finishExam, getExamQuestion, saveExamAnswer, startExam } from './exam-s
 import { listAssessmentDefinitions, publicAssessmentDefinition } from './assessment/registry.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
 import { lockParentAccess, parentAccessStatus, requireParentAccess, setParentPin, unlockParentAccess } from './parent-access.js';
-import { dashboardForProfile, progressForFamily } from './progress.js';
+import { dashboardForProfile, progressForFamily } from './progress-v0584.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
 
 async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.5.83',
-    db: { bound: Boolean(env.DB), schemaReady: false, examSchemaReady: false, assessmentContextReady: false },
+    version: '0.5.84',
+    db: {
+      bound: Boolean(env.DB),
+      schemaReady: false,
+      examSchemaReady: false,
+      assessmentContextReady: false,
+      achievementLedgerReady: false,
+    },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
       secretConfigured: Boolean(env.APPS_SCRIPT_SECRET),
@@ -29,13 +35,14 @@ async function health(env) {
       WHERE type = 'table'
         AND name IN (
           'family_accounts', 'profiles', 'sessions', 'quiz_sessions', 'quiz_session_questions', 'quiz_answers', 'progress_summary',
-          'exam_sessions', 'exam_session_questions', 'exam_answers'
+          'exam_sessions', 'exam_session_questions', 'exam_answers', 'achievements'
         )
     `).all();
     const names = new Set((tables.results || []).map((row) => row.name));
     result.db.schemaReady = ['family_accounts', 'profiles', 'sessions', 'quiz_sessions', 'quiz_session_questions', 'quiz_answers', 'progress_summary']
       .every((name) => names.has(name));
     result.db.examSchemaReady = ['exam_sessions', 'exam_session_questions', 'exam_answers'].every((name) => names.has(name));
+    result.db.achievementLedgerReady = names.has('achievements');
 
     if (result.db.examSchemaReady) {
       const columns = await env.DB.prepare('PRAGMA table_info(exam_sessions)').all();
