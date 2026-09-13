@@ -11,6 +11,10 @@ import {
 } from './questions.js';
 import { getExamBlueprint, publicExamBlueprint, selectExamQuestions } from './exam-blueprints.js';
 import { getBianScienceBlueprint, selectBianScienceQuestions } from './bian-science-assessment.js';
+import {
+  getBianBahasaIndonesiaBlueprint,
+  selectBianBahasaIndonesiaQuestions,
+} from './bian-bahasa-indonesia-assessment.js';
 import { examRewardForSession } from './exam-rewards.js';
 import { randomToken } from './security.js';
 
@@ -97,14 +101,19 @@ async function loadQuestionBank(env, profileSlug, subjectId) {
 
 export async function startExam(env, familyId, profile, subjectId, requestedBlueprintId = '') {
   const isBianScience = profile.slug === 'bian' && subjectId === 'science';
+  const isBianBahasaIndonesia = profile.slug === 'bian' && subjectId === 'bahasa-indonesia';
   const blueprint = isBianScience
     ? getBianScienceBlueprint(requestedBlueprintId)
-    : getExamBlueprint(profile.slug, subjectId, requestedBlueprintId);
+    : isBianBahasaIndonesia
+      ? getBianBahasaIndonesiaBlueprint(requestedBlueprintId)
+      : getExamBlueprint(profile.slug, subjectId, requestedBlueprintId);
   const available = await loadQuestionBank(env, profile.slug, subjectId);
   const selected = (
     isBianScience
       ? selectBianScienceQuestions(available, blueprint)
-      : selectExamQuestions(available, blueprint)
+      : isBianBahasaIndonesia
+        ? selectBianBahasaIndonesiaQuestions(available, blueprint)
+        : selectExamQuestions(available, blueprint)
   ).map(questionForSnapshot);
 
   const sessionId = randomToken(24);
