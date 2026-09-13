@@ -1,0 +1,102 @@
+/* UbayBian v0.5.91 · guided Subject → Session → Start flow */
+.controls-panel.learning-deck{
+  --guided-cyan:#61e6ff;
+  --guided-gold:#ffd766;
+  --guided-green:#62e6b2;
+}
+.controls-panel.learning-deck .deck-control{
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease,opacity .18s ease,transform .18s ease;
+}
+.controls-panel.learning-deck .deck-control.guided-focus{
+  border-color:rgba(100,226,255,.72)!important;
+  box-shadow:0 0 0 2px rgba(70,213,255,.14),0 10px 28px rgba(17,172,230,.12),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  background:
+    radial-gradient(circle at 7% 20%,rgba(87,230,255,.10),transparent 28%),
+    rgba(27,63,108,.78)!important;
+  animation:guidedPulse 2.2s ease-in-out infinite;
+}
+.controls-panel.learning-deck .deck-control.guided-locked{
+  opacity:.52;
+  filter:saturate(.72);
+}
+.controls-panel.learning-deck .deck-control.guided-locked .deck-trigger{
+  cursor:not-allowed;
+}
+.controls-panel.learning-deck .deck-control.guided-locked .deck-trigger-chevron{
+  opacity:.35;
+}
+.controls-panel.learning-deck .deck-trigger-value{
+  transition:color .16s ease,opacity .16s ease;
+}
+.controls-panel.learning-deck.guided-step-subject .deck-control-subject .deck-trigger-value,
+.controls-panel.learning-deck.guided-step-session .deck-control-questions .deck-trigger-value{
+  color:#d8f8ff!important;
+  opacity:.86;
+}
+.controls-panel.learning-deck .learning-deck-status-chip{
+  min-width:154px;
+  justify-content:center;
+  text-align:center;
+  transition:background .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.controls-panel.learning-deck[data-guided-step="1"] .learning-deck-status-chip{
+  color:#d7f7ff;
+  background:rgba(25,98,142,.66);
+  border-color:rgba(94,222,255,.30);
+}
+.controls-panel.learning-deck[data-guided-step="2"] .learning-deck-status-chip{
+  color:#fff2c0;
+  background:rgba(117,88,29,.46);
+  border-color:rgba(255,215,102,.30);
+}
+.controls-panel.learning-deck[data-guided-step="ready"] .learning-deck-status-chip{
+  color:#cbffec;
+  background:rgba(17,103,77,.58);
+  border-color:rgba(98,230,178,.34);
+  box-shadow:0 0 18px rgba(57,226,164,.09);
+}
+.controls-panel.learning-deck .start-btn.guided-disabled{
+  cursor:not-allowed!important;
+  color:rgba(255,255,255,.62)!important;
+  background:linear-gradient(135deg,rgba(104,132,158,.72),rgba(82,103,133,.72))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;
+  transform:none!important;
+  filter:saturate(.65);
+}
+.controls-panel.learning-deck .start-btn.guided-disabled:hover{
+  transform:none!important;
+}
+.controls-panel.learning-deck.guided-ready .start-btn{
+  box-shadow:0 10px 25px rgba(255,98,105,.20),inset 0 1px 0 rgba(255,255,255,.22);
+}
+.guided-setup-hint{
+  flex:1 1 100%;
+  margin:3px 2px 0!important;
+  min-height:16px;
+  color:rgba(214,235,255,.62);
+  font-size:9.5px!important;
+  font-weight:760;
+  line-height:1.35;
+  letter-spacing:.01em;
+  transition:color .18s ease;
+}
+.controls-panel.learning-deck.guided-step-subject .guided-setup-hint{color:#bcefff;}
+.controls-panel.learning-deck.guided-step-session .guided-setup-hint{color:#ffe7a1;}
+.controls-panel.learning-deck.guided-ready .guided-setup-hint{color:#b9f6dc;}
+
+@keyframes guidedPulse{
+  0%,100%{transform:translateY(0);box-shadow:0 0 0 2px rgba(70,213,255,.10),0 8px 24px rgba(17,172,230,.08),inset 0 1px 0 rgba(255,255,255,.08)}
+  50%{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(70,213,255,.18),0 13px 30px rgba(17,172,230,.15),inset 0 1px 0 rgba(255,255,255,.10)}
+}
+
+@media(max-width:900px){
+  .controls-panel.learning-deck .learning-deck-status-chip{min-width:0;}
+  .guided-setup-hint{font-size:9px!important;}
+}
+@media(max-width:600px){
+  .guided-setup-hint{text-align:center;margin-top:6px!important;}
+  .controls-panel.learning-deck .learning-deck-status-chip{font-size:8px!important;letter-spacing:.05em;}
+}
+@media(prefers-reduced-motion:reduce){
+  .controls-panel.learning-deck .deck-control.guided-focus{animation:none!important;}
+}
