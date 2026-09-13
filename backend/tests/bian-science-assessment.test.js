@@ -8,28 +8,28 @@ import {
 } from '../src/bian-science-assessment.js';
 
 const topicProfiles = [
-  ['B2.1E Exercise and Health', ['Mudah', 'Mudah', 'Sedang']],
-  ['B2.1D Food Groups and Classification', ['Mudah', 'Mudah', 'Mudah', 'Mudah', 'Mudah', 'Sedang', 'Sedang', 'Sedang']],
-  ['B2.1B Different Diets', ['Mudah', 'Sedang']],
-  ['B2.1H Medicines and Safety', ['Mudah', 'Mudah', 'Mudah', 'Mudah', 'Sedang', 'Sedang', 'Sedang', 'Sulit']],
-  ['B2.1G Personal and Food Hygiene', ['Mudah', 'Mudah', 'Mudah', 'Sedang', 'Sedang']],
-  ['B2.1A Food and Water for Survival', ['Mudah', 'Mudah', 'Sedang']],
-  ['B2.1F Parental Care for Offspring', ['Mudah', 'Mudah', 'Sedang', 'Sedang', 'Sedang', 'Sulit']],
-  ['B2.1C Balanced Diet', ['Sedang']],
-  ['B2.2C Habitat Features', ['Sulit']],
-  ['B2.2A Habitats', ['Mudah', 'Mudah', 'Sedang', 'Sedang']],
-  ['B2.2B Microhabitats', ['Mudah', 'Sedang']],
-  ['B2.2A+B2.2C Habitat and Survival Features', ['Sulit']],
+  ['B2.1E Exercise and Health', [['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Sedang','multiple-choice']]],
+  ['B2.1D Food Groups and Classification', [['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Sedang','multiple-choice'],['Sedang','multiple-choice'],['Sedang','text']]],
+  ['B2.1B Different Diets', [['Mudah','multiple-choice'],['Sedang','multiple-choice']]],
+  ['B2.1H Medicines and Safety', [['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Mudah','text'],['Sedang','multiple-choice'],['Sedang','multiple-choice'],['Sedang','multiple-choice'],['Sulit','open-response']]],
+  ['B2.1G Personal and Food Hygiene', [['Mudah','multiple-choice'],['Mudah','multiple-choice'],['Mudah','text'],['Sedang','multiple-choice'],['Sedang','multiple-choice']]],
+  ['B2.1A Food and Water for Survival', [['Mudah','text'],['Mudah','text'],['Sedang','text']]],
+  ['B2.1F Parental Care for Offspring', [['Mudah','multiple-choice'],['Mudah','text'],['Sedang','multiple-choice'],['Sedang','multiple-choice'],['Sedang','multiple-choice'],['Sulit','open-response']]],
+  ['B2.1C Balanced Diet', [['Sedang','text']]],
+  ['B2.2C Habitat Features', [['Sulit','multiple-choice']]],
+  ['B2.2A Habitats', [['Mudah','multiple-choice'],['Mudah','text'],['Sedang','multiple-choice'],['Sedang','text']]],
+  ['B2.2B Microhabitats', [['Mudah','text'],['Sedang','text']]],
+  ['B2.2A+B2.2C Habitat and Survival Features', [['Sulit','open-response']]],
 ];
 
-function makeQuestion(id, topic, difficulty) {
+function makeQuestion(id, topic, difficulty, type = 'text') {
   return {
     id,
     topic,
     semester: '1',
-    type: 'text',
+    type,
     prompt: `Question ${id}`,
-    answerKey: 'answer',
+    answerKey: type === 'open-response' ? '' : 'answer',
     difficulty,
     choices: [],
   };
@@ -39,9 +39,9 @@ function makeThreeVariantBank() {
   const bank = [];
   for (const variant of ['A', 'B', 'C']) {
     let index = 1;
-    for (const [topic, difficulties] of topicProfiles) {
-      difficulties.forEach((difficulty) => {
-        bank.push(makeQuestion(`${variant}-${index++}`, topic, difficulty));
+    for (const [topic, slots] of topicProfiles) {
+      slots.forEach(([difficulty, type]) => {
+        bank.push(makeQuestion(`${variant}-${index++}`, topic, difficulty, type));
       });
     }
   }
@@ -51,6 +51,12 @@ function makeThreeVariantBank() {
 function difficultyCounts(questions) {
   const result = { Mudah: 0, Sedang: 0, Sulit: 0 };
   questions.forEach((question) => { result[question.difficulty] += 1; });
+  return result;
+}
+
+function typeCounts(questions) {
+  const result = { 'multiple-choice': 0, text: 0, 'open-response': 0 };
+  questions.forEach((question) => { result[question.type] += 1; });
   return result;
 }
 
@@ -71,6 +77,7 @@ test('Bian Science S1 assessment is 44 questions and 60 minutes', () => {
   assert.equal(blueprint.targetQuestions, 44);
   assert.equal(blueprint.durationMinutes, 60);
   assert.equal(Object.values(blueprint.topicTargets).reduce((sum, value) => sum + value, 0), 44);
+  assert.deepEqual(blueprint.typeTargets, { 'multiple-choice': 29, text: 12, 'open-response': 3 });
 });
 
 test('Bian Science difficulty blueprint totals 22 easy, 18 medium, 4 hard', () => {
@@ -85,8 +92,8 @@ test('Bian Science difficulty blueprint totals 22 easy, 18 medium, 4 hard', () =
 });
 
 test('Bian Science topic aliases match the live sheet labels', () => {
-  for (const [topic] of topicProfiles) {
-    assert.notEqual(bianScienceTopicCategory(makeQuestion('x', topic, 'Mudah')), '', topic);
+  for (const [topic, slots] of topicProfiles) {
+    assert.notEqual(bianScienceTopicCategory(makeQuestion('x', topic, slots[0][0], slots[0][1])), '', topic);
   }
 });
 
@@ -98,6 +105,7 @@ test('Bian Science 132-question bank always assembles exact 44-question assessme
     assert.equal(selected.length, 44);
     assert.deepEqual(categoryCounts(selected), expectedCategories);
     assert.deepEqual(difficultyCounts(selected), { Mudah: 22, Sedang: 18, Sulit: 4 });
+    assert.deepEqual(typeCounts(selected), { 'multiple-choice': 29, text: 12, 'open-response': 3 });
   }
 });
 
@@ -107,7 +115,7 @@ test('Bian Science rejects an unknown assessment blueprint', () => {
 
 test('Bian Science rejects an incomplete question bank', () => {
   assert.throws(
-    () => selectBianScienceQuestions([makeQuestion('1', 'B2.1E Exercise and Health', 'Mudah')]),
+    () => selectBianScienceQuestions([makeQuestion('1', 'B2.1E Exercise and Health', 'Mudah', 'multiple-choice')]),
     /Bank soal belum cukup/i,
   );
 });
