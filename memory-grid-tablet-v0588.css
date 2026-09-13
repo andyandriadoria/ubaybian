@@ -1,0 +1,82 @@
+/* UbayBian v0.5.88 · Neural Grid tablet balance polish
+   Final tablet pass after real iPad screenshots. Keeps the v0.5.87 composition,
+   but balances vertical rhythm, removes active-play mascot crowding, and keeps
+   feedback/actions visually attached to the answer zone. */
+
+@media (min-width:721px) and (max-width:1180px){
+  .neural-shell[data-neural-state="scan"] .neural-lab-bubble,
+  .neural-shell[data-neural-state="recall"] .neural-lab-bubble{display:none!important;}
+  .neural-action-zone{z-index:20!important;}
+}
+
+/* Portrait: keep the energy rail below the title, then center the actual task more naturally. */
+@media (min-width:721px) and (max-width:900px) and (orientation:portrait){
+  .neural-memory-energy{
+    top:96px!important;
+    width:min(430px,62vw)!important;
+    gap:10px!important;
+  }
+  .neural-energy-label{font-size:8px!important;letter-spacing:.10em!important;}
+  .neural-energy-value{font-size:9px!important;}
+
+  /* During active play the board is the companion; mascot returns on ready/result. */
+  .neural-shell[data-neural-state="scan"] .neural-lab-mascot,
+  .neural-shell[data-neural-state="recall"] .neural-lab-mascot{display:none!important;}
+
+  .neural-play{
+    padding:68px 0 26px!important;
+    justify-content:flex-start!important;
+  }
+  .neural-hud{margin-bottom:6px!important;}
+  .neural-phase{margin-bottom:6px!important;}
+  .neural-board{margin-bottom:10px!important;}
+  .neural-prompt{margin:3px auto 9px!important;}
+  .neural-options{gap:10px!important;}
+  .neural-action-zone{
+    margin-top:8px!important;
+    min-height:74px!important;
+  }
+
+  /* Pull the decorative floor slightly upward so the lower chamber does not feel empty. */
+  .ng35-floor-reflection{bottom:-20px!important;opacity:.50!important;}
+  .ng36-stage-rim{bottom:52px!important;opacity:.42!important;}
+  .ng35-grid-dock{top:58%!important;opacity:.28!important;}
+}
+
+/* Tall portrait iPads get a little more breathing room without pushing controls off-screen. */
+@media (min-width:721px) and (max-width:900px) and (orientation:portrait) and (min-height:1000px){
+  .neural-play{padding-top:82px!important;}
+  .neural-board{width:min(356px,37dvh,50vw)!important;}
+  .neural-option{min-height:48px!important;}
+}
+
+/* Landscape: keep feedback/next attached to the right-hand answer panel. */
+@media (min-width:721px) and (max-width:1180px) and (orientation:landscape){
+  .neural-play{
+    grid-template-columns:minmax(285px,355px) minmax(340px,520px)!important;
+    column-gap:30px!important;
+  }
+  .neural-prompt,
+  .neural-options,
+  .neural-action-zone{max-width:520px!important;}
+  .neural-action-zone{
+    margin-top:-2px!important;
+    justify-content:flex-start!important;
+    align-items:center!important;
+  }
+  .neural-feedback{max-width:100%!important;}
+  .neural-next{margin-top:1px!important;}
+  .ng36-stage-rim{bottom:24px!important;opacity:.38!important;}
+}
+
+/* Short landscape browser view: compact only what is necessary; never the tap targets. */
+@media (min-width:721px) and (max-width:1180px) and (orientation:landscape) and (max-height:650px){
+  .neural-play{
+    grid-template-columns:minmax(250px,315px) minmax(320px,500px)!important;
+    column-gap:22px!important;
+  }
+  .neural-option{min-height:44px!important;}
+  .neural-action-zone{min-height:58px!important;margin-top:-4px!important;}
+  .neural-feedback{padding:4px 10px!important;}
+  .neural-next{min-height:40px!important;}
+}
