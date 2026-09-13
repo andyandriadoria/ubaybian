@@ -10,8 +10,8 @@ async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.5.82',
-    db: { bound: Boolean(env.DB), schemaReady: false, examSchemaReady: false },
+    version: '0.5.83',
+    db: { bound: Boolean(env.DB), schemaReady: false, examSchemaReady: false, assessmentContextReady: false },
     gateway: {
       urlConfigured: Boolean(env.APPS_SCRIPT_URL),
       secretConfigured: Boolean(env.APPS_SCRIPT_SECRET),
@@ -35,6 +35,15 @@ async function health(env) {
     result.db.schemaReady = ['family_accounts', 'profiles', 'sessions', 'quiz_sessions', 'quiz_session_questions', 'quiz_answers', 'progress_summary']
       .every((name) => names.has(name));
     result.db.examSchemaReady = ['exam_sessions', 'exam_session_questions', 'exam_answers'].every((name) => names.has(name));
+
+    if (result.db.examSchemaReady) {
+      const columns = await env.DB.prepare('PRAGMA table_info(exam_sessions)').all();
+      const columnNames = new Set((columns.results || []).map((row) => String(row.name || '')));
+      result.db.assessmentContextReady = [
+        'assessment_definition_id', 'academic_year', 'grade', 'semester',
+        'assessment_type', 'blueprint_version', 'selection_strategy',
+      ].every((name) => columnNames.has(name));
+    }
   } catch (error) {
     console.error('HEALTH_DB_CHECK_FAILED', error);
   }
