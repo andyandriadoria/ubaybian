@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {clearSessionToken,createApiClient,setSessionToken} from '../api.js';
+import {clearSessionToken,createApiClient,setSessionToken} from '../api-v040.js';
 import {cleanBaseUrl} from '../config.js';
 
 test('API URL requires HTTPS outside localhost',()=>{
@@ -17,7 +17,7 @@ test('quiz calls send bearer session and idempotency key',async()=>{
  const api=createApiClient('https://api.example.com',fakeFetch);
  await api.startQuiz({profileId:'ubay',subjectId:'math',limit:1});
  await api.submitAnswer('s1',{questionId:'q1',answer:'4',idempotencyKey:'idem-1'});
- assert.equal(calls[0].options.headers.Authorization,'Bearer family-token');
- assert.equal(calls[1].options.headers['Idempotency-Key'],'idem-1');
+ assert.equal(calls[0].options.headers.get('Authorization'),'Bearer family-token');
+ assert.equal(calls[1].options.headers.get('Idempotency-Key'),'idem-1');
  clearSessionToken();
 });
