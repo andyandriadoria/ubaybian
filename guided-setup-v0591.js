@@ -52,6 +52,29 @@
     return sessionValue === 'exam' ? 'Mulai Assessment 📝' : 'Mulai Latihan ⚡';
   }
 
+  function syncMissionFocus(subject) {
+    const focus = document.querySelector('.mission-focus');
+    if (!focus) return;
+    const label = subject?.value
+      ? subject.selectedOptions?.[0]?.textContent?.trim() || 'Pelajaran'
+      : 'pilih pelajaran';
+    focus.textContent = `Fokus: ${label}`;
+  }
+
+  function syncReviewContext(panel, hasSubject) {
+    const review = panel.querySelector('.review-btn');
+    const info = panel.querySelector('.deck-review-info, .review-info');
+    if (!hasSubject) {
+      if (review) review.hidden = true;
+      if (info) info.textContent = 'Pilih pelajaran untuk melihat Review';
+    }
+  }
+
+  function syncRules(panel, ready) {
+    const rules = panel.parentElement?.querySelector(':scope > .learning-deck-rules, :scope > .rules-strip');
+    if (rules) rules.classList.toggle('guided-rules-muted', !ready);
+  }
+
   function updateGuidance(panel) {
     const subject = panel.querySelector('#subject-select');
     const session = panel.querySelector('#question-count');
@@ -106,6 +129,10 @@
           ? '2. Sekarang pilih jenis sesinya.'
           : 'Siap! Cek pilihanmu lalu mulai.';
     }
+
+    syncMissionFocus(subject);
+    syncReviewContext(panel, hasSubject);
+    syncRules(panel, ready);
   }
 
   function addHint(panel) {
