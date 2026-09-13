@@ -100,16 +100,17 @@
   outline:none;
 }
 
-/* Keep the sidebar compact as the collection grows. */
+/* Desktop shows 3 featured + 1 rotating spotlight. Tablet/mobile keeps 2 featured + spotlight,
+   but preserves all three when there is no fourth slot yet. */
 @media (min-width:901px){
   .badge-card .badge-showcase-item:nth-child(n+5){display:none!important;}
 }
 @media (min-width:601px) and (max-width:900px){
-  .badge-card .badge-showcase-item:nth-child(3){display:none!important;}
+  .badge-card.has-badge-spotlight .badge-showcase-item:nth-child(3){display:none!important;}
   .badge-card .badge-showcase-item:nth-child(n+5){display:none!important;}
 }
 @media (max-width:600px){
-  .badge-card .badge-showcase-item:nth-child(3){display:none!important;}
+  .badge-card.has-badge-spotlight .badge-showcase-item:nth-child(3){display:none!important;}
   .badge-card .badge-showcase-item:nth-child(n+5){display:none!important;}
   .badge-showcase-footer{align-items:stretch;flex-direction:column;}
   .badge-view-all{width:100%;min-height:36px;}
