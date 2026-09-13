@@ -26,7 +26,7 @@ Apply pending D1 migrations with:
 npm run db:remote
 ```
 
-The v0.5.83 Worker is rolling-deploy safe: if migration 0004 has not yet been applied, Assessment creation falls back to the legacy session insert. `/v1/health` exposes `db.assessmentContextReady` so the deployment can verify whether the new snapshot schema is active.
+The Worker is rolling-deploy safe: if migration 0004 has not yet been applied, Assessment creation falls back to the legacy session insert. `/v1/health` exposes `db.assessmentContextReady` so the deployment can verify whether the new snapshot schema is active.
 
 ## Current Assessment definitions
 
@@ -63,5 +63,23 @@ Blueprints already used in real sessions are treated as immutable. If a paper sp
 Dashboard analytics combine completed Practice and Assessment sessions for streaks, total learning sessions, subject activity, and the 10-session report. Assessment sessions containing open-response items expose an `auto` score status so provisional auto-scores are not treated as final scores in report summaries.
 
 Reward accounting remains source-specific: Practice keeps its existing reward rules, while Assessment rewards use the first qualifying attempt per subject + blueprint. Review merges wrong/unanswered auto-scored items from both Practice and Assessment.
+
+## Achievement system
+
+Since v0.5.84, dashboard badges are produced by `src/achievements.js` and exposed through `src/progress-v0584.js`. Similar achievements upgrade in place instead of stacking duplicates.
+
+Achievement families:
+
+- **Consistency** — On Fire → Steady Learner → Unstoppable.
+- **Practice** — Perfect Score tiers, Study Habit tiers, Questions Answered tiers, Challenge Accepted.
+- **Mastery** — subject Star → subject Master, plus multi-subject mastery.
+- **Growth** — Comeback → Never Give Up, plus Review Clear.
+- **Assessment** — First Assessment, Assessment Ace → Assessment Perfect, and future Semester Finisher badges driven by the Assessment Registry.
+
+`Subject Master` can only be earned from a final-scored Assessment ≥90%. A Practice ≥90% earns the lighter `Subject Star`. Assessment results that still contain open-response/manual-review items do not qualify for Master/Ace/Perfect until a final score exists.
+
+Migration `0005_achievement_ledger.sql` adds a persistent `achievements` ledger. The Worker remains safe before the migration is applied: eligibility is derived in memory, then automatically backfilled to the ledger once the table exists. `/v1/health` exposes `db.achievementLedgerReady`.
+
+See `docs/achievement-system-v0584.md` for the complete rules and tier thresholds.
 
 Runtime secrets and Google service account credentials must be configured in Cloudflare and must never be committed to this repository.
