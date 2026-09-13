@@ -19,6 +19,7 @@ Configured Grade 2 Semester 1 blueprints:
 - `bian-english-mid-s1-2026` — English, 30 questions, 90 minutes. Question Sets that share a stimulus remain contiguous when a paper is assembled.
 - `bian-math-mid-s1-2026` — Math, 30 questions, 90 minutes. Topic coverage follows the locked school pointer and the selector enforces the audited 14 Mudah / 13 Sedang / 3 Sulit mix.
 - `bian-science-mid-s1-2026` — Science, 44 questions, 60 minutes. The selector follows the MHIS pointer distribution, enforces 22 Mudah / 18 Sedang / 4 Sulit, and assembles 29 multiple-choice, 12 closed short-answer, and 3 open-response questions.
+- `bian-bahasa-indonesia-mid-s1-2026` — Bahasa Indonesia, 34 questions, 90 minutes. Each paper uses one complete audited practice variant, preserves reading-stimulus blocks, and enforces 25 multiple-choice, 5 closed short-answer, 4 open-response questions with a 17 Mudah / 14 Sedang / 3 Sulit mix.
 
 Adding these blueprints does not require a new D1 migration; they use the existing Assessment schema.
 
