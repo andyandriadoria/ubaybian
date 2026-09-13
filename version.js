@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.5.82';
+  const VERSION = '0.5.83';
   const CHANNEL = 'family';
   const LABEL = `v${VERSION} · ${CHANNEL}`;
 
@@ -12,46 +12,20 @@
     return `${path}${separator}v=${encodeURIComponent(VERSION)}`;
   };
 
-  const appVersion = Object.freeze({
+  globalThis.UBAYBIAN_VERSION = Object.freeze({
     version: VERSION,
     channel: CHANNEL,
     label: LABEL,
-    asset
+    asset,
   });
 
-  window.UBAYBIAN_VERSION = VERSION;
-  window.UBAYBIAN = appVersion;
-
-  const syncVersionUI = (root = document) => {
-    const nodes = [];
-    if (root.nodeType === 1 && root.matches?.('.version,[data-app-version]')) nodes.push(root);
-    root.querySelectorAll?.('.version,[data-app-version]').forEach((node) => nodes.push(node));
-
-    nodes.forEach((node) => {
-      if (node.textContent !== LABEL) node.textContent = LABEL;
-      node.dataset.appVersion = VERSION;
-      node.dataset.appChannel = CHANNEL;
+  const renderVersion = () => {
+    document.querySelectorAll('[data-app-version]').forEach((node) => {
+      node.textContent = LABEL;
+      node.title = `UbayBian ${LABEL}`;
     });
-
-    document.documentElement.dataset.appVersion = VERSION;
-    document.documentElement.dataset.appChannel = CHANNEL;
   };
 
-  const boot = () => {
-    syncVersionUI();
-    const observer = new MutationObserver((records) => {
-      for (const record of records) {
-        for (const node of record.addedNodes) {
-          if (node.nodeType === 1) syncVersionUI(node);
-        }
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, { once: true });
-  } else {
-    boot();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderVersion, { once: true });
+  else renderVersion();
 })();
