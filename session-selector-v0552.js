@@ -1,11 +1,11 @@
-// UbayBian v0.5.76 — Session selector bridge for Learning Deck + Assessment
+// UbayBian v0.5.77 — Session selector bridge for Learning Deck + Assessment
 (() => {
   'use strict';
 
   let scheduled = false;
 
   function examAvailable(profileId, subjectId) {
-    if (profileId === 'bian') return ['english', 'math'].includes(subjectId);
+    if (profileId === 'bian') return ['english', 'math', 'science'].includes(subjectId);
     if (profileId === 'ubay') return ['bahasa-indonesia', 'english', 'global-citizenship', 'informatika', 'math', 'pai', 'pancasila', 'science'].includes(subjectId);
     return false;
   }
