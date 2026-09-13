@@ -1,4 +1,4 @@
-// UbayBian v0.5.77 — Open Response wording for non-English assessments
+// UbayBian v0.5.78 — Open Response wording for non-English assessments
 (() => {
   'use strict';
 
@@ -26,7 +26,8 @@
       [/Writing is not checked by exact-match\. Your response will be marked for review after the simulation\./g,
         'This response is not checked by exact-match. It will be marked for review after the assessment.'],
       [/(\d+) writing to review/g, '$1 responses to review'],
-      [/(\d+) writing response(s?) tersimpan untuk review/gi, '$1 open response$2 tersimpan untuk review'],
+      [/(\d+)\s+dari\s+(\d+)\s+writing responses? tersimpan untuk review/gi, '$1 dari $2 open responses tersimpan untuk review'],
+      [/(\d+) writing responses? tersimpan untuk review/gi, '$1 open responses tersimpan untuk review'],
       [/Unanswered writing/g, 'Unanswered response'],
       [/This writing response is not graded by exact-match\./g, 'This response is not graded by exact-match.'],
       [/Writing review pending/g, 'Open response review pending'],
