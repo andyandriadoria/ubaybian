@@ -196,6 +196,7 @@ function renderRack(card, badges, id) {
 
   if (!badges.length) {
     card.classList.add('badge-showcase-empty');
+    card.classList.remove('has-badge-spotlight');
     return;
   }
   card.classList.remove('badge-showcase-empty');
@@ -210,6 +211,7 @@ function renderRack(card, badges, id) {
     .sort((a, b) => Number(b.priority || 0) - Number(a.priority || 0) || Number(b.upgradedAt || 0) - Number(a.upgradedAt || 0));
 
   let spotlight = null;
+  card.classList.toggle('has-badge-spotlight', rotating.length > 0);
   if (rotating.length) {
     spotlight = createBadgeChip(rotating[0], { spotlight: true });
     list.append(spotlight);
@@ -252,11 +254,12 @@ async function enhance() {
   const card = document.querySelector('.badge-card');
   const id = profileId();
   if (!card || !id || card.dataset.badgeShowcaseLoading === '1') return;
-  const signature = `${id}:${document.querySelector('.xp-main')?.textContent || ''}:${card.querySelectorAll('.badge-chip').length}`;
+  const signature = `${id}:${document.querySelector('.xp-main')?.textContent || ''}:${document.querySelector('.hero-meta')?.textContent || ''}`;
   if (card.dataset.badgeShowcaseSignature === signature && card.dataset.badgeShowcaseReady === '1') return;
   card.dataset.badgeShowcaseLoading = '1';
   try {
-    const badges = await loadBadges(id);
+    // A new Home card should always reflect achievements just unlocked in the previous session.
+    const badges = await loadBadges(id, true);
     if (!card.isConnected || profileId() !== id) return;
     renderRack(card, badges, id);
     card.dataset.badgeShowcaseReady = '1';
