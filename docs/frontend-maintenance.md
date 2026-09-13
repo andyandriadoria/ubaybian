@@ -26,7 +26,7 @@ Dokumen ini dibuat setelah audit dependency frontend karena repo v0.5.x memakai 
 
 `app-v040.js` dan `api-v040.js` masih memakai nama versioned karena keduanya adalah core aktif yang belum dipindahkan pada cleanup pertama. Rename/consolidation core dilakukan hanya ketika seluruh import sudah siap dipindahkan bersama.
 
-## File legacy yang dihapus pada baseline v0.6.0
+## Cleanup yang sudah selesai pada v0.6.0
 
 File berikut sudah diaudit sebagai superseded/orphan dan dihapus dari `main`:
 
@@ -39,6 +39,20 @@ File berikut sudah diaudit sebagai superseded/orphan dan dihapus dari `main`:
 - `exam-simulation-v0550.js`
 
 Test API root dipindahkan ke client aktif `api-v040.js` sebelum `api.js` dihapus.
+
+Modul yang aktif dan masih sering dirawat sudah mulai memakai nama stabil tanpa nomor release:
+
+- `learning-audit.css` / `learning-audit.js`
+- `responsive.css`
+- `review-modal.css` / `review-modal.js`
+- `badge-showcase.css` / `badge-showcase.js`
+- `guided-setup.css` / `guided-setup.js`
+- `wikimedia-image-fallback.js`
+- `session-selector.js`
+- `assessment-terminology.js`
+- `open-response-terminology.js`
+
+Rename tersebut memakai blob yang sama dengan file sebelumnya; perubahan ini tidak mengubah behavior aplikasi, hanya merapikan ownership/naming modul.
 
 ## File lama yang masih aktif
 
@@ -93,14 +107,14 @@ Migrasi dilakukan per-feature. Urutan aman:
 4. jalankan `npm run check` dan `npm test`;
 5. baru hapus file legacy feature tersebut.
 
-## Integrity check
+## Quality gates
 
 `scripts/check-frontend.mjs` melakukan dua guardrail dasar:
 
 - syntax check otomatis untuk seluruh JavaScript frontend root;
 - validasi file lokal `.js`, `.css`, dan `.svg` yang direferensikan dari HTML/JavaScript.
 
-Tujuannya agar cleanup berikutnya tidak menghasilkan missing asset/import secara diam-diam.
+Workflow `.github/workflows/quality.yml` menjalankan frontend integrity/test dan backend check/test pada setiap push ke `main` serta pull request. Tujuannya agar cleanup berikutnya tidak menghasilkan missing asset/import atau regression yang lolos diam-diam.
 
 ## Naming policy baru
 
