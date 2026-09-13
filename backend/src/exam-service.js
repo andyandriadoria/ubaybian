@@ -9,20 +9,13 @@ import {
   questionForSnapshot,
   sheetConfig,
 } from './questions.js';
-import { getExamBlueprint, publicExamBlueprint, selectExamQuestions } from './exam-blueprints.js';
-import { getBianScienceBlueprint, selectBianScienceQuestions } from './bian-science-assessment.js';
+import { publicExamBlueprint } from './exam-blueprints.js';
 import {
-  getBianBahasaIndonesiaBlueprint,
-  selectBianBahasaIndonesiaQuestions,
-} from './bian-bahasa-indonesia-assessment.js';
-import {
-  getBianPancasilaBlueprint,
-  selectBianPancasilaQuestions,
-} from './bian-pancasila-assessment.js';
-import {
-  getBianPaibpBlueprint,
-  selectBianPaibpQuestions,
-} from './bian-paibp-assessment.js';
+  assessmentDefinitionForBlueprint,
+  publicAssessmentDefinition,
+  resolveAssessmentDefinition,
+} from './assessment/registry.js';
+import { selectAssessmentQuestions } from './assessment/selectors.js';
 import { examRewardForSession } from './exam-rewards.js';
 import { randomToken } from './security.js';
 
@@ -49,7 +42,7 @@ async function examSession(env, familyId, sessionId) {
   const session = await env.DB.prepare(
     'SELECT * FROM exam_sessions WHERE id = ? AND family_id = ?',
   ).bind(sessionId, familyId).first();
-  if (!session) throw new HttpError(404, 'EXAM_SESSION_NOT_FOUND', 'Sesi simulasi ujian tidak ditemukan.');
+  if (!session) throw new HttpError(404, 'EXAM_SESSION_NOT_FOUND', 'Sesi Assessment tidak ditemukan.');
   return session;
 }
 
@@ -73,10 +66,28 @@ function timing(session) {
   };
 }
 
+function assessmentContextFromSession(session) {
+  const inferred = publicAssessmentDefinition(assessmentDefinitionForBlueprint(session?.blueprint_id));
+  if (!inferred && !session?.assessment_definition_id) return null;
+  return Object.freeze({
+    id: String(session?.assessment_definition_id || inferred?.id || ''),
+    profile: String(inferred?.profile || ''),
+    grade: Number(session?.grade ?? inferred?.grade ?? 0),
+    academicYear: String(session?.academic_year || inferred?.academicYear || ''),
+    semester: Number(session?.semester ?? inferred?.semester ?? 0),
+    assessmentType: String(session?.assessment_type || inferred?.assessmentType || ''),
+    subjectId: String(session?.subject_id || inferred?.subjectId || ''),
+    blueprintId: String(session?.blueprint_id || inferred?.blueprintId || ''),
+    blueprintVersion: Number(session?.blueprint_version ?? inferred?.blueprintVersion ?? 0),
+    selectionStrategy: String(session?.selection_strategy || inferred?.selectionStrategy || ''),
+    status: String(inferred?.status || 'historical'),
+  });
+}
+
 async function publicExamState(env, session, position) {
   const safePosition = Math.max(0, Math.min(Number(session.total_questions) - 1, Number(position) || 0));
   const row = await examQuestionRow(env, session.id, safePosition);
-  if (!row) throw new HttpError(409, 'EXAM_QUESTION_STATE_INVALID', 'Posisi soal simulasi tidak valid.');
+  if (!row) throw new HttpError(409, 'EXAM_QUESTION_STATE_INVALID', 'Posisi soal Assessment tidak valid.');
   const answer = await env.DB.prepare(
     'SELECT answer FROM exam_answers WHERE session_id = ? AND question_id = ?',
   ).bind(session.id, row.question_id).first();
@@ -84,6 +95,7 @@ async function publicExamState(env, session, position) {
     sessionId: session.id,
     subjectId: session.subject_id,
     blueprintId: session.blueprint_id,
+    assessment: assessmentContextFromSession(session),
     title: session.title,
     durationMinutes: Number(session.duration_minutes),
     progress: { current: safePosition + 1, total: Number(session.total_questions) },
@@ -107,44 +119,87 @@ async function loadQuestionBank(env, profileSlug, subjectId) {
   return available;
 }
 
+function legacySessionInsert(env, values) {
+  return env.DB.prepare(`INSERT INTO exam_sessions
+    (id, family_id, profile_id, subject_id, blueprint_id, title, duration_minutes, total_questions, correct_count, created_at, deadline_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`)
+    .bind(
+      values.sessionId,
+      values.familyId,
+      values.profileId,
+      values.subjectId,
+      values.blueprint.id,
+      values.blueprint.title,
+      values.blueprint.durationMinutes,
+      values.totalQuestions,
+      values.now,
+      values.deadlineAt,
+    );
+}
+
+function contextualSessionInsert(env, values) {
+  const definition = values.definition;
+  return env.DB.prepare(`INSERT INTO exam_sessions
+    (id, family_id, profile_id, subject_id, blueprint_id, title, duration_minutes, total_questions, correct_count, created_at, deadline_at,
+      assessment_definition_id, academic_year, grade, semester, assessment_type, blueprint_version, selection_strategy)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(
+      values.sessionId,
+      values.familyId,
+      values.profileId,
+      values.subjectId,
+      values.blueprint.id,
+      values.blueprint.title,
+      values.blueprint.durationMinutes,
+      values.totalQuestions,
+      values.now,
+      values.deadlineAt,
+      definition.id,
+      definition.academicYear,
+      definition.grade,
+      definition.semester,
+      definition.assessmentType,
+      definition.blueprintVersion,
+      definition.selectionStrategy.type,
+    );
+}
+
+function isAssessmentContextSchemaMissing(error) {
+  const message = String(error?.message || '');
+  return /assessment_definition_id|academic_year|blueprint_version|selection_strategy/i.test(message)
+    && /no such column|no column named|has no column named/i.test(message);
+}
+
+async function persistAssessmentSession(env, values, questionStatements) {
+  try {
+    await env.DB.batch([contextualSessionInsert(env, values), ...questionStatements]);
+    return true;
+  } catch (error) {
+    if (!isAssessmentContextSchemaMissing(error)) throw error;
+    // Safe rolling-deploy fallback: v0.5.83 can run before migration 0004 is applied.
+    // Once the migration exists in D1, new sessions automatically persist full context.
+    await env.DB.batch([legacySessionInsert(env, values), ...questionStatements]);
+    return false;
+  }
+}
+
 export async function startExam(env, familyId, profile, subjectId, requestedBlueprintId = '') {
-  const isBianScience = profile.slug === 'bian' && subjectId === 'science';
-  const isBianBahasaIndonesia = profile.slug === 'bian' && subjectId === 'bahasa-indonesia';
-  const isBianPancasila = profile.slug === 'bian' && subjectId === 'pancasila';
-  const isBianPaibp = profile.slug === 'bian' && subjectId === 'paibp';
-  const blueprint = isBianScience
-    ? getBianScienceBlueprint(requestedBlueprintId)
-    : isBianBahasaIndonesia
-      ? getBianBahasaIndonesiaBlueprint(requestedBlueprintId)
-      : isBianPancasila
-        ? getBianPancasilaBlueprint(requestedBlueprintId)
-        : isBianPaibp
-          ? getBianPaibpBlueprint(requestedBlueprintId)
-          : getExamBlueprint(profile.slug, subjectId, requestedBlueprintId);
+  const { definition, blueprint } = resolveAssessmentDefinition(profile.slug, subjectId, requestedBlueprintId);
+  if (Number(profile.grade) !== Number(definition.grade)) {
+    throw new HttpError(
+      409,
+      'ASSESSMENT_GRADE_MISMATCH',
+      `Assessment aktif ditujukan untuk Grade ${definition.grade}, sedangkan profil sekarang Grade ${profile.grade}.`,
+    );
+  }
+
   const available = await loadQuestionBank(env, profile.slug, subjectId);
-  const selected = (
-    isBianScience
-      ? selectBianScienceQuestions(available, blueprint)
-      : isBianBahasaIndonesia
-        ? selectBianBahasaIndonesiaQuestions(available, blueprint)
-        : isBianPancasila
-          ? selectBianPancasilaQuestions(available, blueprint)
-          : isBianPaibp
-            ? selectBianPaibpQuestions(available, blueprint)
-            : selectExamQuestions(available, blueprint)
-  ).map(questionForSnapshot);
+  const selected = selectAssessmentQuestions(available, definition, blueprint).map(questionForSnapshot);
 
   const sessionId = randomToken(24);
   const now = Date.now();
   const deadlineAt = now + (blueprint.durationMinutes * 60 * 1000);
-  const statements = [
-    env.DB.prepare(`INSERT INTO exam_sessions
-      (id, family_id, profile_id, subject_id, blueprint_id, title, duration_minutes, total_questions, correct_count, created_at, deadline_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`)
-      .bind(sessionId, familyId, profile.id, subjectId, blueprint.id, blueprint.title, blueprint.durationMinutes, selected.length, now, deadlineAt),
-  ];
-
-  selected.forEach((question, index) => statements.push(
+  const questionStatements = selected.map((question, index) => (
     env.DB.prepare(`INSERT INTO exam_session_questions
       (session_id, position, question_id, question_type, prompt, image_url, choices_json, answer_key, explanation, difficulty)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
@@ -159,14 +214,30 @@ export async function startExam(env, familyId, profile, subjectId, requestedBlue
         question.answerKey || '',
         question.explanation || '',
         question.difficulty,
-      ),
+      )
   ));
 
-  await env.DB.batch(statements);
+  const contextPersisted = await persistAssessmentSession(env, {
+    sessionId,
+    familyId,
+    profileId: profile.id,
+    subjectId,
+    blueprint,
+    definition,
+    totalQuestions: selected.length,
+    now,
+    deadlineAt,
+  }, questionStatements);
+
   const session = await examSession(env, familyId, sessionId);
   return {
     ...(await publicExamState(env, session, 0)),
-    blueprint: publicExamBlueprint(blueprint),
+    blueprint: {
+      ...publicExamBlueprint(blueprint),
+      assessment: publicAssessmentDefinition(definition),
+    },
+    assessment: publicAssessmentDefinition(definition),
+    contextPersisted,
   };
 }
 
@@ -174,16 +245,16 @@ export async function getExamQuestion(env, familyId, sessionId, requestedPositio
   const session = await examSession(env, familyId, sessionId);
   const position = Number(requestedPosition);
   if (!Number.isInteger(position) || position < 0 || position >= Number(session.total_questions)) {
-    throw new HttpError(422, 'EXAM_POSITION_INVALID', 'Nomor soal simulasi tidak valid.');
+    throw new HttpError(422, 'EXAM_POSITION_INVALID', 'Nomor soal Assessment tidak valid.');
   }
-  if (session.completed_at) throw new HttpError(409, 'EXAM_ALREADY_SUBMITTED', 'Simulasi ujian sudah disubmit.');
+  if (session.completed_at) throw new HttpError(409, 'EXAM_ALREADY_SUBMITTED', 'Assessment sudah disubmit.');
   return publicExamState(env, session, position);
 }
 
 export async function saveExamAnswer(env, familyId, sessionId, body) {
   const session = await examSession(env, familyId, sessionId);
-  if (session.completed_at) throw new HttpError(409, 'EXAM_ALREADY_SUBMITTED', 'Simulasi ujian sudah disubmit.');
-  if (timing(session).expired) throw new HttpError(409, 'EXAM_TIME_EXPIRED', 'Waktu simulasi sudah habis. Submit ujian untuk melihat hasil.');
+  if (session.completed_at) throw new HttpError(409, 'EXAM_ALREADY_SUBMITTED', 'Assessment sudah disubmit.');
+  if (timing(session).expired) throw new HttpError(409, 'EXAM_TIME_EXPIRED', 'Waktu Assessment sudah habis. Submit Assessment untuk melihat hasil.');
 
   const questionId = String(body?.questionId || '').trim();
   const answer = String(body?.answer ?? '').trim();
@@ -193,7 +264,7 @@ export async function saveExamAnswer(env, familyId, sessionId, body) {
   const row = await env.DB.prepare(
     'SELECT * FROM exam_session_questions WHERE session_id = ? AND question_id = ?',
   ).bind(sessionId, questionId).first();
-  if (!row) throw new HttpError(409, 'EXAM_QUESTION_MISMATCH', 'Soal tidak termasuk dalam simulasi ini.');
+  if (!row) throw new HttpError(409, 'EXAM_QUESTION_MISMATCH', 'Soal tidak termasuk dalam Assessment ini.');
 
   const question = questionFromDb(row);
   const needsReview = question.type === 'open-response';
@@ -271,6 +342,7 @@ async function completedExamResult(env, session) {
     sessionId: session.id,
     title: session.title,
     blueprintId: session.blueprint_id,
+    assessment: assessmentContextFromSession(session),
     summary,
     reward,
     results: items.map((item) => {
