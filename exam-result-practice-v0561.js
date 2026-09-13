@@ -1,4 +1,4 @@
-// UbayBian v0.5.67 — align Assessment result presentation with Practice
+// UbayBian v0.5.82 — align Assessment result presentation with Practice
 (() => {
   const main = document.querySelector('#main');
   if (!main) return;
@@ -90,10 +90,13 @@
     });
   }
 
-  function countFromStats(panel, pattern){
+  function countFromStats(panel, patterns){
+    const list = Array.isArray(patterns) ? patterns : [patterns];
     for (const node of panel.querySelectorAll('.exam-result-stats span')) {
-      const match = node.textContent.match(pattern);
-      if (match) return Math.max(0, Number(match[1]) || 0);
+      for (const pattern of list) {
+        const match = node.textContent.match(pattern);
+        if (match) return Math.max(0, Number(match[1]) || 0);
+      }
     }
     return 0;
   }
@@ -101,9 +104,13 @@
   function rewardProgress(panel){
     const correct = countFromStats(panel, /(\d+)\s+auto-correct/i);
     const wrong = countFromStats(panel, /(\d+)\s+auto-wrong/i);
-    const writing = countFromStats(panel, /(\d+)\s+writing to review/i);
+    const review = countFromStats(panel, [
+      /(\d+)\s+writing to review/i,
+      /(\d+)\s+responses? to review/i,
+      /(\d+)\s+open responses? to review/i,
+    ]);
     const unanswered = countFromStats(panel, /(\d+)\s+unanswered/i);
-    const answered = correct + wrong + writing;
+    const answered = correct + wrong + review;
     const total = answered + unanswered;
     const threshold = total ? Math.ceil(total * .8) : 0;
     return { answered, total, threshold };
