@@ -83,6 +83,13 @@
 .controls-panel.learning-deck.guided-step-subject .guided-setup-hint{color:#bcefff;}
 .controls-panel.learning-deck.guided-step-session .guided-setup-hint{color:#ffe7a1;}
 .controls-panel.learning-deck.guided-ready .guided-setup-hint{color:#b9f6dc;}
+.learning-deck-rules,.rules-strip{
+  transition:opacity .18s ease,filter .18s ease,transform .18s ease;
+}
+.learning-deck-rules.guided-rules-muted,.rules-strip.guided-rules-muted{
+  opacity:.48;
+  filter:saturate(.65);
+}
 
 @keyframes guidedPulse{
   0%,100%{transform:translateY(0);box-shadow:0 0 0 2px rgba(70,213,255,.10),0 8px 24px rgba(17,172,230,.08),inset 0 1px 0 rgba(255,255,255,.08)}
