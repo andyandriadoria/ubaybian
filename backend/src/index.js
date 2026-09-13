@@ -4,7 +4,7 @@ import { finishExam, getExamQuestion, saveExamAnswer, startExam } from './exam-s
 import { listAssessmentDefinitions, publicAssessmentDefinition } from './assessment/registry.js';
 import { HttpError, corsHeaders, json, readJson, routeMatch, withCors } from './http.js';
 import { lockParentAccess, parentAccessStatus, requireParentAccess, setParentPin, unlockParentAccess } from './parent-access.js';
-import { dashboardForProfile, progressForFamily } from './progress-v0584.js';
+import { dashboardForProfile, progressForFamily } from './progress-dashboard.js';
 import { startQuiz, submitAnswer } from './quiz-service.js';
 
 async function health(env) {
