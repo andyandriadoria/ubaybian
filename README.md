@@ -24,8 +24,8 @@ Frontend saat ini masuk melalui:
 - `index.html`
 - `version.js` — single source of truth versi frontend
 - `bootstrap.js`
-- `app-v040.js` — core app aktif; nama lama dipertahankan sementara sampai konsolidasi modul selesai
-- `api-v040.js` — API client aktif
+- `app.js` — core app aktif; nama lama dipertahankan sementara sampai konsolidasi modul selesai
+- `api.js` — API client aktif
 - `quiz.js`, `profiles.js`, `config.js`
 
 Backend aktif berada di `backend/`. Entry Worker mengikuti `backend/wrangler.jsonc`.

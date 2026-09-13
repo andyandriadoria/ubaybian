@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {clearSessionToken,createApiClient,setSessionToken} from '../api-v040.js';
+import {clearSessionToken,createApiClient,setSessionToken} from '../api.js';
 import {cleanBaseUrl} from '../config.js';
 
 test('API URL requires HTTPS outside localhost',()=>{

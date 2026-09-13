@@ -1,6 +1,6 @@
 /* UbayBian v0.5.34 · Memory Grid Neural Chamber
    World-building layer: chamber, spatial depth, energy connections, toy-science props,
-   and state-reactive lighting. Gameplay remains in memory-grid-v046.js. */
+   and state-reactive lighting. Gameplay remains in memory-grid.js. */
 
 .neural-overlay{
   --ng-state-a:#64ead0;

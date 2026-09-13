@@ -1,5 +1,5 @@
 /* UbayBian v0.5.87 · Memory Grid Readability + Tablet Layout Loader
-   Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid-v046.js.
+   Spatial/decorative layer only. Gameplay, scoring, XP and persistence stay in memory-grid.js.
    Loads the clarity layers first, then the tablet-specific composition last. */
 (() => {
   const SELECTOR = '.neural-shell';
@@ -16,22 +16,22 @@
   function loadClarityCSS(){
     appendCSS({
       selector:'link[data-memory-grid-v0536]',
-      href:'memory-grid-v0536.css?v=0.5.39',
+      href:'memory-grid-clarity.css?v=0.5.39',
       dataKey:'memoryGridV0536'
     });
     appendCSS({
       selector:'link[data-memory-grid-v0537]',
-      href:'memory-grid-v0537.css?v=0.5.39',
+      href:'memory-grid-contrast.css?v=0.5.39',
       dataKey:'memoryGridV0537'
     });
     appendCSS({
       selector:'link[data-memory-grid-v0538]',
-      href:'memory-grid-v0538.css?v=0.5.39',
+      href:'memory-grid-hint-contrast.css?v=0.5.39',
       dataKey:'memoryGridV0538'
     });
     appendCSS({
       selector:'link[data-memory-grid-tablet-v0587]',
-      href:'memory-grid-tablet-v0587.css?v=0.5.87',
+      href:'memory-grid-tablet.css?v=0.5.87',
       dataKey:'memoryGridTabletV0587'
     });
   }

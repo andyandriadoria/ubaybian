@@ -1,5 +1,5 @@
 /* UbayBian v0.5.89 · Review modal enhancement
-   Visual/semantic decoration only. Core Review behavior stays in extras-v042.js. */
+   Visual/semantic decoration only. Core Review behavior stays in extras.js. */
 (() => {
   const BOX_SELECTOR = '.ub-modal-box';
 

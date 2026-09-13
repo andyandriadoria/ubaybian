@@ -12,11 +12,11 @@
 
   function ensurePolish(){
     const existing = [...document.querySelectorAll('link[rel="stylesheet"]')]
-      .find((link) => String(link.getAttribute('href') || '').includes('memory-grid-tablet-v0588.css'));
+      .find((link) => String(link.getAttribute('href') || '').includes('memory-grid-tablet-polish.css'));
     if(existing) existing.remove();
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'memory-grid-tablet-v0588.css?v=0.5.88';
+    link.href = 'memory-grid-tablet-polish.css?v=0.5.88';
     link.dataset.memoryGridTabletV0588 = '1';
     document.head.append(link);
   }

@@ -1,5 +1,5 @@
 /* UbayBian v0.5.33 · Memory Grid Gameplay Polish
-   DOM-only layout polish. Core game logic remains in memory-grid-v046.js. */
+   DOM-only layout polish. Core game logic remains in memory-grid.js. */
 (() => {
   const SELECTOR = '.neural-shell';
 

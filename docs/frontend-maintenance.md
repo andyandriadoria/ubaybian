@@ -18,13 +18,13 @@ Dokumen ini dibuat setelah audit dependency frontend karena repo v0.5.x memakai 
 - `index.html`
 - `version.js`
 - `bootstrap.js`
-- `app-v040.js`
-- `api-v040.js`
+- `app.js`
+- `api.js`
 - `quiz.js`
 - `profiles.js`
 - `config.js`
 
-`app-v040.js` dan `api-v040.js` masih memakai nama versioned karena keduanya adalah core aktif yang belum dipindahkan pada cleanup pertama. Rename/consolidation core dilakukan hanya ketika seluruh import sudah siap dipindahkan bersama.
+`app.js` dan `api.js` masih memakai nama versioned karena keduanya adalah core aktif yang belum dipindahkan pada cleanup pertama. Rename/consolidation core dilakukan hanya ketika seluruh import sudah siap dipindahkan bersama.
 
 ## Cleanup yang sudah selesai pada v0.6.0
 
@@ -38,7 +38,7 @@ File berikut sudah diaudit sebagai superseded/orphan dan dihapus dari `main`:
 - `login.css`
 - `exam-simulation-v0550.js`
 
-Test API root dipindahkan ke client aktif `api-v040.js` sebelum `api.js` dihapus.
+Test API root dipindahkan ke client aktif `api.js` sebelum `api.js` dihapus.
 
 Modul yang aktif dan masih sering dirawat sudah mulai memakai nama stabil tanpa nomor release:
 

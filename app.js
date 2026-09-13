@@ -1,6 +1,6 @@
 import {profiles,findProfile} from './profiles.js';
 import {apiBase,backendEnabled} from './config.js';
-import {createApiClient,ApiError} from './api-v040.js';
+import {createApiClient,ApiError} from './api.js';
 import {newIdempotencyKey} from './quiz.js';
 
 const main=document.querySelector('#main');

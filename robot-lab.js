@@ -1,5 +1,5 @@
 /* v0.5.21 — Robot Lab Adventure Upgrade
-   Visual-only enhancement built from the Robot Lab data already rendered by app-v040.js. */
+   Visual-only enhancement built from the Robot Lab data already rendered by app.js. */
 (function(){
   const main=document.querySelector('#main');
   if(!main)return;

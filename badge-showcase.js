@@ -1,5 +1,5 @@
 import { apiBase, backendEnabled } from './config.js';
-import { createApiClient } from './api-v040.js?v=0.5.52';
+import { createApiClient } from './api.js?v=0.5.52';
 
 const api = backendEnabled ? createApiClient(apiBase) : null;
 const cache = new Map();

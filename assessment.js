@@ -1,5 +1,5 @@
 import {apiBase,backendEnabled} from './config.js';
-import {createApiClient,ApiError} from './api-v040.js?v=0.5.82';
+import {createApiClient,ApiError} from './api.js?v=0.5.82';
 import {findProfile} from './profiles.js';
 
 const main=document.querySelector('#main');

@@ -4,7 +4,7 @@
     if (document.querySelector('link[data-reward-v0542="1"]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './reward-shop-v0542.css?v=0.5.42';
+    link.href = './reward-shop-lock.css?v=0.5.42';
     link.dataset.rewardV0542 = '1';
     document.head.appendChild(link);
   };
