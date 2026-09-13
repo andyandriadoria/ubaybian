@@ -1,0 +1,39 @@
+name: Frontend semantic rename (one time)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/frontend-normalize-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Normalize frontend filenames
+        run: node scripts/normalize-frontend-names.mjs
+      - name: Verify normalized frontend
+        run: |
+          npm run check
+          npm test
+          npm run audit:legacy
+      - name: Commit normalized frontend
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'refactor: normalize legacy frontend filenames'
+          git push origin HEAD:main
