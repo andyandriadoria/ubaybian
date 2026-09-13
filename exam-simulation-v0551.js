@@ -1,5 +1,5 @@
 import {apiBase,backendEnabled} from './config.js';
-import {createApiClient,ApiError} from './api-v040.js?v=0.5.54';
+import {createApiClient,ApiError} from './api-v040.js?v=0.5.82';
 import {findProfile} from './profiles.js';
 
 const main=document.querySelector('#main');
@@ -27,9 +27,19 @@ function button(label,cls,handler){const node=text('button',label,cls);node.type
 function currentProfile(){return findProfile(document.body.dataset.profile||'');}
 function errorMessage(error){
  if(error instanceof ApiError)return error.message;
- return 'Simulasi belum bisa dibuka. Coba lagi sebentar.';
+ return 'Assessment belum bisa dibuka. Coba lagi sebentar.';
 }
-function examAvailable(profile,subjectId){return profile?.id==='bian'&&['english','math'].includes(subjectId);}
+function examAvailable(profile,subjectId){
+ if(profile?.id==='bian')return ['bahasa-indonesia','english','math','paibp','pancasila','science'].includes(subjectId);
+ if(profile?.id==='ubay')return ['bahasa-indonesia','english','global-citizenship','informatika','math','pai','pancasila','science'].includes(subjectId);
+ return false;
+}
+function assessmentTitle(value){
+ return String(value||'Assessment')
+  .replace(/\bMid Exam S([12])\b/g,'Midterm Assessment S$1')
+  .replace(/\bFinal Exam S([12])\b/g,'Final Assessment S$1')
+  .replace(/\bMid Exam\b/g,'Assessment');
+}
 
 function setSessionOptions(panel){
  const profile=currentProfile();
@@ -43,10 +53,10 @@ function setSessionOptions(panel){
  const previous=session.value;
  session.replaceChildren();
  session.append(
-  el('option',{value:'5',text:'⚡ Quick Practice · 5 soal'}),
-  el('option',{value:'10',text:'📚 Practice · 10 soal'}),
+  el('option',{value:'5',text:'⚡ Quick Practice'}),
+  el('option',{value:'10',text:'📚 Practice'}),
  );
- if(examAvailable(profile,subject.value))session.append(el('option',{value:'exam',text:'📝 Mid Exam Simulation · 30 soal'}));
+ if(examAvailable(profile,subject.value))session.append(el('option',{value:'exam',text:'📝 Assessment'}));
  if([...session.options].some((option)=>option.value===previous))session.value=previous;
  else session.value=profile.id==='bian'?'5':'10';
  mode.value='normal';
@@ -55,8 +65,9 @@ function setSessionOptions(panel){
 
  const sync=()=>{
   const isExam=session.value==='exam';
-  start.textContent=isExam?'Mulai Simulasi 📝':'Mulai Latihan ⚡';
+  start.textContent=isExam?'Mulai Assessment 📝':'Mulai Latihan ⚡';
   start.classList.toggle('exam-start-btn',isExam);
+  start.title=isExam?'Mulai Assessment':'Mulai sesi belajar';
   if(review)review.style.display=isExam?'none':'';
   panel.classList.toggle('exam-session-selected',isExam);
  };
@@ -103,6 +114,7 @@ function startTimer(){
 
 function isWritingQuestion(question){return question?.type==='open-response';}
 function isTextQuestion(question){return question?.type==='text'||isWritingQuestion(question);}
+function isEnglishAssessment(){return String(activeExam?.subjectId||'').toLowerCase()==='english';}
 
 function answerValue(){
  if(!activeExam)return '';
@@ -119,7 +131,7 @@ async function persistCurrent(){
  if(saveState)saveState.textContent='Menyimpan…';
  const saved=await api.saveExamAnswer(activeExam.sessionId,{questionId:activeExam.question.id,answer});
  activeExam={...activeExam,savedAnswer:answer,answeredCount:saved.answeredCount,remainingSeconds:saved.remainingSeconds,expired:saved.expired};
- if(saveState)saveState.textContent=saved.needsReview?'Tersimpan · writing akan direview ✓':'Tersimpan ✓';
+ if(saveState)saveState.textContent=saved.needsReview?'Tersimpan · open response akan direview ✓':'Tersimpan ✓';
  const answered=document.querySelector('#exam-answered');if(answered)answered.textContent=`Answered ${activeExam.answeredCount} / ${activeExam.progress.total}`;
 }
 
@@ -160,13 +172,14 @@ function renderExam(){
  const current=activeExam.progress.current;
  const total=activeExam.progress.total;
  const writing=isWritingQuestion(question);
- const subjectLabel=String(activeExam.subjectId||'subject').toUpperCase();
+ const english=isEnglishAssessment();
+ const subjectLabel=String(activeExam.subjectId||'subject').replace(/-/g,' ').toUpperCase();
  const card=el('section',{class:'exam-shell'});
  const top=el('div',{class:'exam-topbar'},[
   el('div',{class:'exam-heading'},[
-   text('p','MID EXAM SIMULATION','eyebrow'),
-   text('h1',activeExam.title||'Mid Exam Simulation'),
-   text('p',activeExam.blueprint?.subtitle||'Kerjakan seperti ujian sungguhan. Jawaban dan nilai baru dibuka setelah submit.','exam-subtitle'),
+   text('p','ASSESSMENT','eyebrow'),
+   text('h1',assessmentTitle(activeExam.title)),
+   text('p',activeExam.blueprint?.subtitle||'Kerjakan dengan fokus. Jawaban dan hasil baru dibuka setelah Assessment disubmit.','exam-subtitle'),
   ]),
   el('div',{class:'exam-meta'},[
    el('div',{class:'exam-timer-box'},[text('span','⏱','exam-meta-icon'),text('strong',formatClock(remainingSeconds()),'exam-timer'),text('small','remaining')]),
@@ -177,8 +190,8 @@ function renderExam(){
  top.querySelector('.exam-answered').id='exam-answered';
 
  const progress=el('div',{class:'exam-progress'},[el('span',{style:`width:${Math.round((current/total)*100)}%`})]);
- const tags=[text('span',subjectLabel),text('span',question.difficulty||'Grade 2')];
- if(writing)tags.push(text('span','WRITING · REVIEWED','exam-writing-tag'));
+ const tags=[text('span',subjectLabel),text('span',question.difficulty||'Assessment')];
+ if(writing)tags.push(text('span',english?'WRITING · REVIEWED':'OPEN RESPONSE · REVIEWED','exam-writing-tag'));
  const body=el('div',{class:'exam-question-card'},[
   el('div',{class:'exam-question-head'},[
    el('div',{class:'exam-tags'},tags),
@@ -190,20 +203,27 @@ function renderExam(){
 
  const answer=el('div',{class:'exam-answer'});
  if(isTextQuestion(question)){
-  const input=el('textarea',{id:'exam-text-answer',rows:writing?'5':'3',maxlength:writing?'1000':'500',placeholder:writing?'Write your sentence(s) here…':'Write your answer here…'});
+  const placeholder=english
+   ? (writing?'Write your response here…':'Write your answer here…')
+   : (writing?'Tulis jawabanmu di sini…':'Tulis jawaban singkat di sini…');
+  const input=el('textarea',{id:'exam-text-answer',rows:writing?'5':'3',maxlength:writing?'1000':'500',placeholder});
   input.value=activeExam.savedAnswer||'';
   answer.append(input);
-  if(writing)answer.append(text('p','Writing is not checked by exact-match. Your response will be marked for review after the simulation.','exam-writing-hint'));
+  if(writing){
+   answer.append(text('p',english
+    ? 'This response is not checked by exact-match. It will be marked for review after the Assessment.'
+    : 'Jawaban open response tidak diperiksa dengan exact-match dan akan ditandai untuk review setelah Assessment.','exam-writing-hint'));
+  }
  }else{
   const options=el('div',{class:`exam-options ${question.type==='image-choice'?'exam-image-options':''}`});
   question.choices.forEach((choice)=>options.append(optionButton(choice)));answer.append(options);
  }
  body.append(answer);
 
- const saveState=text('span',activeExam.savedAnswer?(writing?'Tersimpan · writing akan direview ✓':'Tersimpan ✓'):'Jawaban belum disimpan','exam-save-state');saveState.id='exam-save-state';
+ const saveState=text('span',activeExam.savedAnswer?(writing?'Tersimpan · open response akan direview ✓':'Tersimpan ✓'):'Jawaban belum disimpan','exam-save-state');saveState.id='exam-save-state';
  const previous=button('← Previous','exam-secondary',()=>goToPosition(current-2));previous.disabled=current<=1;
  const next=button('Next →','exam-primary',()=>goToPosition(current));next.disabled=current>=total;
- const finish=button('Finish Exam','exam-finish-btn',()=>finishExam(false));
+ const finish=button('Finish Assessment','exam-finish-btn',()=>finishExam(false));
  const nav=el('div',{class:'exam-nav'},[el('div',{class:'exam-save-wrap'},[saveState]),el('div',{class:'exam-nav-actions'},[previous,next,finish])]);
 
  card.append(top,progress,body,nav);
@@ -216,10 +236,10 @@ function renderExam(){
 async function finishExam(auto=false){
  if(!activeExam||finishing)return;
  const unanswered=Math.max(0,activeExam.progress.total-activeExam.answeredCount-(answerValue()&&!activeExam.savedAnswer?1:0));
- if(!auto&&unanswered>0&&!window.confirm(`Masih ada sekitar ${unanswered} soal yang belum dijawab. Tetap submit ujian?`))return;
- if(!auto&&!window.confirm('Submit Mid Exam Simulation sekarang? Setelah submit jawaban tidak dapat diubah.'))return;
+ if(!auto&&unanswered>0&&!window.confirm(`Masih ada sekitar ${unanswered} soal yang belum dijawab. Tetap submit Assessment?`))return;
+ if(!auto&&!window.confirm('Submit Assessment sekarang? Setelah submit jawaban tidak dapat diubah.'))return;
  finishing=true;
- const status=document.querySelector('#exam-save-state');if(status)status.textContent=auto?'Waktu habis. Menyimpan ujian…':'Mengirim ujian…';
+ const status=document.querySelector('#exam-save-state');if(status)status.textContent=auto?'Waktu habis. Menyimpan Assessment…':'Mengirim Assessment…';
  try{
   try{await persistCurrent();}catch(error){if(!(error instanceof ApiError&&error.code==='EXAM_TIME_EXPIRED'))throw error;}
   const result=await api.finishExam(activeExam.sessionId);
@@ -238,18 +258,18 @@ function renderExamReward(card,reward){
    text('span',`⭐ +${reward.xpEarned} XP`),
    text('span',`🪙 +${reward.coinsEarned} coins`),
   ]));
-  card.append(text('p',`Termasuk +${reward.completionXp} XP completion bonus. Reward Mid Exam hanya diberikan pada percobaan pertama yang memenuhi syarat.`,`exam-result-reward-note`));
+  card.append(text('p',`Termasuk +${reward.completionXp} XP completion bonus. Reward Assessment hanya diberikan pada percobaan pertama yang memenuhi syarat.`,`exam-result-reward-note`));
   return;
  }
  if(reward.status==='incomplete'){
-  card.append(text('p',`Belum ada XP atau coins. Jawab minimal ${reward.completionThreshold} dari ${reward.total} soal untuk mengaktifkan reward Mid Exam. Kesempatan reward belum terpakai dan masih bisa didapat pada percobaan berikutnya.`,`exam-result-reward-note is-retake`));
+  card.append(text('p',`Belum ada XP atau coins. Jawab minimal ${reward.completionThreshold} dari ${reward.total} soal untuk mengaktifkan reward Assessment. Kesempatan reward belum terpakai dan masih bisa didapat pada percobaan berikutnya.`,`exam-result-reward-note is-retake`));
   return;
  }
  if(reward.status==='legacy'){
-  card.append(text('p','Sesi ini dibuat sebelum reward Mid Exam diaktifkan. Percobaan berikutnya yang memenuhi syarat tetap bisa mendapat XP dan coins.','exam-result-reward-note is-retake'));
+  card.append(text('p','Sesi ini dibuat sebelum reward Assessment diaktifkan. Percobaan berikutnya yang memenuhi syarat tetap bisa mendapat XP dan coins.','exam-result-reward-note is-retake'));
   return;
  }
- card.append(text('p','Retake tetap bisa dipakai untuk latihan, tetapi XP dan coins hanya diberikan pada percobaan pertama Mid Exam yang memenuhi syarat.','exam-result-reward-note is-retake'));
+ card.append(text('p','Retake tetap bisa dipakai untuk latihan, tetapi XP dan coins hanya diberikan pada percobaan pertama Assessment yang memenuhi syarat.','exam-result-reward-note is-retake'));
 }
 
 function renderExamResult(result){
@@ -257,35 +277,34 @@ function renderExamResult(result){
  const summary=result.summary;
  const hasWriting=summary.writingTotal>0;
  const displayScore=hasWriting?summary.autoScore:summary.score;
+ const english=isEnglishAssessment();
  const card=el('section',{class:'exam-result'});
  card.append(
-  text('p','SIMULATION COMPLETE','eyebrow'),
+  text('p','ASSESSMENT COMPLETE','eyebrow'),
   text('div',resultEmoji(displayScore),'exam-result-emoji'),
-  text('h1',result.title),
+  text('h1',assessmentTitle(result.title)),
  );
  if(displayScore!==null){
   card.append(el('div',{class:'exam-result-score'},[text('strong',String(displayScore)),text('span',hasWriting?'/100 auto-score':'/100')]));
  }else{
-  card.append(text('div','Writing review pending','exam-result-pending-title'));
+  card.append(text('div',english?'Writing review pending':'Open response review pending','exam-result-pending-title'));
  }
  card.append(el('div',{class:'exam-result-stats'},[
   text('span',`✅ ${summary.correct} auto-correct`),
   text('span',`❌ ${summary.wrong} auto-wrong`),
-  hasWriting?text('span',`📝 ${summary.reviewPending} writing to review`):null,
+  hasWriting?text('span',`📝 ${summary.reviewPending} ${english?'writing':'responses'} to review`):null,
   text('span',`⬜ ${summary.unanswered} unanswered`),
  ]));
  renderExamReward(card,result.reward);
  if(hasWriting){
-  card.append(text('p',`Auto-score dihitung hanya dari ${summary.autoTotal} soal yang bisa dinilai otomatis. ${summary.writingAnswered} dari ${summary.writingTotal} writing response tersimpan untuk review; nilai akhir belum ditetapkan.`,`exam-result-note exam-writing-result-note`));
- }else{
-  card.append(text('p','Nilai baru dibuka setelah seluruh simulasi selesai, seperti ujian sungguhan.','exam-result-note'));
+  card.append(text('p',`Auto-score dihitung hanya dari ${summary.autoTotal} soal yang bisa dinilai otomatis. ${summary.writingAnswered} dari ${summary.writingTotal} open response tersimpan untuk review; nilai akhir belum ditetapkan.`,`exam-result-note exam-writing-result-note`));
  }
 
  const review=el('section',{class:'exam-review'});review.append(text('h2','Review Answers'));
  for(const item of result.results){
   const unanswered=!item.answer;
   const status=item.manualReview
-   ? (unanswered?'— Unanswered writing':'📝 Needs review')
+   ? (unanswered?'— Unanswered response':'📝 Needs review')
    : (item.correct?'✓ Correct':unanswered?'— Unanswered':'✕ Check again');
   const cls=item.manualReview?'is-review':item.correct?'is-correct':'is-wrong';
   const bodyChildren=[
@@ -293,7 +312,7 @@ function renderExamResult(result){
    text('p',`Your answer: ${item.answer||'—'}`),
   ];
   if(item.manualReview){
-   bodyChildren.push(text('p','This writing response is not graded by exact-match.','exam-writing-review-label'));
+   bodyChildren.push(text('p','This response is not graded by exact-match.','exam-writing-review-label'));
   }else{
    bodyChildren.push(text('p',`Correct answer: ${item.correctAnswer||'—'}`));
   }
@@ -312,7 +331,7 @@ function renderExamResult(result){
 
 async function launchExam(profile,subjectId,start,status){
  if(!api||!profile)return;
- start.disabled=true;const old=start.textContent;start.textContent='Menyiapkan paper…';status.textContent='';
+ start.disabled=true;const old=start.textContent;start.textContent='Menyiapkan Assessment…';status.textContent='';
  try{
   activeExam=await api.startExam({profileId:profile.id,subjectId});
   finishing=false;renderExam();
