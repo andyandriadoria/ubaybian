@@ -1,0 +1,688 @@
+/* UbayBian v0.5.85 — responsive hardening
+   One final responsive layer for phone/tablet portrait + landscape.
+   Loaded last so it can safely contain older visual layers without rewriting them. */
+
+/* --------------------------------------------------------------------------
+   GLOBAL CONTAINMENT
+   -------------------------------------------------------------------------- */
+html,
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+.shell,
+main,
+.app-main-grid,
+.main-col,
+.side-menu,
+.controls-panel,
+.quiz-card,
+.result-panel,
+.report-card,
+.robotlab-card,
+.exam-shell,
+.exam-result,
+.exam-question-card,
+.exam-review,
+.reward-chamber,
+.parent-pin-dialog{
+  min-width:0;
+  max-width:100%;
+}
+
+main > *,
+.main-col > *,
+.report-main-grid > *,
+.controls-row > *,
+.learning-deck-controls > *,
+.exam-meta > *,
+.exam-nav > *{
+  min-width:0;
+}
+
+img,
+svg,
+video,
+canvas{
+  max-width:100%;
+}
+
+input,
+select,
+textarea,
+button{
+  min-width:0;
+  max-width:100%;
+}
+
+.badge-text,
+.profile-info,
+.side-tile > div,
+.hero-text,
+.deck-trigger-copy,
+.upgrade-info,
+.ub-reward-copy,
+.report-subject-cell{
+  min-width:0;
+}
+
+.badge-name,
+.badge-desc,
+.side-tile-text,
+.side-tile-sub,
+.hero-text,
+.question-text,
+.option-text,
+.exam-question-text,
+.exam-review-item,
+.upgrade-name,
+.upgrade-status,
+.ub-reward-copy,
+.report-learning-note{
+  overflow-wrap:anywhere;
+}
+
+/* --------------------------------------------------------------------------
+   REPORT — keep Detail Sesi inside the viewport on every device.
+   -------------------------------------------------------------------------- */
+.report-card,
+.report-card .report-main-grid,
+.report-card .report-chart,
+.report-card .report-table-wrap,
+.report-card .report-table-scroll{
+  min-width:0 !important;
+  max-width:100% !important;
+}
+
+.report-card .report-table-wrap{
+  overflow:hidden !important;
+}
+
+.report-card .report-table-scroll{
+  width:100%;
+  overflow-x:auto !important;
+  overscroll-behavior-inline:contain;
+  -webkit-overflow-scrolling:touch;
+}
+
+.report-card .report-table{
+  width:100% !important;
+  max-width:100% !important;
+}
+
+.report-card .report-subject-cell{
+  max-width:100%;
+  flex-wrap:wrap;
+}
+
+.report-card .report-session-type{
+  white-space:normal;
+}
+
+/* --------------------------------------------------------------------------
+   TABLET NAVIGATION — two clean rows avoid centre-nav collisions in landscape.
+   -------------------------------------------------------------------------- */
+@media (max-width:1180px){
+  .topbar,
+  body.adventure-shell:not(.adventure-home) .topbar,
+  body:has(#main > .exam-shell) .topbar,
+  body:has(#main > .exam-result) .topbar{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto auto auto;
+    grid-template-areas:
+      "brand version switch logout"
+      "nav nav nav nav";
+    align-items:center;
+    gap:9px 10px !important;
+    min-height:auto !important;
+    padding:11px 20px !important;
+  }
+
+  .topbar .brand{grid-area:brand;justify-self:start;min-width:0}
+  .topbar .version{grid-area:version;margin-left:0 !important;justify-self:end}
+  .topbar #switch-profile{grid-area:switch;justify-self:end}
+  .topbar #logout-family{grid-area:logout;justify-self:end}
+
+  .topbar .top-nav,
+  body.adventure-shell:not(.adventure-home) .top-nav,
+  body:has(#main > .exam-shell) .top-nav,
+  body:has(#main > .exam-result) .top-nav{
+    grid-area:nav;
+    position:static !important;
+    left:auto !important;
+    transform:none !important;
+    width:100% !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    justify-content:stretch !important;
+    justify-self:stretch;
+    gap:4px !important;
+    padding:5px !important;
+  }
+
+  .topbar .top-nav[hidden]{display:none !important}
+
+  .topbar .top-nav button{
+    width:100%;
+    min-width:0;
+    white-space:nowrap;
+    text-align:center;
+  }
+
+  body.adventure-shell:not(.adventure-home) main,
+  body:has(#main > .exam-shell) main,
+  body:has(#main > .exam-result) main{
+    padding-left:20px !important;
+    padding-right:20px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   TABLET PORTRAIT / PHONE LANDSCAPE
+   -------------------------------------------------------------------------- */
+@media (max-width:900px){
+  .app-main-grid,
+  body.adventure-shell:not(.adventure-home) .app-main-grid{
+    grid-template-columns:1fr !important;
+    gap:14px !important;
+    min-height:0 !important;
+  }
+
+  .main-col{order:1 !important;min-width:0}
+  .side-menu{order:2 !important}
+
+  .side-menu,
+  body.adventure-shell:not(.adventure-home) .side-menu{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:10px !important;
+  }
+
+  .side-profile,
+  .badge-card,
+  body.adventure-shell:not(.adventure-home) .side-profile,
+  body.adventure-shell:not(.adventure-home) .badge-card{
+    grid-column:span 1;
+  }
+
+  .report-card[data-adventure-report="1"] .report-main-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-chart,
+  .report-card[data-adventure-report="1"] .report-table-wrap{
+    min-height:0 !important;
+  }
+
+  .controls-panel.learning-deck .controls-row,
+  .controls-panel.learning-deck .learning-deck-controls{
+    min-width:0;
+  }
+
+  .controls-panel.learning-deck .deck-menu{
+    max-width:100% !important;
+  }
+
+  .result-actions,
+  .bottom-actions,
+  .exam-nav,
+  .exam-nav-actions{
+    flex-wrap:wrap;
+  }
+
+  .robotlab-card .robotlab-upgrade-item,
+  .robotlab-card .upgrade-info{
+    min-width:0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   PHONE / SMALL TABLET PORTRAIT
+   -------------------------------------------------------------------------- */
+@media (max-width:700px){
+  body{
+    padding-left:max(0px,env(safe-area-inset-left));
+    padding-right:max(0px,env(safe-area-inset-right));
+  }
+
+  .topbar,
+  body.adventure-shell:not(.adventure-home) .topbar,
+  body:has(#main > .exam-shell) .topbar,
+  body:has(#main > .exam-result) .topbar{
+    grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-areas:
+      "brand switch logout"
+      "nav nav nav";
+    padding:9px 12px !important;
+    gap:7px !important;
+  }
+
+  .topbar .version{display:none !important}
+  .topbar .brand{font-size:18px !important}
+  .topbar .brand-icon{font-size:24px !important}
+  .topbar #switch-profile,
+  .topbar #logout-family{
+    min-height:34px !important;
+    padding:6px 9px !important;
+    font-size:10px !important;
+    white-space:nowrap;
+  }
+
+  .topbar .top-nav,
+  body.adventure-shell:not(.adventure-home) .top-nav,
+  body:has(#main > .exam-shell) .top-nav,
+  body:has(#main > .exam-result) .top-nav{
+    padding:4px !important;
+    border-radius:16px !important;
+  }
+
+  .topbar .top-nav button,
+  body.adventure-shell:not(.adventure-home) .top-nav button,
+  body:has(#main > .exam-shell) .top-nav button,
+  body:has(#main > .exam-result) .top-nav button{
+    padding:7px 6px !important;
+    font-size:10.5px !important;
+  }
+
+  main,
+  body.adventure-shell:not(.adventure-home) main,
+  body:has(#main > .exam-shell) main,
+  body:has(#main > .exam-result) main{
+    padding-left:10px !important;
+    padding-right:10px !important;
+  }
+
+  /* Home/sidebar stays compact: profile + badges full width, action tiles in two columns. */
+  .side-menu,
+  body.adventure-shell:not(.adventure-home) .side-menu{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+
+  .side-profile,
+  .badge-card,
+  body.adventure-shell:not(.adventure-home) .side-profile,
+  body.adventure-shell:not(.adventure-home) .badge-card{
+    grid-column:1/-1 !important;
+  }
+
+  body.adventure-shell:not(.adventure-home) .side-tile,
+  .side-tile{
+    min-width:0;
+    padding:10px 48px 10px 11px !important;
+  }
+
+  body.adventure-shell:not(.adventure-home) .side-tile::after{
+    right:4px !important;
+    font-size:30px !important;
+    letter-spacing:-11px !important;
+  }
+
+  .badge-chip{min-width:0}
+  .badge-name{font-size:10.5px}
+  .badge-desc{font-size:9.5px}
+
+  /* Mission setup / floating selectors. */
+  .controls-panel.learning-deck{
+    width:100%;
+    max-width:100%;
+    overflow:visible;
+  }
+
+  .controls-panel.learning-deck .controls-row,
+  .controls-panel.learning-deck .learning-deck-controls,
+  .controls-panel.learning-deck .start-row{
+    grid-template-columns:1fr !important;
+    width:100% !important;
+  }
+
+  .controls-panel.learning-deck .deck-menu{
+    left:0 !important;
+    right:0 !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+
+  .controls-panel.learning-deck .deck-review-info{
+    width:100% !important;
+    max-width:100% !important;
+    white-space:normal !important;
+  }
+
+  .rules-strip{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px !important;
+  }
+  .rules-strip span{text-align:center;white-space:normal}
+
+  .hero-daily{
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:8px;
+  }
+  .hero-text h1{font-size:clamp(20px,7vw,28px) !important}
+  .hero-trophy{font-size:34px !important;margin:0 !important}
+
+  /* Practice/result. */
+  .quiz-card,
+  .result-panel{
+    width:100%;
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+
+  .result-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1fr;
+    width:100%;
+  }
+  .result-actions button{width:100%}
+
+  /* REPORT: convert the desktop table into true mobile session cards. */
+  .report-card[data-adventure-report="1"] .report-header,
+  .report-card .report-header{
+    min-height:0 !important;
+    padding:16px 82px 16px 16px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    gap:6px !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-header > div:first-child{
+    width:100%;
+    min-width:0;
+  }
+
+  .report-card[data-adventure-report="1"] .report-badge,
+  .report-card .report-badge{
+    position:static !important;
+    transform:none !important;
+    margin:2px 0 0 !important;
+    max-width:100%;
+    white-space:normal;
+  }
+
+  .report-card[data-adventure-report="1"] .report-hero-visual{
+    right:8px !important;
+    top:12px !important;
+    bottom:auto !important;
+    width:66px !important;
+    height:74px !important;
+  }
+  .report-card[data-adventure-report="1"] .report-hero-visual img{
+    width:62px !important;
+    height:70px !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-chart,
+  .report-card[data-adventure-report="1"] .report-table-wrap{
+    padding:14px !important;
+    border-radius:18px !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-chart-inner{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch;
+    gap:4px !important;
+    padding-left:2px !important;
+    padding-right:2px !important;
+  }
+  .report-card[data-adventure-report="1"] .report-bar-wrap{
+    flex:1 0 24px;
+    min-width:24px;
+  }
+
+  .report-card[data-adventure-report="1"] .report-table-scroll{
+    max-height:none !important;
+    overflow:visible !important;
+    padding:0 !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-table{
+    display:block;
+    width:100% !important;
+    border-spacing:0 !important;
+    font-size:11px !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-table thead{
+    position:absolute !important;
+    width:1px !important;
+    height:1px !important;
+    padding:0 !important;
+    margin:-1px !important;
+    overflow:hidden !important;
+    clip:rect(0,0,0,0) !important;
+    white-space:nowrap !important;
+    border:0 !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-table tbody{
+    display:grid;
+    gap:9px;
+    width:100%;
+  }
+
+  .report-card[data-adventure-report="1"] .report-table tbody tr{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+    width:100%;
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid rgba(140,193,222,.30);
+    border-radius:15px;
+    background:rgba(255,255,255,.70);
+    box-shadow:0 5px 12px rgba(43,105,143,.055);
+  }
+
+  .report-card[data-adventure-report="1"] .report-table tbody td{
+    display:flex !important;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+    min-width:0;
+    padding:6px 0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    white-space:normal !important;
+    text-align:right;
+  }
+
+  .report-card[data-adventure-report="1"] .report-table tbody td + td{
+    border-top:1px solid rgba(121,181,213,.16) !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-table tbody td::before{
+    flex:0 0 auto;
+    color:#6a879b;
+    font-size:9.5px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:.045em;
+    text-transform:uppercase;
+    text-align:left;
+  }
+  .report-card[data-adventure-report="1"] .report-table tbody td:nth-child(1)::before{content:"Tanggal"}
+  .report-card[data-adventure-report="1"] .report-table tbody td:nth-child(2)::before{content:"Subject"}
+  .report-card[data-adventure-report="1"] .report-table tbody td:nth-child(3)::before{content:"Nilai"}
+  .report-card[data-adventure-report="1"] .report-table tbody td:nth-child(4)::before{content:"Benar / Total"}
+
+  .report-card[data-adventure-report="1"] .report-subject-cell{
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    text-align:right;
+  }
+
+  .report-card[data-adventure-report="1"] .report-session-type{
+    margin-left:4px !important;
+  }
+
+  .report-card[data-adventure-report="1"] .report-learning-insights{
+    padding:12px !important;
+    border-radius:18px !important;
+  }
+
+  /* Assessment. */
+  .exam-shell,
+  .exam-result{
+    width:100% !important;
+    max-width:100% !important;
+    margin:7px 0 !important;
+    padding:15px !important;
+    border-radius:20px !important;
+  }
+
+  .exam-question-card{padding:16px !important}
+  .exam-meta{grid-template-columns:1fr !important}
+  .exam-timer-box,
+  .exam-answered-box{width:100%;min-width:0 !important}
+  .exam-option{width:100%;min-width:0}
+  .exam-result-stats{display:grid !important;grid-template-columns:1fr 1fr;width:100%}
+  .exam-result-stats span{width:100%;min-width:0 !important}
+  .exam-result-rewards{width:100%}
+  .exam-result-reward-chip{min-width:0 !important;flex:1 1 120px !important}
+  .exam-review,
+  .exam-review-item,
+  .exam-unanswered-group{width:100%;max-width:100%}
+
+  .exam-nav-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    width:100%;
+    gap:7px;
+  }
+  .exam-nav-actions button{width:100%}
+  .exam-finish-btn{grid-column:1/-1}
+
+  /* Robot Lab. */
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-energy-label,
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label{
+    padding-left:18px !important;
+    padding-right:18px !important;
+    white-space:normal !important;
+    flex-wrap:wrap;
+    gap:4px 10px !important;
+  }
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-label > span{
+    white-space:normal !important;
+  }
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-next-step{
+    padding-left:18px !important;
+    padding-right:18px !important;
+  }
+  .robotlab-card.robotlab-adventure-v0521 .robotlab-xpbar-track{
+    margin-left:16px !important;
+    margin-right:16px !important;
+  }
+  .robotlab-upgrade-item{max-width:100%;overflow:hidden}
+
+  /* Reward Shop / Parent Access. */
+  .reward-chamber-overlay,
+  .parent-pin-dialog-overlay{
+    padding:10px max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));
+  }
+  .reward-chamber{
+    width:100% !important;
+    max-width:100% !important;
+    max-height:calc(100dvh - 20px) !important;
+    border-radius:22px !important;
+  }
+  .reward-chamber .ub-modal-heading h2{font-size:21px !important}
+  .reward-chamber .ub-wallet{min-width:0;max-width:100%}
+  .reward-chamber .ub-reward-card{min-width:0;max-width:100%}
+  .parent-pin-dialog{width:100% !important;max-width:420px !important}
+}
+
+/* --------------------------------------------------------------------------
+   VERY SMALL PHONES
+   -------------------------------------------------------------------------- */
+@media (max-width:420px){
+  .topbar,
+  body.adventure-shell:not(.adventure-home) .topbar,
+  body:has(#main > .exam-shell) .topbar,
+  body:has(#main > .exam-result) .topbar{
+    grid-template-columns:minmax(0,1fr) auto auto;
+    padding-inline:9px !important;
+  }
+
+  .topbar .brand{font-size:16.5px !important;gap:6px !important}
+  .topbar .brand-icon{font-size:22px !important}
+  .topbar #switch-profile,
+  .topbar #logout-family{padding:6px 7px !important;font-size:9.5px !important}
+  .topbar .top-nav button{font-size:9.5px !important;padding:7px 4px !important}
+
+  .side-menu,
+  body.adventure-shell:not(.adventure-home) .side-menu{
+    grid-template-columns:1fr !important;
+  }
+  .side-profile,
+  .badge-card,
+  body.adventure-shell:not(.adventure-home) .side-profile,
+  body.adventure-shell:not(.adventure-home) .badge-card{
+    grid-column:auto !important;
+  }
+  body.adventure-shell:not(.adventure-home) .side-tile,
+  .side-tile{padding-right:62px !important}
+
+  .hero-daily{grid-template-columns:1fr}
+  .hero-action{display:none}
+  .rules-strip{grid-template-columns:1fr !important}
+
+  .result-actions{grid-template-columns:1fr !important}
+  .exam-result-stats{grid-template-columns:1fr !important}
+  .exam-nav-actions{grid-template-columns:1fr !important}
+  .exam-finish-btn{grid-column:auto}
+
+  .report-card[data-adventure-report="1"] .report-header,
+  .report-card .report-header{
+    padding-right:16px !important;
+  }
+  .report-card[data-adventure-report="1"] .report-hero-visual{display:none !important}
+
+  .report-card[data-adventure-report="1"] .report-table tbody td{
+    align-items:flex-start;
+  }
+
+  .reward-chamber .ub-wallet{
+    padding-left:70px !important;
+    padding-right:12px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   PHONE LANDSCAPE — save vertical room without squeezing horizontal content.
+   -------------------------------------------------------------------------- */
+@media (orientation:landscape) and (max-width:950px) and (max-height:600px){
+  .topbar,
+  body.adventure-shell:not(.adventure-home) .topbar,
+  body:has(#main > .exam-shell) .topbar,
+  body:has(#main > .exam-result) .topbar{
+    padding-top:6px !important;
+    padding-bottom:6px !important;
+  }
+
+  .topbar .top-nav{padding:3px !important}
+  .topbar .top-nav button{padding-top:5px !important;padding-bottom:5px !important}
+
+  main,
+  body.adventure-shell:not(.adventure-home) main,
+  body:has(#main > .exam-shell) main,
+  body:has(#main > .exam-result) main{
+    padding-top:5px !important;
+    padding-bottom:14px !important;
+  }
+
+  .hero-daily{min-height:0 !important;padding-top:12px !important;padding-bottom:12px !important}
+  .exam-shell,.exam-result{margin-top:4px !important;margin-bottom:4px !important}
+  .reward-chamber{max-height:calc(100dvh - 12px) !important}
+}
