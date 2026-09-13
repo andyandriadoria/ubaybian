@@ -17,14 +17,25 @@ test('registry contains every current Ubay and Bian Assessment exactly once', ()
 });
 
 test('registry resolves current Assessment without subject-specific branching in exam service', () => {
-  const science = resolveAssessmentDefinition('bian', 'science');
+  const science = resolveAssessmentDefinition({ profileSlug: 'bian', grade: 2 }, 'science');
   assert.equal(science.definition.id, 'bian-g2-2026-2027-s1-midterm-science');
   assert.equal(science.blueprint.id, 'bian-science-mid-s1-2026');
   assert.equal(science.definition.selectionStrategy.type, 'topic-difficulty-type-quota');
 
-  const math = resolveAssessmentDefinition('ubay', 'math', 'ubay-g7-2026-2027-s1-midterm-math');
+  const math = resolveAssessmentDefinition(
+    { profileSlug: 'ubay', grade: 7, academicYear: '2026/2027', semester: 1, assessmentType: 'midterm' },
+    'math',
+    'ubay-g7-2026-2027-s1-midterm-math',
+  );
   assert.equal(math.definition.blueprintId, 'ubay-math-mid-s1-2026');
   assert.equal(math.definition.grade, 7);
+});
+
+test('academic context prevents a previous-grade definition from being selected', () => {
+  assert.throws(
+    () => resolveAssessmentDefinition({ profileSlug: 'bian', grade: 3 }, 'science'),
+    (error) => error?.code === 'ASSESSMENT_NOT_FOUND',
+  );
 });
 
 test('every definition points to a registered selector adapter', () => {
