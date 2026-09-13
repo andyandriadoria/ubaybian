@@ -33,7 +33,7 @@ For profiles `ubay` and `bian`:
 
 `src/launch-baseline.js` records the reset key `production-launch-2026-09-13-v1` in `launch_resets` after a successful cleanup. Once recorded, later requests and deployments do not clear learning data again.
 
-The Worker entry point is `src/index-v0586.js`, which runs the baseline guard before normal API handling. This allows production D1 to be cleaned even when D1 migrations and Worker deployments happen separately.
+The Worker entry point is `src/worker.js`, which runs the baseline guard before normal API handling. This allows production D1 to be cleaned even when D1 migrations and Worker deployments happen separately.
 
 Migration `0006_production_launch_baseline.sql` creates the marker table but does not itself delete learning data.
 
