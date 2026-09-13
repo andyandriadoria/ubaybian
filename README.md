@@ -6,7 +6,7 @@ UbayBian memakai frontend GitHub Pages, backend Cloudflare Worker + D1, dan bank
 
 ## Status aplikasi
 
-Mulai v0.6.0, repo masuk fase **frontend consolidation**. Perilaku belajar yang sudah stabil dipertahankan, sementara file legacy yang benar-benar tidak dipakai dihapus dan pola pengembangan baru tidak lagi membuat file baru untuk setiap patch kecil.
+Sejak v0.6.0, repo masuk fase **consolidation & maintenance**. File frontend aktif sudah memakai nama berbasis fungsi, bukan nomor release. Histori perubahan disimpan oleh Git, bukan dengan menumpuk salinan file untuk setiap patch.
 
 Fitur utama saat ini:
 
@@ -19,18 +19,20 @@ Fitur utama saat ini:
 
 ## Entry point aktif
 
-Frontend saat ini masuk melalui:
+Frontend:
 
 - `index.html`
 - `version.js` — single source of truth versi frontend
 - `bootstrap.js`
-- `app.js` — core app aktif; nama lama dipertahankan sementara sampai konsolidasi modul selesai
-- `api.js` — API client aktif
-- `quiz.js`, `profiles.js`, `config.js`
+- `app.js`
+- `api.js`
+- `quiz.js`
+- `profiles.js`
+- `config.js`
 
 Backend aktif berada di `backend/`. Entry Worker mengikuti `backend/wrangler.jsonc`.
 
-> Catatan: masih ada beberapa file bernama `*-v0xxx.*` yang **masih aktif sebagai cascade/polish layer**. Jangan menghapus file hanya karena nomor versinya lama. Lihat [`docs/frontend-maintenance.md`](docs/frontend-maintenance.md).
+Beberapa fitur frontend masih memiliki lebih dari satu file semantic layer, misalnya base/polish/state. Layer tersebut **masih aktif**, bukan file orphan. Jangan menghapusnya hanya karena terlihat seperti lapisan lama; gabungkan dulu dengan urutan cascade/behavior yang sama lalu jalankan quality gate.
 
 ## Aturan file mulai v0.6.0
 
@@ -38,21 +40,23 @@ Backend aktif berada di `backend/`. Entry Worker mengikuti `backend/wrangler.jso
 
 - Perbaikan/polish fitur yang sudah ada → edit modul yang sama.
 - File baru hanya untuk fitur/modul baru yang memang berbeda tanggung jawab.
-- Histori versi disimpan oleh Git, bukan dengan menumpuk salinan file bernomor versi.
+- Histori versi disimpan oleh Git.
 - `version.js` menjadi sumber versi aplikasi yang tampil ke pengguna.
-- File versioned lama akan dikonsolidasikan bertahap tanpa mengubah behavior/visual yang sudah stabil.
+- Cleanup dilakukan berdasarkan dependency/reachability, bukan umur file.
 
-## Pemeriksaan frontend
+## Quality & audit
+
+Frontend:
 
 ```bash
 npm run check
 npm test
+npm run audit:legacy
 ```
 
-`npm run check` otomatis:
+`npm run check` melakukan syntax check JavaScript frontend dan memastikan asset lokal yang direferensikan tersedia.
 
-1. melakukan syntax check seluruh file JavaScript frontend di root; dan
-2. memastikan asset lokal (`.js`, `.css`, `.svg`) yang direferensikan frontend benar-benar tersedia.
+`npm run audit:legacy` menginventarisasi referensi nama legacy, mencari kandidat frontend yang tidak direferensikan, dan mengecek reachability modul backend dari entry Worker.
 
 Backend:
 
@@ -62,6 +66,8 @@ npm install
 npm run check
 npm test
 ```
+
+Workflow `.github/workflows/quality.yml` menjalankan pemeriksaan frontend dan backend pada setiap push ke `main` serta pull request.
 
 ## Backend & data
 

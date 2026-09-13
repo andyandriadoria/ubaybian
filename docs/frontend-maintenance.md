@@ -2,16 +2,16 @@
 
 Baseline: **v0.6.0**
 
-Dokumen ini dibuat setelah audit dependency frontend karena repo v0.5.x memakai pola additive patching: setiap polish sering menambah file CSS/JS baru dengan suffix versi. Pola tersebut membuat cascade makin panjang dan sulit dibaca.
+Dokumen ini menjadi acuan cleanup setelah pola additive patching v0.5.x dihentikan. Mulai v0.6.0, file frontend aktif memakai nama berdasarkan fungsi; nomor release tidak lagi menjadi bagian nama file baru.
 
-## Prinsip mulai v0.6.0
+## Prinsip
 
 1. **Release baru tidak membuat file baru secara otomatis.**
-2. Perbaikan visual/behavior fitur yang sama harus mengubah file modul yang sama.
-3. File baru hanya dibuat jika ada tanggung jawab/fitur baru yang memang berbeda.
-4. Git menjadi histori perubahan; nomor versi tidak perlu dimasukkan ke nama file baru.
+2. Perbaikan visual/behavior fitur yang sama harus mengubah modul yang sama.
+3. File baru hanya dibuat bila ada tanggung jawab/fitur baru yang memang berbeda.
+4. Git menjadi histori perubahan; nomor versi tidak perlu disimpan di nama file.
 5. `version.js` adalah single source of truth versi frontend yang tampil di UI.
-6. Jangan menghapus file lama hanya karena namanya terlihat usang. Pastikan lebih dulu file tersebut tidak direferensikan langsung, di-import, atau dimuat dinamis oleh JavaScript lain.
+6. Penghapusan file harus berbasis dependency/reachability, bukan umur file atau tampilannya di root repo.
 
 ## Entry point frontend aktif
 
@@ -24,109 +24,87 @@ Dokumen ini dibuat setelah audit dependency frontend karena repo v0.5.x memakai 
 - `profiles.js`
 - `config.js`
 
-`app.js` dan `api.js` masih memakai nama versioned karena keduanya adalah core aktif yang belum dipindahkan pada cleanup pertama. Rename/consolidation core dilakukan hanya ketika seluruh import sudah siap dipindahkan bersama.
+Nama-nama tersebut sudah menjadi nama semantic/stabil. File lama yang pernah menjadi pendahulunya tetap tersedia melalui histori Git dan tidak perlu dipertahankan sebagai salinan di branch aktif.
 
-## Cleanup yang sudah selesai pada v0.6.0
+## Status cleanup v0.6.0
 
-File berikut sudah diaudit sebagai superseded/orphan dan dihapus dari `main`:
+Cleanup yang sudah dilakukan:
 
-- `app.js`
-- `app-v037.js`
-- `api.js`
-- `api-v037.js`
-- `styles.css`
-- `login.css`
-- `exam-simulation-v0550.js`
+- orphan/superseded frontend lama dihapus;
+- file frontend aktif dinormalisasi ke nama semantic;
+- integrity checker ditambahkan;
+- CI frontend/backend ditambahkan;
+- audit dependency/reachability ditambahkan.
 
-Test API root dipindahkan ke client aktif `api.js` sebelum `api.js` dihapus.
+Audit 13 September 2026 menghasilkan:
 
-Modul yang aktif dan masih sering dirawat sudah mulai memakai nama stabil tanpa nomor release:
+- **Potential unreferenced frontend files: 0**
+- **Backend modules reachable from Wrangler entry: 25/25**
+- **Potential unreachable backend modules: 0**
 
-- `learning-audit.css` / `learning-audit.js`
-- `responsive.css`
-- `review-modal.css` / `review-modal.js`
-- `badge-showcase.css` / `badge-showcase.js`
-- `guided-setup.css` / `guided-setup.js`
-- `wikimedia-image-fallback.js`
-- `session-selector.js`
-- `assessment-terminology.js`
-- `open-response-terminology.js`
+Artinya file runtime yang masih ada saat ini dipertahankan karena benar-benar direferensikan atau reachable. Jangan menghapus layer aktif hanya untuk mengurangi jumlah file.
 
-Rename tersebut memakai blob yang sama dengan file sebelumnya; perubahan ini tidak mengubah behavior aplikasi, hanya merapikan ownership/naming modul.
+## Layer yang masih aktif
 
-## File lama yang masih aktif
+Beberapa fitur masih terdiri dari beberapa file semantic layer, misalnya base, polish, state, theme, atau responsive layer. Contohnya Home, Report, Robot Lab, Memory Grid, Brain Games, Reward Shop, Learning Deck, dan Assessment.
 
-Beberapa keluarga file versioned **masih sengaja dipertahankan** karena browser masih menggunakannya sebagai cascade/behavior layer. Contoh:
+Layer-layer tersebut dapat dikonsolidasikan bertahap, tetapi urutan CSS dan urutan eksekusi JavaScript harus dipertahankan. Penggabungan harus dilakukan per-feature, bukan mass-delete.
 
-- `adventure-v050...v053`
-- `report-adventure-v0518`, `report-polish-v0519`, `report-final-v0520`
-- `robot-lab-v0521...v0526`
-- `learning-deck-v0546...v0556`
-- `memory-grid-v046...v0538` dan tablet polish v0587/v0588
-- `reward-shop-v0540...v0543`
-- Assessment/result/theme layers
+Urutan aman:
 
-Sebagian asset bahkan dimuat secara dinamis. Contoh: Memory Grid dan Reward Shop memiliki JavaScript yang memasang CSS tambahan saat runtime. Karena itu penghapusan harus dilakukan setelah layer digabung, bukan berdasarkan nama file semata.
+1. identifikasi seluruh referensi langsung, import, dan dynamic loader;
+2. gabungkan CSS dengan urutan cascade yang sama;
+3. konsolidasikan JavaScript hanya bila scope/event flow tetap aman;
+4. ubah referensi di `index.html`/loader;
+5. jalankan `npm run check`, `npm test`, dan `npm run audit:legacy`;
+6. baru hapus file sumber yang sudah benar-benar tergantikan.
 
-## Target konsolidasi bertahap
+## Responsive regression rules
 
-Arah akhir yang diinginkan adalah modul semantik seperti:
+Aturan utama dari audit responsive lama sudah digabung ke dokumen ini:
 
-```text
-styles/
-  base.css
-  shell.css
-  home.css
-  practice.css
-  assessment.css
-  report.css
-  robot-lab.css
-  reward-shop.css
-  brain-games.css
-  memory-grid.css
-  responsive.css
+- container grid/flex yang memuat tabel, selector, label panjang, atau pertanyaan dinamis harus bisa menyusut (`min-width: 0` bila perlu);
+- hindari fixed `min-width` pada kartu tanpa mobile override;
+- gunakan `minmax(0, 1fr)` untuk kolom yang harus dapat menyusut;
+- tabel lebar harus memakai scroll container lokal, bukan memperlebar page;
+- modal/dialog harus dibatasi ke dynamic viewport dan memperhitungkan safe area;
+- layout tablet/phone harus menjaga top navigation, sidebar, result card, Assessment, Report, Reward Shop, Robot Lab, Brain Games, dan Memory Grid tetap tanpa page-level horizontal overflow.
 
-features/
-  home.js
-  practice.js
-  assessment.js
-  review.js
-  achievements.js
-  report.js
-  robot-lab.js
-  reward-shop.js
-  brain-games.js
-  memory-grid.js
-```
+## Learning-flow invariants
 
-Migrasi dilakukan per-feature. Urutan aman:
+Ringkasan audit learning-flow lama juga dipertahankan di sini:
 
-1. gabungkan CSS dalam urutan cascade yang sama;
-2. gabungkan/dekomposisi JavaScript tanpa mengubah event flow;
-3. ganti referensi di `index.html`/dynamic loader;
-4. jalankan `npm run check` dan `npm test`;
-5. baru hapus file legacy feature tersebut.
+- Practice dan Assessment sama-sama berkontribusi ke learning history, streak, report, dan review sesuai aturan masing-masing;
+- reward Practice dan Assessment dihitung terpisah sebelum digabung ke saldo profil;
+- Assessment retake yang sudah pernah mendapat reward tidak mencetak reward kedua;
+- open-response tidak masuk automatic Review dan tidak boleh dianggap final score sebelum manual review selesai;
+- Report membedakan score final dan provisional/auto;
+- Review menggabungkan recovery dari Practice dan Assessment auto-scored items.
+
+Dokumen audit one-off lama sudah tidak diperlukan di branch aktif karena aturan yang masih relevan sudah diringkas di sini; histori lengkap tetap tersedia di Git.
 
 ## Quality gates
 
-`scripts/check-frontend.mjs` melakukan dua guardrail dasar:
+`scripts/check-frontend.mjs`:
 
-- syntax check otomatis untuk seluruh JavaScript frontend root;
-- validasi file lokal `.js`, `.css`, dan `.svg` yang direferensikan dari HTML/JavaScript.
+- syntax check otomatis untuk JavaScript frontend;
+- validasi asset lokal `.js`, `.css`, `.svg`, dan referensi lokal lain yang dipakai frontend.
 
-Workflow `.github/workflows/quality.yml` menjalankan frontend integrity/test dan backend check/test pada setiap push ke `main` serta pull request. Tujuannya agar cleanup berikutnya tidak menghasilkan missing asset/import atau regression yang lolos diam-diam.
+`scripts/audit-legacy.mjs`:
 
-## Naming policy baru
+- menginventarisasi referensi nama legacy/versioned;
+- mencari kandidat frontend yang tidak direferensikan runtime;
+- memeriksa reachability modul backend dari `backend/wrangler.jsonc`.
+
+Workflow `.github/workflows/quality.yml` menjalankan frontend integrity/test dan backend check/test pada setiap push ke `main` dan pull request.
+
+## Naming policy
 
 Gunakan nama berdasarkan fungsi, misalnya:
 
 - `review-modal.css`
 - `badge-showcase.js`
 - `memory-grid.css`
+- `assessment.js`
 
-Hindari pola baru seperti:
-
-- `review-modal-v0597.css`
-- `memory-grid-v0612.js`
-
-Nomor release cukup berada di `version.js`, commit, tag/release Git, dan changelog/dokumentasi bila diperlukan.
+Hindari pola nama berbasis nomor release. Nomor versi cukup berada di `version.js`, commit/tag Git, atau catatan release bila diperlukan.
