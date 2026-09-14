@@ -1,5 +1,6 @@
 import { HttpError } from '../http.js';
 import { getExamBlueprint } from '../exam-blueprints.js';
+import { getBianMathBlueprint } from '../bian-math-assessment.js';
 import { getBianScienceBlueprint } from '../bian-science-assessment.js';
 import { getBianBahasaIndonesiaBlueprint } from '../bian-bahasa-indonesia-assessment.js';
 import { getBianPancasilaBlueprint } from '../bian-pancasila-assessment.js';
@@ -32,8 +33,8 @@ export const ASSESSMENT_DEFINITIONS = Object.freeze([
     id: 'bian-g2-2026-2027-s1-midterm-math',
     profileSlug: 'bian', grade: 2, academicYear: '2026/2027', semester: 1,
     assessmentType: 'midterm', subjectId: 'math', blueprintId: 'bian-math-mid-s1-2026',
-    blueprintSource: 'exam-blueprints',
-    selectionStrategy: { type: 'topic-difficulty-quota', adapter: DEFAULT_ADAPTER },
+    blueprintSource: 'bian-math',
+    selectionStrategy: { type: 'validated-variant', adapter: 'bian-math-v1' },
   }),
   definition({
     id: 'bian-g2-2026-2027-s1-midterm-science',
@@ -124,6 +125,7 @@ export const ASSESSMENT_DEFINITIONS = Object.freeze([
 
 const BLUEPRINT_LOADERS = Object.freeze({
   'exam-blueprints': (item, requestedId) => getExamBlueprint(item.profileSlug, item.subjectId, requestedId),
+  'bian-math': (_item, requestedId) => getBianMathBlueprint(requestedId),
   'bian-science': (_item, requestedId) => getBianScienceBlueprint(requestedId),
   'bian-bahasa-indonesia': (_item, requestedId) => getBianBahasaIndonesiaBlueprint(requestedId),
   'bian-pancasila': (_item, requestedId) => getBianPancasilaBlueprint(requestedId),
