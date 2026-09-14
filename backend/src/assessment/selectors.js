@@ -20,6 +20,12 @@ export function selectionAdapterIds() {
 }
 
 export function selectAssessmentQuestions(questions, definition, blueprint) {
+  // Bian Math keeps the historical blueprint id for compatibility, but the
+  // worksheet-based 2026 bank is organised as three validated parallel forms.
+  if (definition?.profileSlug === 'bian' && definition?.subjectId === 'math') {
+    return selectBianMathQuestions(questions);
+  }
+
   const adapterId = String(definition?.selectionStrategy?.adapter || '').trim();
   const selector = SELECTOR_ADAPTERS[adapterId];
   if (!selector) {
