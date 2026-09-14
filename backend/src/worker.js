@@ -2,7 +2,7 @@ import app from './index.js';
 import { corsHeaders, json, withCors } from './http.js';
 import { ensureProductionLaunchBaseline } from './launch-baseline.js';
 
-const VERSION = '0.5.86';
+const VERSION = '0.6.1';
 
 function isSetupRequest(request) {
   const url = new URL(request.url);
