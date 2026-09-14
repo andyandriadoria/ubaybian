@@ -258,7 +258,12 @@ function renderExamReward(card,reward){
    text('span',`⭐ +${reward.xpEarned} XP`),
    text('span',`🪙 +${reward.coinsEarned} coins`),
   ]));
-  card.append(text('p',`Termasuk +${reward.completionXp} XP completion bonus. Reward Assessment hanya diberikan pada percobaan pertama yang memenuhi syarat.`,`exam-result-reward-note`));
+  if(Number(reward.policyVersion)>=2){
+   const breakdown=`Effort +${reward.effortXp} XP / +${reward.effortCoins} coins · Completion +${reward.completionXp} XP / +${reward.completionCoins} coins · Auto Accuracy +${reward.accuracyXp} XP / +${reward.accuracyCoins} coins.`;
+   card.append(text('p',`${breakdown} Open response yang dijawab ikut Effort & Completion. Reward hanya diberikan pada percobaan pertama yang memenuhi syarat.`,`exam-result-reward-note`));
+  }else{
+   card.append(text('p',`Termasuk +${reward.completionXp} XP completion bonus. Reward Assessment hanya diberikan pada percobaan pertama yang memenuhi syarat.`,`exam-result-reward-note`));
+  }
   return;
  }
  if(reward.status==='incomplete'){
