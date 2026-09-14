@@ -64,6 +64,18 @@ Dashboard analytics combine completed Practice and Assessment sessions for strea
 
 Reward accounting remains source-specific: Practice keeps its existing reward rules, while Assessment rewards use the first qualifying attempt per subject + blueprint. Review merges wrong/unanswered auto-scored items from both Practice and Assessment.
 
+### Assessment reward policy v2
+
+Starting 15 September 2026 at 06:30 WIB, a qualifying Assessment reward is based on three components instead of raw auto-scored question count:
+
+- **Effort** — up to 50 XP + 100 coins, proportional to all answered questions. Answered open-response items count here.
+- **Completion** — at 80–99% answered: +25 XP + 50 coins; at 100% answered: +50 XP + 100 coins.
+- **Auto Accuracy** — up to 100 XP + 400 coins, proportional to `autoCorrect / autoTotal`. Unanswered auto-scored questions remain in the denominator.
+
+A perfect fully answered Assessment still caps at **200 XP + 600 coins**. The Assessment must have at least 80% of all questions answered before any reward is granted. Open-response answers contribute to Effort and Completion but are not treated as correct or wrong for Auto Accuracy before manual review.
+
+Anti-farming remains unchanged: only the first qualifying attempt for the same profile + subject + blueprint can award XP/coins. A sub-80% attempt does not consume that opportunity. Historical rewarded sessions keep the original v1 formula so existing balances do not change retroactively.
+
 ## Achievement system
 
 Since v0.5.84, dashboard badges are produced by `src/achievements.js` and exposed through `src/progress-dashboard.js`. Similar achievements upgrade in place instead of stacking duplicates.
