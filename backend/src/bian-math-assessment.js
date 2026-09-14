@@ -21,32 +21,32 @@ export const BIAN_MATH_BLUEPRINT = Object.freeze({
   }),
   visualTarget: 4,
   topicTargets: Object.freeze({
-    'number-sense-place-value': 7,
-    'patterns-number-line': 4,
-    'compare-order': 4,
-    'mental-operations-difference': 5,
-    'number-bonds-bar-model': 3,
-    'rounding-odd-even': 3,
-    'word-problems-money': 3,
-    'ordinal-numbers': 1,
+    'bian-math-number-sense-place-value': 7,
+    'bian-math-patterns-number-line': 4,
+    'bian-math-compare-order': 4,
+    'bian-math-mental-operations-difference': 5,
+    'bian-math-number-bonds-bar-model': 3,
+    'bian-math-rounding-odd-even': 3,
+    'bian-math-word-problems-money': 3,
+    'bian-math-ordinal': 1,
   }),
 });
 
 const TOPIC_ALIASES = Object.freeze({
-  'number-sense-place-value': 'Number Sense, Number Words & Place Value',
-  'patterns-number-line': 'Number Patterns & Number Line',
-  'compare-order': 'Compare & Order',
-  'mental-operations-difference': 'Mental Addition, Subtraction & Difference',
-  'number-bonds-bar-model': 'Number Bonds, Bar Model & Number Facts',
-  'rounding-odd-even': 'Rounding, Odd & Even',
-  'word-problems-money': 'Word Problems, Money & Application',
-  'ordinal-numbers': 'Ordinal Numbers',
+  'bian-math-number-sense-place-value': 'Number Sense, Number Words & Place Value',
+  'bian-math-patterns-number-line': 'Number Patterns & Number Line',
+  'bian-math-compare-order': 'Compare & Order',
+  'bian-math-mental-operations-difference': 'Mental Addition, Subtraction & Difference',
+  'bian-math-number-bonds-bar-model': 'Number Bonds, Bar Model & Number Facts',
+  'bian-math-rounding-odd-even': 'Rounding, Odd & Even',
+  'bian-math-word-problems-money': 'Word Problems, Money & Application',
+  'bian-math-ordinal': 'Ordinal Numbers',
 });
 
 function normalize(value) {
   return String(value || '')
     .normalize('NFKC')
-    .toLocaleLowerCase('en-US')
+    .toLowerCase()
     .replace(/[–—/_-]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -72,7 +72,7 @@ function variantKey(question) {
   const match = /^BIAN-G2-MATH-WS-S1-(\d{3})$/i.exec(String(question?.id || '').trim());
   if (!match) return '';
   const number = Number(match[1]);
-  if (!Number.isInteger(number) || number < 1) return '';
+  if (!Number.isInteger(number) || number < 1 || number > 90) return '';
   return String(Math.floor((number - 1) / BIAN_MATH_BLUEPRINT.targetQuestions));
 }
 
@@ -120,7 +120,7 @@ function validateVariant(questions, blueprint) {
     if ((typeCounts[questionType] || 0) !== target) return false;
   }
 
-  const visualCount = questions.filter((question) => String(question?.imageUrl || '').trim()).length;
+  const visualCount = questions.filter((question) => Boolean(String(question?.imageUrl || '').trim())).length;
   if (visualCount !== blueprint.visualTarget) return false;
 
   return questions.every((question) => Boolean(bianMathTopicCategory(question)));
@@ -135,7 +135,10 @@ export function getBianMathBlueprint(requestedId = '') {
 }
 
 export function selectBianMathQuestions(questions, blueprint = BIAN_MATH_BLUEPRINT) {
-  const eligible = questions.filter((question) => String(question.semester) === String(blueprint.semester));
+  const eligible = questions.filter((question) => (
+    String(question.semester) === String(blueprint.semester)
+    && Boolean(variantKey(question))
+  ));
   if (eligible.length < blueprint.targetQuestions) {
     throw new HttpError(
       422,
@@ -147,7 +150,6 @@ export function selectBianMathQuestions(questions, blueprint = BIAN_MATH_BLUEPRI
   const variants = new Map();
   for (const question of eligible) {
     const key = variantKey(question);
-    if (!key) continue;
     if (!variants.has(key)) variants.set(key, []);
     variants.get(key).push(question);
   }
