@@ -3,10 +3,13 @@ import {normalizeSession,normalizeAnswerResult,normalizeExamState,normalizeExamS
 const SESSION_KEY='ubaybian:family-session:v1';
 const DASHBOARD_SOFT_TTL_MS=15_000;
 const DASHBOARD_HARD_TTL_MS=120_000;
-const dashboardCache=new Map();
-const dashboardInflight=new Map();
-const quizSessionProfiles=new Map();
-const examSessionProfiles=new Map();
+const shared=globalThis.__UBAYBIAN_API_STATE__||(globalThis.__UBAYBIAN_API_STATE__={
+ dashboardCache:new Map(),
+ dashboardInflight:new Map(),
+ quizSessionProfiles:new Map(),
+ examSessionProfiles:new Map(),
+});
+const {dashboardCache,dashboardInflight,quizSessionProfiles,examSessionProfiles}=shared;
 
 function dashboardKey(baseUrl,profileId){return `${baseUrl}::${String(profileId||'')}`;}
 function clearDashboardCache(){dashboardCache.clear();dashboardInflight.clear();}
