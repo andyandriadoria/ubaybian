@@ -11,7 +11,7 @@ async function health(env) {
   const result = {
     ok: true,
     service: 'ubaybian-api',
-    version: '0.5.84',
+    version: '0.6.2',
     db: {
       bound: Boolean(env.DB),
       schemaReady: false,
@@ -58,7 +58,7 @@ async function health(env) {
   return result;
 }
 
-async function handler(request, env) {
+async function handler(request, env, ctx) {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, '') || '/';
   if (request.method === 'GET' && path === '/v1/health') return json(await health(env));
@@ -109,7 +109,7 @@ async function handler(request, env) {
   if (request.method === 'GET' && dashboardParams) {
     const session = await requireSession(request, env);
     const profile = await requireProfile(env, session.familyId, dashboardParams.profileId);
-    return json(await dashboardForProfile(env, session.familyId, profile));
+    return json(await dashboardForProfile(env, session.familyId, profile, ctx));
   }
 
   const progressParams = routeMatch(path, '/v1/progress/:profileId');
@@ -232,12 +232,12 @@ async function handler(request, env) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     let cors = {};
     try {
       cors = corsHeaders(request, env);
       if (request.method === 'OPTIONS') return withCors(new Response(null, { status: 204 }), cors);
-      return withCors(await handler(request, env), cors);
+      return withCors(await handler(request, env, ctx), cors);
     } catch (error) {
       const status = error instanceof HttpError ? error.status : 500;
       const code = error instanceof HttpError ? error.code : 'INTERNAL_ERROR';
