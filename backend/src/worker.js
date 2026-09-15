@@ -2,12 +2,30 @@ import app from './index.js';
 import { corsHeaders, json, withCors } from './http.js';
 import { ensureProductionLaunchBaseline } from './launch-baseline.js';
 
-const VERSION = '0.6.1';
+const VERSION = '0.6.2';
+let baselineSnapshot = null;
+let baselineInflight = null;
 
 function isSetupRequest(request) {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, '') || '/';
   return request.method === 'POST' && path === '/v1/setup';
+}
+
+async function productionLaunchBaseline(env) {
+  if (baselineSnapshot) return baselineSnapshot;
+  if (baselineInflight) return baselineInflight;
+
+  baselineInflight = ensureProductionLaunchBaseline(env)
+    .then((result) => {
+      // The launch reset is immutable once applied. Keep it in isolate memory so normal
+      // API requests do not query launch_resets repeatedly for the lifetime of this Worker.
+      if (result?.applied || result?.alreadyApplied) baselineSnapshot = result;
+      return result;
+    })
+    .finally(() => { baselineInflight = null; });
+
+  return baselineInflight;
 }
 
 async function patchHealthResponse(request, response, baseline) {
@@ -40,7 +58,7 @@ export default {
     let cors = {};
     try {
       cors = corsHeaders(request, env);
-      const baseline = await ensureProductionLaunchBaseline(env);
+      const baseline = await productionLaunchBaseline(env);
       const response = await app.fetch(request, env, ctx);
       return await patchHealthResponse(request, response, baseline);
     } catch (error) {
