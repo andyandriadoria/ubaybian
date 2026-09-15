@@ -1,5 +1,5 @@
 import { apiBase, backendEnabled } from './config.js';
-import { createApiClient } from './api.js?v=0.5.52';
+import { createApiClient } from './api.js?v=0.6.2';
 
 const api = backendEnabled ? createApiClient(apiBase) : null;
 const cache = new Map();
@@ -258,8 +258,9 @@ async function enhance() {
   if (card.dataset.badgeShowcaseSignature === signature && card.dataset.badgeShowcaseReady === '1') return;
   card.dataset.badgeShowcaseLoading = '1';
   try {
-    // A new Home card should always reflect achievements just unlocked in the previous session.
-    const badges = await loadBadges(id, true);
+    // Reuse the shared dashboard cache. Progress-changing actions invalidate that cache, so
+    // newly unlocked achievements still refresh without a second forced dashboard request.
+    const badges = await loadBadges(id, false);
     if (!card.isConnected || profileId() !== id) return;
     renderRack(card, badges, id);
     card.dataset.badgeShowcaseReady = '1';
