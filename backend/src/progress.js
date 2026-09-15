@@ -1,7 +1,5 @@
 import { engagementTotals } from './engagement.js';
 import { EXAM_REWARD_RULES, examRewardTotals } from './exam-rewards.js';
-import { readSheetValues } from './google.js';
-import { parsePublishedQuestions, sheetConfig } from './questions.js';
 import { reviewKey, reviewQuestionStates } from './review-queue.js';
 
 const LEVELS = Object.freeze([
@@ -103,46 +101,6 @@ export function mergeLearningReport(practiceRows = [], assessmentRows = [], limi
     .slice(0, Math.max(0, safeCount(limit)));
 }
 
-async function liveReviewQuestionKeys(env, profile, pendingStates) {
-  const pendingBySubject = new Map();
-  for (const row of pendingStates) {
-    const subjectId = String(row.subject_id || '');
-    if (!subjectId) continue;
-    if (!pendingBySubject.has(subjectId)) pendingBySubject.set(subjectId, []);
-    pendingBySubject.get(subjectId).push(row);
-  }
-
-  if (!pendingBySubject.size) return new Set();
-
-  const liveKeys = new Set();
-  await Promise.all([...pendingBySubject.entries()].map(async ([subjectId, pendingRows]) => {
-    try {
-      const { sheetName } = sheetConfig(profile.slug, subjectId);
-      const rows = await readSheetValues(env, profile.slug, sheetName);
-      const liveQuestionIds = new Set(
-        parsePublishedQuestions(rows)
-          .filter((question) => question.type !== 'open-response')
-          .map((question) => question.id),
-      );
-      for (const row of pendingRows) {
-        if (liveQuestionIds.has(String(row.question_id || ''))) liveKeys.add(reviewKey(row));
-      }
-    } catch (error) {
-      // Dashboard availability should not fail just because the question-bank gateway is
-      // temporarily unavailable. Fall back to the unified historical queue; startQuiz remains
-      // the final authority and validates the live bank again when Review is opened.
-      console.error('REVIEW_LIVE_FILTER_FAILED', {
-        profile: profile.slug,
-        subjectId,
-        code: error?.code || 'UNKNOWN',
-      });
-      for (const row of pendingRows) liveKeys.add(reviewKey(row));
-    }
-  }));
-
-  return liveKeys;
-}
-
 export async function progressForFamily(env, familyId, profileId = null) {
   const sql = profileId
     ? `SELECT p.slug AS profileId, ps.subject_id AS subjectId, ps.attempted, ps.correct, ps.last_practiced_at AS lastPracticedAt
@@ -219,17 +177,19 @@ export async function dashboardForProfile(env, familyId, profile) {
     subjectStats.set(id, item);
   }
 
+  // Dashboard uses the persisted unified review state only. The live Google Sheet is validated
+  // when Review actually starts, so ordinary Home/Report/Robot navigation never waits on Sheets.
   const pendingReviewStates = await reviewQuestionStates(env, familyId, profile.id);
-  const liveReviewKeys = await liveReviewQuestionKeys(env, profile, pendingReviewStates);
+  const reviewKeys = new Set();
   for (const row of pendingReviewStates) {
     const key = reviewKey(row);
-    if (!liveReviewKeys.has(key)) continue;
+    reviewKeys.add(key);
     const subjectId = String(row.subject_id || '');
     const subject = subjectStats.get(subjectId) || { subjectId, attempted: 0, correct: 0, review: 0 };
     subject.review += 1;
     subjectStats.set(subject.subjectId, subject);
   }
-  const reviewTotal = liveReviewKeys.size;
+  const reviewTotal = reviewKeys.size;
 
   const answersAsc = [...answersDesc].reverse();
   const previouslyWrong = new Set();
@@ -299,9 +259,14 @@ export async function dashboardForProfile(env, familyId, profile) {
       streak3Xp: 30,
       streak7Xp: 70,
       gameDailyXpCap: 50,
-      examCorrectXp: EXAM_REWARD_RULES.correctXp,
-      examCorrectCoins: EXAM_REWARD_RULES.correctCoins,
-      examCompletionXp: EXAM_REWARD_RULES.completionXp,
+      examEffortXpMax: EXAM_REWARD_RULES.effortXpMax,
+      examEffortCoinsMax: EXAM_REWARD_RULES.effortCoinsMax,
+      examCompletionXpQualified: EXAM_REWARD_RULES.completionXpQualified,
+      examCompletionCoinsQualified: EXAM_REWARD_RULES.completionCoinsQualified,
+      examCompletionXpFull: EXAM_REWARD_RULES.completionXpFull,
+      examCompletionCoinsFull: EXAM_REWARD_RULES.completionCoinsFull,
+      examAccuracyXpMax: EXAM_REWARD_RULES.accuracyXpMax,
+      examAccuracyCoinsMax: EXAM_REWARD_RULES.accuracyCoinsMax,
       examCompletionAnswerRatio: EXAM_REWARD_RULES.completionAnswerRatio,
     },
   };
