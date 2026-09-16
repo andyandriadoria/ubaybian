@@ -1,4 +1,4 @@
-/* v0.5.19 — Report Data Polish
+/* v0.8.5 — Report Data Polish
    Derives display-only summary from already rendered report rows. */
 (function(){
   const main=document.querySelector('#main');
@@ -52,7 +52,8 @@
       const benchmark=document.createElement('div');
       benchmark.className='report-benchmark';
       benchmark.setAttribute('aria-hidden','true');
-      benchmark.innerHTML='<span>50%</span>';
+      // Keep the 50% guide line, but do not render text inside the plot.
+      // On narrow charts the label could overlap a session score such as 75%*.
       chartInner.prepend(benchmark);
     }
 
