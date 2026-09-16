@@ -1,16 +1,18 @@
 import { apiBase, backendEnabled } from './config.js';
 import { findProfile } from './profiles.js';
 import {
-  LAB_RUN_SIZE,
-  createLabMissionRun,
-  finaliseRunScore,
+  LAB_MAX_SCORE,
+  createLabShift,
+  evaluateLabAction,
+  finaliseShiftScore,
+  labJobScore,
   labRankForTotalScore,
-  missionScore,
   rankProgress,
 } from './lab-rescue-engine.js';
 
 const SESSION_KEY = 'ubaybian:family-session:v1';
-const LOCAL_PREFIX = 'ubaybian:lab-rescue:v1:';
+const LOCAL_PREFIX = 'ubaybian:lab-rescue:v2:';
+const GAME_ID = 'lab-rescue';
 let activeLab = null;
 let statusCache = new Map();
 
@@ -18,18 +20,24 @@ function token() {
   try { return localStorage.getItem(SESSION_KEY) || ''; } catch { return ''; }
 }
 
-async function call(path, options = {}) {
+async function call(path, options = {}, timeoutMs = 5000) {
   if (!backendEnabled) throw new Error('Backend belum aktif.');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   const headers = new Headers(options.headers || {});
   headers.set('Accept', 'application/json');
   if (options.body) headers.set('Content-Type', 'application/json');
   const auth = token();
   if (auth) headers.set('Authorization', `Bearer ${auth}`);
-  const response = await fetch(`${apiBase}${path}`, { ...options, headers });
-  let data = null;
-  try { data = await response.json(); } catch {}
-  if (!response.ok) throw new Error(data?.message || 'Lab Rescue belum tersedia.');
-  return data;
+  try {
+    const response = await fetch(`${apiBase}${path}`, { ...options, headers, signal: controller.signal });
+    let data = null;
+    try { data = await response.json(); } catch {}
+    if (!response.ok) throw new Error(data?.message || 'Lab Rescue belum tersedia.');
+    return data;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function profileFromHash() {
@@ -43,7 +51,7 @@ function el(tag, cls = '', text) {
   return node;
 }
 
-function button(label, cls, action) {
+function button(label, cls = '', action) {
   const node = el('button', cls, label);
   node.type = 'button';
   if (action) node.addEventListener('click', action);
@@ -54,40 +62,47 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function formatTime(totalSeconds) {
+  const total = Math.max(0, Math.ceil(Number(totalSeconds) || 0));
+  const min = Math.floor(total / 60);
+  const sec = total % 60;
+  return `${min}:${String(sec).padStart(2, '0')}`;
+}
+
 function loadLocal(profileId) {
   try {
     const raw = localStorage.getItem(`${LOCAL_PREFIX}${profileId}`);
     const parsed = raw ? JSON.parse(raw) : {};
     return {
-      recentKeys: Array.isArray(parsed.recentKeys) ? parsed.recentKeys.slice(0, 18) : [],
-      lastAccuracy: Number.isFinite(Number(parsed.lastAccuracy)) ? Number(parsed.lastAccuracy) : null,
+      recentKeys: Array.isArray(parsed.recentKeys) ? parsed.recentKeys.slice(0, 20) : [],
+      best: Math.max(0, Number(parsed.best) || 0),
+      totalScore: Math.max(0, Number(parsed.totalScore) || 0),
+      plays: Math.max(0, Number(parsed.plays) || 0),
     };
   } catch {
-    return { recentKeys: [], lastAccuracy: null };
+    return { recentKeys: [], best: 0, totalScore: 0, plays: 0 };
   }
 }
 
 function saveLocal(profileId, value) {
-  try {
-    localStorage.setItem(`${LOCAL_PREFIX}${profileId}`, JSON.stringify(value));
-  } catch {}
+  try { localStorage.setItem(`${LOCAL_PREFIX}${profileId}`, JSON.stringify(value)); } catch {}
 }
 
-function gameStateFromStatus(status) {
-  const game = status?.games?.['lab-rescue'] || {};
+function gameStateFromStatus(status, local) {
+  const game = status?.games?.[GAME_ID] || {};
   return {
-    best: Number(game.best || 0),
-    plays: Number(game.plays || 0),
-    totalScore: Number(game.totalScore || 0),
+    best: Math.max(Number(game.best || 0), Number(local.best || 0)),
+    plays: Math.max(Number(game.plays || 0), Number(local.plays || 0)),
+    totalScore: Math.max(Number(game.totalScore || 0), Number(local.totalScore || 0)),
     dailyXp: Number(status?.dailyXp || 0),
     dailyXpCap: Number(status?.dailyXpCap || 50),
   };
 }
 
-async function loadGameStatus(profile, force = false) {
+async function loadGameStatus(profile, local, force = false) {
   const cached = statusCache.get(profile.id);
   if (!force && cached && Date.now() - cached.at < 15000) return cached.value;
-  const value = await call(`/v1/games/${encodeURIComponent(profile.id)}/status`);
+  const value = await call(`/v1/games/${encodeURIComponent(profile.id)}/status`, {}, 4500);
   statusCache.set(profile.id, { value, at: Date.now() });
   return value;
 }
@@ -114,13 +129,12 @@ function ensureLabTile() {
     tile.tabIndex = 0;
     const icon = el('span', 'side-tile-icon lab-rescue-tile-icon', '🧪');
     const copy = el('div', 'lab-rescue-tile-copy');
-    copy.append(el('div', 'side-tile-text', 'Lab Rescue'), el('div', 'side-tile-sub', 'Science mission · 5 per run'));
+    copy.append(el('div', 'side-tile-text', 'Lab Rescue'), el('div', 'side-tile-sub', 'Science shift · manage the lab'));
     const accent = el('span', 'lab-rescue-tile-accent', '⚗️');
     tile.append(icon, copy, accent);
     const reward = tileByName('Reward Shop');
     if (reward?.parentNode === menu) menu.insertBefore(tile, reward);
     else menu.append(tile);
-
     const open = (event) => {
       event?.preventDefault?.();
       event?.stopPropagation?.();
@@ -137,398 +151,753 @@ function ensureLabTile() {
 async function syncTile(profile, tile) {
   if (!tile || tile.dataset.labSync === 'loading') return;
   tile.dataset.labSync = 'loading';
+  const local = loadLocal(profile.id);
   try {
-    const status = await loadGameStatus(profile);
-    const state = gameStateFromStatus(status);
-    const sub = tile.querySelector('.side-tile-sub');
-    if (sub) sub.textContent = `Best ${state.best} · ${rankLabel(state.totalScore)}`;
+    const status = await loadGameStatus(profile, local);
+    const state = gameStateFromStatus(status, local);
+    tile.querySelector('.side-tile-sub').textContent = `Best ${state.best} · ${rankLabel(state.totalScore)}`;
   } catch {
-    const sub = tile.querySelector('.side-tile-sub');
-    if (sub) sub.textContent = 'Science mission · 5 per run';
+    tile.querySelector('.side-tile-sub').textContent = local.plays
+      ? `Best ${local.best} · ${rankLabel(local.totalScore)}`
+      : 'Science shift · manage the lab';
   } finally {
     tile.dataset.labSync = 'done';
   }
 }
 
-function renderVisual(target, visual) {
-  target.replaceChildren();
-  if (!visual) return;
-
-  if (visual.kind === 'meters') {
-    for (const [label, value] of visual.items || []) {
-      const item = el('div', 'lab-meter');
-      const head = el('div', 'lab-meter-head');
-      head.append(el('span', '', label), el('strong', '', `${value}%`));
-      const track = el('div', 'lab-meter-track');
-      const fill = el('span', 'lab-meter-fill');
-      fill.style.width = `${clamp(Number(value) || 0, 0, 100)}%`;
-      track.append(fill); item.append(head, track); target.append(item);
-    }
-    return;
-  }
-
-  if (visual.kind === 'table') {
-    const table = el('div', 'lab-data-table');
-    for (const row of visual.rows || []) {
-      const line = el('div', 'lab-data-row');
-      row.forEach((cell) => line.append(el('span', '', String(cell))));
-      table.append(line);
-    }
-    target.append(table); return;
-  }
-
-  if (visual.kind === 'variables') {
-    const grid = el('div', 'lab-variable-grid');
-    for (const [label, value] of visual.items || []) {
-      const card = el('div', 'lab-variable-card');
-      card.append(el('span', '', label), el('strong', '', value));
-      grid.append(card);
-    }
-    target.append(grid); return;
-  }
-
-  if (visual.kind === 'particles') {
-    const chamber = el('div', `lab-particles ${visual.state === 'spread' ? 'spread' : 'close'}`);
-    for (let i = 0; i < 18; i += 1) chamber.append(el('span', 'lab-particle'));
-    target.append(chamber); return;
-  }
-
-  if (visual.kind === 'chain') {
-    const chain = el('div', 'lab-chain');
-    String(visual.text || '').split('→').map((part) => part.trim()).forEach((part, index, arr) => {
-      chain.append(el('span', 'lab-chain-node', part));
-      if (index < arr.length - 1) chain.append(el('span', 'lab-chain-arrow', '→'));
-    });
-    target.append(chain); return;
-  }
-
-  if (visual.kind === 'sequence') {
-    const sequence = el('div', 'lab-sequence-visual');
-    (visual.steps || []).forEach((step, index) => {
-      sequence.append(el('span', 'lab-sequence-step', step));
-      if (index < visual.steps.length - 1) sequence.append(el('span', 'lab-sequence-arrow', '›'));
-    });
-    target.append(sequence); return;
-  }
-
-  if (visual.kind === 'beam') {
-    const beam = el('div', 'lab-beam');
-    (visual.items || []).forEach((item, index) => {
-      beam.append(el('span', 'lab-beam-node', item));
-      if (index < visual.items.length - 1) beam.append(el('span', 'lab-beam-line'));
-    });
-    target.append(beam); return;
-  }
-
-  if (visual.kind === 'stations') {
-    const stations = el('div', 'lab-stations');
-    (visual.items || []).forEach((item) => stations.append(el('span', 'lab-station', item)));
-    target.append(stations); return;
-  }
-
-  if (visual.kind === 'circuit') {
-    const circuit = el('div', 'lab-circuit');
-    circuit.append(el('span', 'lab-circuit-node', '🔋'), el('span', 'lab-circuit-wire'), el('span', 'lab-circuit-node', visual.state === 'open' ? '⛓️‍💥' : '🔌'), el('span', 'lab-circuit-wire'), el('span', 'lab-circuit-node', '💡'));
-    target.append(circuit); return;
-  }
-
-  if (visual.kind === 'habitat') {
-    const hero = el('div', 'lab-visual-hero', visual.emoji || '🌍');
-    const labels = el('div', 'lab-mini-labels');
-    (visual.labels || []).forEach((label) => labels.append(el('span', '', label)));
-    target.append(hero, labels); return;
-  }
-
-  const hero = el('div', 'lab-visual-hero', visual.emoji || '🧪');
-  if (visual.badge) hero.append(el('small', '', visual.badge));
-  target.append(hero);
-}
-
 async function openLabRescue(profile) {
   if (activeLab) activeLab.close(true);
   const previousOverflow = document.body.style.overflow;
-  let sessionId = '';
-  let bestScore = 0;
-  let totalScore = 0;
+  let local = loadLocal(profile.id);
+  let bestScore = local.best;
+  let totalScore = local.totalScore;
   let dailyXp = 0;
   let dailyCap = 50;
-  let missions = [];
-  let missionIndex = 0;
+  let pendingShift = createLabShift(profile.id, { recentKeys: local.recentKeys, bestScore });
+  let phase = 'ready';
+  let stationStates = new Map();
+  let queue = [];
+  let jobDeck = [];
+  let usedKeys = [];
+  let selectedStationId = '';
   let scoreValue = 0;
-  let solved = 0;
+  let stability = 100;
   let combo = 0;
   let bestCombo = 0;
-  let phase = 'ready';
-  let saving = false;
-  let runKeys = [];
-  let local = loadLocal(profile.id);
+  let completed = 0;
+  let missed = 0;
+  let endAt = 0;
+  let nextSpawnAt = 0;
+  let tickTimer = 0;
+  let lastTickAt = 0;
+  let remoteSession = null;
+  let remoteStartPromise = null;
+  let finishing = false;
 
   const overlay = el('div', 'lab-rescue-overlay');
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-label', 'Lab Rescue Science game');
+  overlay.setAttribute('aria-label', 'Lab Rescue Science shift');
   const shell = el('section', 'lab-rescue-shell');
   shell.dataset.profile = profile.id;
+
   const top = el('header', 'lab-rescue-top');
   const brand = el('div', 'lab-rescue-brand');
-  const brandIcon = el('div', 'lab-rescue-brand-icon', '🧪');
-  const brandCopy = el('div');
-  brandCopy.append(el('p', 'lab-rescue-kicker', 'SCIENCE ARCADE'), el('h2', '', 'Lab Rescue'), el('p', 'lab-rescue-subtitle', 'Diagnose · test · reason · rescue the lab'));
-  brand.append(brandIcon, brandCopy);
+  brand.append(el('span', 'lab-rescue-kicker', 'SCIENCE ARCADE'), el('strong', 'lab-rescue-logo', 'LAB RESCUE'), el('span', 'lab-rescue-subtitle', 'RUN THE LAB · SAVE THE SHIFT'));
   const closeButton = button('×', 'lab-rescue-close', () => close());
   closeButton.setAttribute('aria-label', 'Tutup Lab Rescue');
   top.append(brand, closeButton);
+
   const stage = el('div', 'lab-rescue-stage');
+  const ready = buildReadyView();
+  const play = buildPlayView();
+  const result = buildResultView();
+  stage.append(ready.root, play.root, result.root);
   shell.append(top, stage);
   overlay.append(shell);
   document.body.append(overlay);
   document.body.style.overflow = 'hidden';
-
-  const ready = el('section', 'lab-rescue-view lab-rescue-ready');
-  const readyOrb = el('div', 'lab-rescue-orb', '⚗️');
-  const readyTitle = el('h3', '', profile.id === 'bian' ? 'Science Lab needs you!' : 'Emergency science mission');
-  const readyCopy = el('p', 'lab-rescue-ready-copy', profile.id === 'bian'
-    ? 'Selesaikan 5 science missions. Setiap run punya kombinasi baru.'
-    : 'Solve 5 procedural science missions. Each run mixes concepts, evidence, variables, and predictions.');
-  const readyChips = el('div', 'lab-rescue-chips');
-  const bestChip = el('span', 'lab-rescue-chip', '🏆 Best …');
-  const rankChip = el('span', 'lab-rescue-chip', '🥼 Junior Researcher');
-  readyChips.append(el('span', 'lab-rescue-chip', '🧪 5 missions'), bestChip, rankChip, el('span', 'lab-rescue-chip', '⭐ up to +10 XP/run'));
-  const rankCard = el('div', 'lab-rank-card');
-  const rankRow = el('div', 'lab-rank-row');
-  const rankName = el('strong', '', 'Junior Researcher');
-  const rankHint = el('span', '', 'Loading progress…');
-  rankRow.append(rankName, rankHint);
-  const rankTrack = el('div', 'lab-rank-track');
-  const rankFill = el('span', 'lab-rank-fill'); rankTrack.append(rankFill);
-  const xpLine = el('p', 'lab-rescue-xp-line', 'Game XP hari ini: … / 50');
-  const readyNote = el('p', 'lab-rescue-note', 'Menyiapkan science lab…');
-  const startButton = button('Mulai Rescue →', 'lab-rescue-primary', () => beginRun(startButton, readyNote));
-  startButton.disabled = true;
-  ready.append(readyOrb, readyTitle, readyCopy, readyChips, rankCard, xpLine, startButton, readyNote);
-  rankCard.append(rankRow, rankTrack);
-
-  const play = el('section', 'lab-rescue-view lab-rescue-play');
-  play.hidden = true;
-  const hud = el('div', 'lab-rescue-hud');
-  const missionStat = statCard('MISSION', '1 / 5');
-  const energyStat = statCard('LAB ENERGY', '0');
-  const comboStat = statCard('COMBO', 'x0');
-  hud.append(missionStat.card, energyStat.card, comboStat.card);
-  const missionHead = el('div', 'lab-mission-head');
-  const typeChip = el('span', 'lab-mission-type', '🔍 DIAGNOSE');
-  const topicChip = el('span', 'lab-mission-topic', 'Science');
-  missionHead.append(typeChip, topicChip);
-  const missionTitle = el('h3', 'lab-mission-title', 'Mission');
-  const scenario = el('p', 'lab-mission-scenario', '');
-  const visual = el('div', 'lab-mission-visual');
-  const question = el('p', 'lab-mission-question', '');
-  const options = el('div', 'lab-mission-options');
-  const feedback = el('div', 'lab-mission-feedback'); feedback.hidden = true;
-  const nextButton = button('Mission berikutnya →', 'lab-rescue-primary lab-next', nextMission);
-  nextButton.hidden = true;
-  play.append(hud, missionHead, missionTitle, scenario, visual, question, options, feedback, nextButton);
-
-  const result = el('section', 'lab-rescue-view lab-rescue-result');
-  result.hidden = true;
-  const complete = el('div', 'lab-rescue-complete', '🧪 LAB RUN COMPLETE');
-  const resultTitle = el('h3', '', 'Lab rescued!');
-  const resultEnergy = el('div', 'lab-result-energy', '0');
-  const resultCaption = el('p', 'lab-result-caption', 'Lab Energy');
-  const resultStats = el('div', 'lab-result-grid');
-  const solvedCard = metricCard('✅ Missions', '0/5');
-  const comboCard = metricCard('🔥 Best combo', 'x0');
-  const bestCard = metricCard('🏆 Best run', '0');
-  const xpCard = metricCard('⭐ XP didapat', '+0');
-  resultStats.append(solvedCard.card, comboCard.card, bestCard.card, xpCard.card);
-  const resultRank = el('div', 'lab-result-rank');
-  const resultNote = el('p', 'lab-rescue-note', '');
-  const resultActions = el('div', 'lab-result-actions');
-  const replay = button('Main Lagi', 'lab-rescue-primary', () => beginRun(replay, resultNote));
-  const done = button('Selesai', 'lab-rescue-ghost', () => close());
-  resultActions.append(replay, done);
-  result.append(complete, resultTitle, resultEnergy, resultCaption, resultStats, resultRank, resultActions, resultNote);
-
-  stage.append(ready, play, result);
   activeLab = { close };
 
   overlay.addEventListener('click', (event) => { if (event.target === overlay) close(); });
   const onKey = (event) => { if (event.key === 'Escape') close(); };
   document.addEventListener('keydown', onKey);
-  loadStatus();
 
-  function statCard(label, value) {
-    const card = el('div', 'lab-hud-stat');
+  renderReady();
+  hydrateStatus();
+
+  function buildReadyView() {
+    const root = el('section', 'lab-rescue-view lab-rescue-ready');
+    const alert = el('div', 'lab-ready-alert');
+    const incidentIcon = el('div', 'lab-incident-icon');
+    const story = el('div', 'lab-incident-story');
+    const eyebrow = el('span', 'lab-story-eyebrow', 'INCOMING SHIFT');
+    const title = el('h3');
+    const brief = el('p');
+    const callout = el('div', 'lab-bot-callout');
+    story.append(eyebrow, title, brief, callout);
+    alert.append(incidentIcon, story);
+
+    const stationPreview = el('div', 'lab-station-preview');
+    const stats = el('div', 'lab-ready-stats');
+    const best = el('div', 'lab-ready-stat');
+    const rank = el('div', 'lab-ready-stat');
+    const xp = el('div', 'lab-ready-stat');
+    const duration = el('div', 'lab-ready-stat');
+    stats.append(best, rank, xp, duration);
+
+    const rankBox = el('div', 'lab-ready-rank');
+    const rankLine = el('div', 'lab-ready-rank-line');
+    const rankName = el('strong');
+    const rankHint = el('span');
+    rankLine.append(rankName, rankHint);
+    const track = el('div', 'lab-rank-track');
+    const fill = el('span', 'lab-rank-fill');
+    track.append(fill);
+    rankBox.append(rankLine, track);
+
+    const note = el('p', 'lab-rescue-note', 'Start kapan saja. Shift tetap bisa dimainkan kalau koneksi reward sedang lambat.');
+    const start = button('START LAB SHIFT →', 'lab-rescue-primary lab-start-shift', startShift);
+    root.append(alert, stationPreview, stats, rankBox, start, note);
+    return { root, incidentIcon, title, brief, callout, stationPreview, best, rank, xp, duration, rankName, rankHint, fill, note, start };
+  }
+
+  function buildPlayView() {
+    const root = el('section', 'lab-rescue-view lab-rescue-play');
+    root.hidden = true;
+    const hud = el('div', 'lab-shift-hud');
+    const timer = hudCard('SHIFT', '1:30', 'cyan');
+    const stabilityCard = hudCard('LAB STABILITY', '100%', 'green');
+    const score = hudCard('SCORE', '0', 'orange');
+    const comboCard = hudCard('COMBO', 'x0', 'pink');
+    hud.append(timer.card, stabilityCard.card, score.card, comboCard.card);
+
+    const body = el('div', 'lab-shift-body');
+    const labFloor = el('div', 'lab-floor');
+    const floorHeader = el('div', 'lab-floor-header');
+    floorHeader.append(el('div', 'lab-live-label', '● LIVE LAB'), el('div', 'lab-queue-label', 'Incoming 0'));
+    const bot = el('div', 'lab-shift-bot');
+    const botAvatar = el('div', 'lab-bot-avatar', '🤖');
+    const botText = el('p', '', 'Stations online. Watch for the first alert.');
+    bot.append(botAvatar, botText);
+    const stations = el('div', 'lab-station-grid');
+    const queueStrip = el('div', 'lab-queue-strip');
+    labFloor.append(floorHeader, bot, stations, queueStrip);
+
+    const workbench = el('aside', 'lab-workbench');
+    body.append(labFloor, workbench);
+    root.append(hud, body);
+    return { root, timer: timer.value, stability: stabilityCard.value, score: score.value, combo: comboCard.value, stations, queueStrip, queueLabel: floorHeader.lastElementChild, botText, workbench };
+  }
+
+  function buildResultView() {
+    const root = el('section', 'lab-rescue-view lab-rescue-result');
+    root.hidden = true;
+    const badge = el('div', 'lab-result-badge', 'SHIFT COMPLETE');
+    const title = el('h3', '', 'Lab secured!');
+    const score = el('div', 'lab-result-score', '0');
+    const caption = el('p', 'lab-result-caption', 'Lab Score');
+    const grid = el('div', 'lab-result-grid');
+    const jobs = resultMetric('🧪 Jobs completed', '0');
+    const misses = resultMetric('⚠️ Jobs missed', '0');
+    const comboMetric = resultMetric('🔥 Best combo', 'x0');
+    const stabilityMetric = resultMetric('🛡️ Stability', '100%');
+    const xp = resultMetric('⭐ XP earned', '…');
+    grid.append(jobs.card, misses.card, comboMetric.card, stabilityMetric.card, xp.card);
+    const rank = el('div', 'lab-result-rank');
+    const note = el('p', 'lab-rescue-note');
+    const actions = el('div', 'lab-result-actions');
+    const replay = button('SHIFT LAGI', 'lab-rescue-primary', () => prepareReplay());
+    const done = button('Selesai', 'lab-rescue-ghost', () => close());
+    actions.append(replay, done);
+    root.append(badge, title, score, caption, grid, rank, actions, note);
+    return { root, title, score, jobs: jobs.value, misses: misses.value, combo: comboMetric.value, stability: stabilityMetric.value, xp: xp.value, rank, note, replay, done };
+  }
+
+  function hudCard(label, value, tone) {
+    const card = el('div', `lab-hud-card ${tone}`);
     card.append(el('span', '', label));
-    const strong = el('strong', '', value); card.append(strong);
+    const strong = el('strong', '', value);
+    card.append(strong);
     return { card, value: strong };
   }
 
-  function metricCard(label, value) {
+  function resultMetric(label, value) {
     const card = el('div', 'lab-result-card');
     card.append(el('span', '', label));
-    const strong = el('strong', '', value); card.append(strong);
+    const strong = el('strong', '', value);
+    card.append(strong);
     return { card, value: strong };
   }
 
-  function syncRank() {
-    const state = rankProgress(totalScore);
-    rankName.textContent = `${state.rank.icon} ${state.rank.label}`;
-    rankChip.textContent = `${state.rank.icon} ${state.rank.label}`;
-    rankFill.style.width = `${state.progress}%`;
-    rankHint.textContent = state.rank.nextAt ? `${state.remaining} energy to next rank` : 'Max rank · keep chasing Best Run';
+  function renderReady() {
+    ready.incidentIcon.textContent = pendingShift.incident.emoji;
+    ready.title.textContent = pendingShift.incident.title;
+    ready.brief.textContent = pendingShift.incident.brief;
+    ready.callout.textContent = pendingShift.incident.callout;
+    ready.stationPreview.replaceChildren();
+    for (const station of pendingShift.stations) {
+      const item = el('div', `lab-preview-station ${station.accent}`);
+      item.append(el('span', 'lab-preview-icon', station.icon), el('strong', '', station.name), el('small', '', 'READY'));
+      ready.stationPreview.append(item);
+    }
+    ready.best.innerHTML = `<span>🏆 BEST</span><strong>${bestScore}</strong>`;
+    ready.rank.innerHTML = `<span>🥼 RANK</span><strong>${labRankForTotalScore(totalScore).label}</strong>`;
+    ready.xp.innerHTML = `<span>⭐ GAME XP</span><strong>${dailyXp}/${dailyCap}</strong>`;
+    ready.duration.innerHTML = `<span>⏱️ SHIFT</span><strong>${formatTime(pendingShift.config.shiftSeconds)}</strong>`;
+    const progress = rankProgress(totalScore);
+    ready.rankName.textContent = `${progress.rank.icon} ${progress.rank.label}`;
+    ready.rankHint.textContent = progress.rank.nextAt ? `${progress.remaining} energy to next rank` : 'Max rank · keep chasing Best Run';
+    ready.fill.style.width = `${progress.progress}%`;
   }
 
-  async function loadStatus() {
+  async function hydrateStatus() {
     try {
-      const status = await loadGameStatus(profile, true);
-      const state = gameStateFromStatus(status);
-      bestScore = state.best; totalScore = state.totalScore; dailyXp = state.dailyXp; dailyCap = state.dailyXpCap;
-      bestChip.textContent = `🏆 Best ${bestScore}`;
-      xpLine.textContent = `Game XP hari ini: ${dailyXp} / ${dailyCap}`;
-      syncRank();
-      readyNote.textContent = dailyXp >= dailyCap
-        ? 'XP game harian sudah penuh. Lab Rescue tetap bisa dimainkan untuk Best Run dan Lab Rank.'
-        : 'Science lab online. Setiap run menghasilkan 5 mission baru.';
-      startButton.disabled = false;
-    } catch (error) {
-      readyNote.textContent = error.message;
-      readyNote.classList.add('error');
+      const status = await loadGameStatus(profile, local, true);
+      const state = gameStateFromStatus(status, local);
+      bestScore = state.best;
+      totalScore = state.totalScore;
+      dailyXp = state.dailyXp;
+      dailyCap = state.dailyXpCap;
+      pendingShift = createLabShift(profile.id, { recentKeys: local.recentKeys, bestScore });
+      renderReady();
+      ready.note.textContent = dailyXp >= dailyCap
+        ? 'XP game hari ini sudah penuh. Shift tetap bisa dimainkan untuk Best Score dan Lab Rank.'
+        : 'Lab online. Score shift akan tersimpan dan ikut shared game XP cap.';
+    } catch {
+      ready.note.textContent = 'Offline lab mode siap. Gameplay tetap jalan; XP baru tersimpan saat backend tersedia.';
     }
   }
 
-  async function beginRun(trigger, note) {
-    if (saving || phase === 'play') return;
-    trigger.disabled = true; note.textContent = 'Menyalakan science lab…'; note.classList.remove('error');
+  function startShift() {
+    if (phase !== 'ready') return;
+    phase = 'play';
+    ready.root.hidden = true;
+    result.root.hidden = true;
+    play.root.hidden = false;
+    shell.classList.add('is-shift-live');
+    const shift = pendingShift;
+    jobDeck = [...shift.jobs];
+    usedKeys = [];
+    queue = [];
+    selectedStationId = '';
+    scoreValue = 0;
+    stability = 100;
+    combo = 0;
+    bestCombo = 0;
+    completed = 0;
+    missed = 0;
+    stationStates = new Map(shift.stations.map((station) => [station.id, { meta: station, job: null }]));
+    endAt = Date.now() + (shift.config.shiftSeconds * 1000);
+    nextSpawnAt = Date.now() + 5000;
+    lastTickAt = Date.now();
+    play.botText.textContent = shift.incident.callout;
+    renderStations();
+    renderQueue();
+    renderWorkbench();
+    updateHud();
+    seedOpeningJobs();
+    remoteSession = null;
+    remoteStartPromise = beginRemoteSession();
+    tickTimer = window.setInterval(tick, 250);
+  }
+
+  async function beginRemoteSession() {
     try {
-      const start = await call(`/v1/games/${encodeURIComponent(profile.id)}/start`, {
-        method: 'POST', body: JSON.stringify({ gameId: 'lab-rescue' }),
-      });
-      sessionId = start.sessionId;
-      const generated = createLabMissionRun(profile.id, {
-        recentKeys: local.recentKeys,
-        bestScore,
-        lastAccuracy: local.lastAccuracy,
-      });
-      missions = generated.missions;
-      runKeys = missions.map((item) => item.key);
-      missionIndex = 0; scoreValue = 0; solved = 0; combo = 0; bestCombo = 0; phase = 'play';
-      ready.hidden = true; result.hidden = true; play.hidden = false;
-      energyStat.value.textContent = '0'; comboStat.value.textContent = 'x0';
-      renderMission();
-    } catch (error) {
-      trigger.disabled = false; note.textContent = error.message; note.classList.add('error');
+      const data = await call(`/v1/games/${encodeURIComponent(profile.id)}/start`, {
+        method: 'POST',
+        body: JSON.stringify({ gameId: GAME_ID }),
+      }, 4500);
+      remoteSession = data?.sessionId ? data : null;
+      return remoteSession;
+    } catch {
+      play.botText.textContent = '🤖 Offline scoring mode active. Keep the lab running—gameplay is unaffected.';
+      return null;
     }
   }
 
-  function renderMission() {
-    const mission = missions[missionIndex];
-    if (!mission) return;
-    missionStat.value.textContent = `${missionIndex + 1} / ${LAB_RUN_SIZE}`;
-    typeChip.textContent = `${mission.typeIcon} ${mission.typeLabel}`;
-    topicChip.textContent = mission.topic;
-    missionTitle.textContent = mission.title;
-    scenario.textContent = mission.scenario;
-    question.textContent = mission.question;
-    renderVisual(visual, mission.visual);
-    feedback.hidden = true; feedback.className = 'lab-mission-feedback'; feedback.replaceChildren();
-    nextButton.hidden = true;
-    options.replaceChildren();
-    for (const choice of mission.choices) {
-      const option = button('', 'lab-mission-option', () => answerMission(choice.id, option));
-      option.dataset.choice = choice.id;
-      option.append(el('span', 'lab-option-letter', choice.id), el('span', 'lab-option-text', choice.text));
-      options.append(option);
+  function seedOpeningJobs() {
+    const seen = new Set();
+    for (let i = 0; i < 2; i += 1) {
+      const index = jobDeck.findIndex((job) => !seen.has(job.stationId));
+      if (index < 0) break;
+      const [job] = jobDeck.splice(index, 1);
+      seen.add(job.stationId);
+      assignJob(job);
     }
+    renderStations();
   }
 
-  function answerMission(choiceId, clicked) {
+  function nextJobFromDeck() {
+    if (!jobDeck.length) {
+      const refill = createLabShift(profile.id, { recentKeys: [...usedKeys, ...local.recentKeys], bestScore });
+      jobDeck = refill.jobs.filter((job) => !usedKeys.slice(-6).includes(job.key));
+      if (!jobDeck.length) jobDeck = refill.jobs;
+    }
+    return jobDeck.shift() || null;
+  }
+
+  function spawnJob() {
+    const job = nextJobFromDeck();
+    if (!job) return;
+    const station = stationStates.get(job.stationId);
+    if (station && !station.job) assignJob(job);
+    else if (queue.length < 5) queue.push({ ...job, queuedAt: Date.now() });
+    else {
+      const dropped = queue.shift();
+      if (dropped) missed += 1;
+      queue.push({ ...job, queuedAt: Date.now() });
+      stability = clamp(stability - 5, 0, 100);
+      combo = 0;
+      play.botText.textContent = '🤖 Queue overload! Clear a station before more jobs arrive.';
+    }
+    renderQueue();
+    renderStations();
+  }
+
+  function assignJob(job) {
+    const station = stationStates.get(job.stationId);
+    if (!station || station.job) return false;
+    station.job = {
+      ...job,
+      status: 'waiting',
+      assignedAt: Date.now(),
+      processingEndsAt: 0,
+      attempts: 0,
+      placements: {},
+      sequence: [],
+      selectedToolId: '',
+    };
+    play.botText.textContent = `🤖 ${station.meta.name}: ${job.alert}`;
+    return true;
+  }
+
+  function promoteQueue() {
+    let moved = false;
+    for (let i = 0; i < queue.length;) {
+      const queued = queue[i];
+      const station = stationStates.get(queued.stationId);
+      if (station && !station.job) {
+        queue.splice(i, 1);
+        assignJob(queued);
+        moved = true;
+      } else i += 1;
+    }
+    if (moved) renderQueue();
+  }
+
+  function tick() {
     if (phase !== 'play') return;
-    phase = 'feedback';
-    const mission = missions[missionIndex];
-    const correct = choiceId === mission.answer;
-    for (const option of options.querySelectorAll('button')) {
-      option.disabled = true;
-      if (option.dataset.choice === mission.answer) option.classList.add('correct');
+    const now = Date.now();
+    const dt = Math.min(1000, now - lastTickAt);
+    lastTickAt = now;
+    const shiftConfig = pendingShift.config;
+    let selectedChanged = false;
+
+    for (const state of stationStates.values()) {
+      const job = state.job;
+      if (!job) continue;
+      if (job.status === 'processing' && now >= job.processingEndsAt) {
+        job.status = 'ready';
+        play.botText.textContent = `🤖 ${state.meta.name} finished processing. Tap COLLECT!`;
+        if (selectedStationId === state.meta.id) selectedChanged = true;
+      }
+      if (job.status === 'waiting') {
+        const age = now - job.assignedAt;
+        if (age > shiftConfig.patienceMs) {
+          stability = clamp(stability - (dt / 1000) * 0.8, 0, 100);
+          if (age > shiftConfig.patienceMs + 15000) failStationJob(state);
+        }
+      }
     }
-    if (correct) {
-      const gain = missionScore(true, combo);
-      combo += 1; bestCombo = Math.max(bestCombo, combo); solved += 1; scoreValue += gain;
-      clicked.classList.add('correct');
-      feedback.classList.add('success');
-      feedback.append(el('strong', '', `✓ LAB STABLE · +${gain} energy`), el('p', '', mission.explanation));
-    } else {
-      combo = 0; clicked.classList.add('wrong'); feedback.classList.add('error');
-      feedback.append(el('strong', '', '⚠ Experiment still unstable'), el('p', '', mission.explanation));
+
+    for (let i = queue.length - 1; i >= 0; i -= 1) {
+      const age = now - queue[i].queuedAt;
+      if (age > shiftConfig.patienceMs) stability = clamp(stability - (dt / 1000) * 0.35, 0, 100);
+      if (age > shiftConfig.patienceMs + 14000) {
+        queue.splice(i, 1);
+        missed += 1;
+        combo = 0;
+        stability = clamp(stability - 7, 0, 100);
+      }
     }
-    energyStat.value.textContent = String(scoreValue);
-    comboStat.value.textContent = `x${combo}`;
-    feedback.hidden = false;
-    nextButton.textContent = missionIndex < LAB_RUN_SIZE - 1 ? 'Mission berikutnya →' : 'Lihat hasil →';
-    nextButton.hidden = false;
+
+    if (now >= nextSpawnAt) {
+      spawnJob();
+      const span = shiftConfig.spawnMaxMs - shiftConfig.spawnMinMs;
+      nextSpawnAt = now + shiftConfig.spawnMinMs + Math.floor(Math.random() * Math.max(1, span));
+    }
+    promoteQueue();
+    updateHud();
+    renderStations();
+    renderQueue();
+    if (selectedChanged) renderWorkbench();
+
+    if (now >= endAt || stability <= 0) finishShift();
   }
 
-  function nextMission() {
-    if (phase !== 'feedback') return;
-    if (missionIndex < LAB_RUN_SIZE - 1) {
-      missionIndex += 1; phase = 'play'; renderMission();
-    } else {
-      finishRun();
+  function failStationJob(state) {
+    if (!state?.job) return;
+    usedKeys.push(state.job.key);
+    missed += 1;
+    combo = 0;
+    stability = clamp(stability - 10, 0, 100);
+    play.botText.textContent = `🤖 ${state.meta.name} timed out. Resetting the station.`;
+    state.job = null;
+    if (selectedStationId === state.meta.id) renderWorkbench();
+    promoteQueue();
+  }
+
+  function updateHud() {
+    play.timer.textContent = formatTime((endAt - Date.now()) / 1000);
+    play.stability.textContent = `${Math.round(stability)}%`;
+    play.score.textContent = String(Math.min(LAB_MAX_SCORE, Math.floor(scoreValue)));
+    play.combo.textContent = `x${combo}`;
+    shell.style.setProperty('--lab-stability', `${clamp(stability, 0, 100)}%`);
+  }
+
+  function renderStations() {
+    play.stations.replaceChildren();
+    const now = Date.now();
+    for (const state of stationStates.values()) {
+      const station = state.meta;
+      const job = state.job;
+      const card = button('', `lab-station-card ${station.accent}${selectedStationId === station.id ? ' selected' : ''}`, () => selectStation(station.id));
+      const topRow = el('div', 'lab-station-card-top');
+      topRow.append(el('span', 'lab-station-icon', station.icon), el('strong', '', station.name));
+      const status = el('span', 'lab-station-status');
+      let label = 'IDLE';
+      let progress = 0;
+      if (job?.status === 'waiting') {
+        label = 'NEEDS YOU';
+        progress = clamp(((now - job.assignedAt) / pendingShift.config.patienceMs) * 100, 0, 100);
+        card.classList.add(progress > 75 ? 'critical' : 'alert');
+      } else if (job?.status === 'processing') {
+        label = 'PROCESSING';
+        const elapsed = job.processingMs - Math.max(0, job.processingEndsAt - now);
+        progress = clamp((elapsed / job.processingMs) * 100, 0, 100);
+        card.classList.add('processing');
+      } else if (job?.status === 'ready') {
+        label = 'COLLECT';
+        progress = 100;
+        card.classList.add('ready');
+      }
+      status.textContent = label;
+      topRow.append(status);
+      const jobTitle = el('p', 'lab-station-job', job ? job.title : 'Station ready for the next science job.');
+      const bar = el('div', 'lab-station-bar');
+      const fill = el('span');
+      fill.style.width = `${progress}%`;
+      bar.append(fill);
+      card.append(topRow, jobTitle, bar);
+      play.stations.append(card);
     }
   }
 
-  async function finishRun() {
-    if (saving) return;
-    saving = true; phase = 'result';
-    const finalScore = finaliseRunScore(scoreValue, solved);
-    play.hidden = true; result.hidden = false;
-    resultEnergy.textContent = String(finalScore);
-    solvedCard.value.textContent = `${solved}/${LAB_RUN_SIZE}`;
-    comboCard.value.textContent = `x${bestCombo}`;
-    bestCard.value.textContent = String(Math.max(bestScore, finalScore));
-    xpCard.value.textContent = '…';
-    resultTitle.textContent = solved === LAB_RUN_SIZE ? 'Perfect rescue!' : solved >= 3 ? 'Lab rescued!' : 'Lab run complete';
-    resultNote.textContent = 'Menyimpan hasil science mission…'; resultNote.classList.remove('error');
-    replay.disabled = true; done.disabled = true;
+  function renderQueue() {
+    play.queueStrip.replaceChildren();
+    play.queueLabel.textContent = `Incoming ${queue.length}`;
+    if (!queue.length) {
+      play.queueStrip.append(el('span', 'lab-queue-empty', 'Incoming tray clear · keep an eye on the stations'));
+      return;
+    }
+    for (const job of queue) {
+      const station = stationStates.get(job.stationId)?.meta;
+      const chip = el('div', 'lab-queue-chip');
+      chip.append(el('span', '', station?.icon || '🧪'), el('strong', '', job.title), el('small', '', 'waiting'));
+      play.queueStrip.append(chip);
+    }
+  }
 
-    try {
-      const data = await call(`/v1/games/${encodeURIComponent(profile.id)}/finish`, {
-        method: 'POST', body: JSON.stringify({ sessionId, score: finalScore }),
-      });
-      const state = gameStateFromStatus(data);
-      const previousBest = bestScore;
-      bestScore = state.best || Math.max(previousBest, finalScore);
-      totalScore = state.totalScore || (totalScore + finalScore);
-      dailyXp = state.dailyXp; dailyCap = state.dailyXpCap;
-      const xpEarned = Number(data.xpEarned || 0);
-      bestCard.value.textContent = String(bestScore);
-      xpCard.value.textContent = `+${xpEarned}`;
-      const rank = labRankForTotalScore(totalScore);
-      resultRank.textContent = `${rank.icon} ${rank.label} · Total Lab Energy ${totalScore}`;
-      resultNote.textContent = dailyXp >= dailyCap
-        ? 'XP game harian sudah penuh. Main lagi tetap menambah Best Run dan Lab Rank.'
-        : `Hasil tersimpan · Game XP hari ini ${dailyXp}/${dailyCap}`;
-      if (finalScore > previousBest) resultTitle.textContent = 'New Best Run! 🌟';
-      local = {
-        recentKeys: [...runKeys, ...local.recentKeys.filter((key) => !runKeys.includes(key))].slice(0, 18),
-        lastAccuracy: solved / LAB_RUN_SIZE,
+  function selectStation(stationId) {
+    const state = stationStates.get(stationId);
+    if (!state) return;
+    if (state.job?.status === 'ready') {
+      collectJob(state);
+      return;
+    }
+    selectedStationId = stationId;
+    renderStations();
+    renderWorkbench();
+  }
+
+  function renderWorkbench(message = '') {
+    const target = play.workbench;
+    target.replaceChildren();
+    const state = stationStates.get(selectedStationId);
+    if (!state) {
+      const idle = el('div', 'lab-workbench-empty');
+      idle.append(el('div', 'lab-workbench-hero', '🧑‍🔬'), el('h3', '', 'Choose a station'), el('p', '', 'Tap a flashing station, perform the science action, then manage another station while it processes.'));
+      target.append(idle);
+      return;
+    }
+    const station = state.meta;
+    const job = state.job;
+    const head = el('div', 'lab-workbench-head');
+    head.append(el('span', 'lab-workbench-icon', station.icon), el('div', '', undefined));
+    head.lastElementChild.append(el('small', '', station.name.toUpperCase()), el('h3', '', job?.title || 'Station idle'));
+    target.append(head);
+
+    if (!job) {
+      target.append(el('div', 'lab-workbench-empty compact', '✅ Station clear. Check the other stations or incoming tray.'));
+      return;
+    }
+    const alert = el('p', 'lab-workbench-alert', job.alert);
+    target.append(alert);
+
+    if (job.status === 'processing') {
+      const remaining = Math.max(0, job.processingEndsAt - Date.now());
+      const pct = clamp((1 - (remaining / job.processingMs)) * 100, 0, 100);
+      const processing = el('div', 'lab-processing-panel');
+      processing.append(el('div', 'lab-processing-machine', '⚙️'), el('strong', '', 'PROCESSING…'), el('p', '', 'Good. Leave this station running and help somewhere else.'));
+      const track = el('div', 'lab-process-track');
+      const fill = el('span'); fill.style.width = `${pct}%`; track.append(fill);
+      processing.append(track);
+      target.append(processing);
+      return;
+    }
+    if (job.status === 'ready') {
+      const collect = el('div', 'lab-collect-panel');
+      collect.append(el('div', 'lab-collect-icon', '✨'), el('strong', '', 'RESULT READY'), el('p', '', job.success));
+      collect.append(button('COLLECT RESULT', 'lab-rescue-primary', () => collectJob(state)));
+      target.append(collect);
+      return;
+    }
+
+    const actionArea = el('div', 'lab-action-area');
+    target.append(actionArea);
+    renderMechanic(actionArea, state);
+    if (message) target.append(el('div', 'lab-action-hint', message));
+  }
+
+  function renderMechanic(target, state) {
+    const job = state.job;
+    const mechanic = job.mechanic;
+    if (mechanic.kind === 'slider') {
+      const panel = el('div', 'lab-control-panel');
+      const value = el('strong', 'lab-control-value', `${mechanic.start}${mechanic.unit}`);
+      const row = el('div', 'lab-control-label'); row.append(el('span', '', mechanic.label), value);
+      const input = document.createElement('input');
+      input.type = 'range'; input.min = mechanic.min; input.max = mechanic.max; input.step = 1; input.value = mechanic.start;
+      input.className = 'lab-range';
+      input.addEventListener('input', () => { value.textContent = `${input.value}${mechanic.unit}`; });
+      const zone = el('div', 'lab-target-zone', `TARGET ZONE ${mechanic.targetMin}–${mechanic.targetMax}${mechanic.unit}`);
+      const run = button('RUN STATION', 'lab-action-button', () => submitAction(state, { value: Number(input.value) }));
+      panel.append(row, input, zone, run); target.append(panel); return;
+    }
+    if (mechanic.kind === 'controls') {
+      const values = {};
+      const panel = el('div', 'lab-control-panel');
+      for (const field of mechanic.fields) {
+        values[field.id] = field.start;
+        const value = el('strong', 'lab-control-value', `${field.start}${field.unit}`);
+        const row = el('div', 'lab-control-label'); row.append(el('span', '', field.label), value);
+        const input = document.createElement('input');
+        input.type = 'range'; input.min = field.min; input.max = field.max; input.step = 1; input.value = field.start; input.className = 'lab-range';
+        input.addEventListener('input', () => { values[field.id] = Number(input.value); value.textContent = `${input.value}${field.unit}`; });
+        const zone = el('div', 'lab-target-zone', `TARGET ${field.targetMin}–${field.targetMax}${field.unit}`);
+        panel.append(row, input, zone);
+      }
+      panel.append(button('CALIBRATE', 'lab-action-button', () => submitAction(state, { values })));
+      target.append(panel); return;
+    }
+    if (mechanic.kind === 'tools') {
+      const rack = el('div', 'lab-tool-rack');
+      const slot = el('div', 'lab-tool-slot', job.selectedToolId ? 'Tool loaded' : 'Tap a tool to load the station');
+      for (const tool of mechanic.tools) {
+        const toolButton = button('', `lab-tool${job.selectedToolId === tool.id ? ' selected' : ''}`, () => {
+          job.selectedToolId = tool.id;
+          renderWorkbench();
+        });
+        toolButton.append(el('span', 'lab-tool-icon', tool.icon), el('strong', '', tool.label));
+        rack.append(toolButton);
+      }
+      const use = button('USE LOADED TOOL', 'lab-action-button', () => submitAction(state, { toolId: job.selectedToolId }));
+      use.disabled = !job.selectedToolId;
+      target.append(slot, rack, use); return;
+    }
+    if (mechanic.kind === 'sort') {
+      const selected = { id: '' };
+      const items = el('div', 'lab-sort-items');
+      const bins = el('div', 'lab-sort-bins');
+      const draw = () => {
+        items.replaceChildren(); bins.replaceChildren();
+        for (const item of mechanic.items) {
+          if (job.placements[item.id]) continue;
+          const itemButton = button('', `lab-sort-token${selected.id === item.id ? ' selected' : ''}`, () => { selected.id = item.id; draw(); });
+          itemButton.append(el('span', '', item.icon), el('strong', '', item.label)); items.append(itemButton);
+        }
+        for (const bin of mechanic.bins) {
+          const binButton = button('', 'lab-sort-bin', () => {
+            if (!selected.id) return;
+            const item = mechanic.items.find((entry) => entry.id === selected.id);
+            if (!item) return;
+            if (item.bin === bin.id) {
+              job.placements[item.id] = bin.id;
+              selected.id = '';
+              if (mechanic.items.every((entry) => job.placements[entry.id] === entry.bin)) submitAction(state, { placements: job.placements });
+              else draw();
+            } else {
+              selected.id = '';
+              stability = clamp(stability - 1, 0, 100);
+              play.botText.textContent = `🤖 ${job.hint}`;
+              draw();
+            }
+          });
+          const placed = mechanic.items.filter((item) => job.placements[item.id] === bin.id);
+          binButton.append(el('span', 'lab-bin-icon', bin.icon), el('strong', '', bin.label), el('small', '', placed.map((item) => item.icon).join(' ') || 'drop here'));
+          bins.append(binButton);
+        }
       };
-      saveLocal(profile.id, local);
-      statusCache.delete(profile.id);
-      const tile = document.querySelector('.lab-rescue-tile');
-      if (tile) { tile.dataset.labSync = ''; syncTile(profile, tile); }
-      window.dispatchEvent(new Event('ubaybian:progress-changed'));
-    } catch (error) {
-      resultNote.textContent = `Hasil belum tersimpan: ${error.message}`; resultNote.classList.add('error');
-    } finally {
-      saving = false; replay.disabled = false; done.disabled = false;
+      draw(); target.append(items, bins); return;
     }
+    if (mechanic.kind === 'connect') {
+      const board = el('div', 'lab-connect-board');
+      const path = el('div', 'lab-connect-path', 'Start the circuit…');
+      const draw = () => {
+        board.replaceChildren();
+        for (const node of mechanic.nodes) {
+          const index = job.sequence.indexOf(node.id);
+          const nodeButton = button('', `lab-connect-node${index >= 0 ? ' connected' : ''}`, () => {
+            const expected = mechanic.sequence[job.sequence.length];
+            if (node.id !== expected) {
+              job.sequence = [];
+              stability = clamp(stability - 1, 0, 100);
+              play.botText.textContent = `🤖 ${job.hint}`;
+              path.textContent = 'Path reset · try one continuous route';
+              draw();
+              return;
+            }
+            job.sequence.push(node.id);
+            path.textContent = job.sequence.map((id) => mechanic.nodes.find((entry) => entry.id === id)?.icon || '•').join('  →  ');
+            if (job.sequence.length === mechanic.sequence.length) submitAction(state, { sequence: job.sequence });
+            else draw();
+          });
+          nodeButton.append(el('span', '', node.icon), el('strong', '', node.label));
+          board.append(nodeButton);
+        }
+      };
+      draw(); target.append(path, board); return;
+    }
+  }
+
+  function submitAction(state, payload) {
+    const job = state?.job;
+    if (!job || job.status !== 'waiting') return;
+    if (!evaluateLabAction(job, payload)) {
+      job.attempts += 1;
+      combo = 0;
+      stability = clamp(stability - 2, 0, 100);
+      play.botText.textContent = `🤖 ${job.hint}`;
+      renderWorkbench(job.hint);
+      updateHud();
+      return;
+    }
+    job.status = 'processing';
+    job.processingEndsAt = Date.now() + job.processingMs;
+    usedKeys.push(job.key);
+    play.botText.textContent = `🤖 Nice work. ${state.meta.name} is processing—check another station while it runs.`;
+    renderStations();
+    renderWorkbench();
+  }
+
+  function collectJob(state) {
+    const job = state?.job;
+    if (!job || job.status !== 'ready') return;
+    const gain = labJobScore({ waitedMs: Date.now() - job.assignedAt, patienceMs: pendingShift.config.patienceMs, comboBefore: combo });
+    scoreValue = Math.min(LAB_MAX_SCORE, scoreValue + gain);
+    combo += 1;
+    bestCombo = Math.max(bestCombo, combo);
+    completed += 1;
+    stability = clamp(stability + 4, 0, 100);
+    play.botText.textContent = `🤖 +${gain} score · ${job.success}`;
+    state.job = null;
+    if (selectedStationId === state.meta.id) renderWorkbench();
+    promoteQueue();
+    renderStations();
+    renderQueue();
+    updateHud();
+  }
+
+  async function finishShift() {
+    if (phase !== 'play' || finishing) return;
+    finishing = true;
+    phase = 'result';
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = 0;
+    shell.classList.remove('is-shift-live');
+    play.root.hidden = true;
+    result.root.hidden = false;
+    const finalScore = finaliseShiftScore(scoreValue, stability);
+    result.score.textContent = String(finalScore);
+    result.jobs.textContent = String(completed);
+    result.misses.textContent = String(missed);
+    result.combo.textContent = `x${bestCombo}`;
+    result.stability.textContent = `${Math.round(stability)}%`;
+    result.xp.textContent = '…';
+    result.title.textContent = stability <= 0 ? 'Lab overload contained' : completed >= 7 ? 'Excellent shift!' : completed >= 4 ? 'Lab secured!' : 'Shift complete';
+    result.note.textContent = 'Saving shift result…';
+    result.replay.disabled = true;
+    result.done.disabled = true;
+
+    const recentKeys = [...usedKeys, ...local.recentKeys.filter((key) => !usedKeys.includes(key))].slice(0, 20);
+    let xpEarned = 0;
+    let savedRemotely = false;
+    try {
+      const session = await remoteStartPromise;
+      if (session?.sessionId) {
+        const data = await call(`/v1/games/${encodeURIComponent(profile.id)}/finish`, {
+          method: 'POST',
+          body: JSON.stringify({ sessionId: session.sessionId, score: finalScore }),
+        }, 5000);
+        const state = gameStateFromStatus(data, local);
+        bestScore = Math.max(state.best, finalScore);
+        totalScore = Math.max(state.totalScore, totalScore + finalScore);
+        dailyXp = state.dailyXp;
+        dailyCap = state.dailyXpCap;
+        xpEarned = Number(data.xpEarned || 0);
+        savedRemotely = true;
+      }
+    } catch {}
+
+    if (!savedRemotely) {
+      bestScore = Math.max(bestScore, finalScore);
+      totalScore += finalScore;
+    }
+    local = {
+      recentKeys,
+      best: Math.max(local.best, bestScore),
+      totalScore: Math.max(local.totalScore, totalScore),
+      plays: local.plays + 1,
+    };
+    saveLocal(profile.id, local);
+    result.xp.textContent = `+${xpEarned}`;
+    result.rank.textContent = `${rankLabel(totalScore)} · Total Lab Energy ${totalScore}`;
+    result.note.textContent = savedRemotely
+      ? `Shift tersimpan · Game XP hari ini ${dailyXp}/${dailyCap}`
+      : 'Shift tersimpan di perangkat. XP belum ditambahkan karena backend Lab Rescue belum merespons.';
+    statusCache.delete(profile.id);
+    const tile = document.querySelector('.lab-rescue-tile');
+    if (tile) { tile.dataset.labSync = ''; syncTile(profile, tile); }
+    if (savedRemotely) window.dispatchEvent(new Event('ubaybian:progress-changed'));
+    finishing = false;
+    result.replay.disabled = false;
+    result.done.disabled = false;
+  }
+
+  function prepareReplay() {
+    if (finishing) return;
+    pendingShift = createLabShift(profile.id, { recentKeys: local.recentKeys, bestScore });
+    phase = 'ready';
+    result.root.hidden = true;
+    ready.root.hidden = false;
+    renderReady();
+    ready.note.textContent = 'New incident loaded. Ready for another shift?';
   }
 
   function close(force = false) {
-    if (!force && (phase === 'play' || phase === 'feedback' || saving)) {
-      if (!confirm('Lab Rescue masih berjalan atau sedang menyimpan hasil. Yakin mau keluar?')) return;
-    }
+    if (!force && phase === 'play' && !confirm('Lab shift masih berjalan. Keluar sekarang?')) return;
+    if (tickTimer) clearInterval(tickTimer);
     phase = 'closed';
     document.removeEventListener('keydown', onKey);
     overlay.remove();
@@ -538,10 +907,7 @@ async function openLabRescue(profile) {
   }
 }
 
-function scan() {
-  ensureLabTile();
-}
-
+function scan() { ensureLabTile(); }
 const observer = new MutationObserver(() => requestAnimationFrame(scan));
 observer.observe(document.documentElement, { childList: true, subtree: true });
 window.addEventListener('hashchange', () => setTimeout(scan, 60));
