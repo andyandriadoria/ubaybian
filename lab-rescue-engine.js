@@ -1,130 +1,227 @@
-export const LAB_RUN_SIZE = 5;
 export const LAB_MAX_SCORE = 900;
 
-const TYPE_META = {
-  diagnose:['DIAGNOSE','🔍'], fix:['FIX THE LAB','🛠️'], predict:['PREDICT','🔮'],
-  sequence:['SEQUENCE','🧩'], evidence:['EVIDENCE CHECK','📊'], variable:['VARIABLE LAB','🎛️'],
-};
+const PROFILE_CONFIG = Object.freeze({
+  bian: Object.freeze({ shiftSeconds: 75, spawnMinMs: 7000, spawnMaxMs: 10500, patienceMs: 26000, difficultyTier: 1 }),
+  ubay: Object.freeze({ shiftSeconds: 90, spawnMinMs: 6200, spawnMaxMs: 9200, patienceMs: 23500, difficultyTier: 2 }),
+});
 
-const BIAN = [
-  {id:'habitat',type:'fix',d:1,topic:'Habitats',variants:[
-    ['penguin','🐧','cold ocean','polar habitat',['desert','rainforest']],
-    ['camel','🐪','hot and dry land','desert',['pond','polar habitat']],
-    ['frog','🐸','wet place near fresh water','pond',['desert','icy mountain']],
-    ['monkey','🐒','warm place with many tall trees','rainforest',['polar habitat','open ocean']],
-  ]},
-  {id:'plant',type:'diagnose',d:1,topic:'Plants',variants:[
-    ['dark','The plant has water, but it has been kept in a dark cupboard.','Move it into the light',['Add ice','Cover it with a box'],'Plants need enough light to stay healthy and grow.'],
-    ['dry','The plant is in sunlight, but the soil is very dry.','Give it water',['Put it in a freezer','Remove all the soil'],'Plants need enough water to stay healthy and grow.'],
-  ]},
-  {id:'material',type:'predict',d:1,topic:'Materials',variants:[
-    ['sponge','🧽','A sponge gets drops of water.','The sponge absorbs the water',['The water turns into metal','The sponge becomes a magnet'],'A sponge is absorbent, so it can soak up water.'],
-    ['plastic','🧴','Water is poured on a plastic sheet.','Most water stays on the surface',['The plastic drinks the water','The plastic becomes paper'],'Plastic is usually waterproof, so water does not soak through easily.'],
-  ]},
-  {id:'food',type:'fix',d:1,topic:'Healthy choices',variants:[
-    ['meal1','Rice, grilled fish, vegetables, and water',['Only sweets and soda','Only potato chips']],
-    ['meal2','Bread, egg, fruit, and water',['Three candies and cola','Only ice cream']],
-  ]},
-  {id:'sense',type:'diagnose',d:1,topic:'Human body',variants:[
-    ['sound','🔔','A bell rings behind a screen.','hearing','Use your ears',['Use your tongue','Use your skin'],'We use our ears for hearing.'],
-    ['smell','🌸','A flower is hidden inside a box with small holes.','smell','Use your nose',['Use your knees','Use your elbows'],'We use our nose for smell.'],
-  ]},
-  {id:'shadow',type:'predict',d:2,topic:'Light',variants:[
-    ['close','A toy is moved closer to a lamp.','Its shadow can become larger',['The shadow disappears forever','The toy becomes transparent']],
-    ['block','A solid book is placed between a torch and the wall.','A shadow forms on the wall',['The wall becomes a mirror','The book starts glowing']],
-  ]},
-  {id:'force',type:'evidence',d:2,topic:'Forces',variants:[
-    ['push',[['Trial 1','small push','short distance'],['Trial 2','bigger push','longer distance']],'A bigger push can make the toy travel farther',['The toy moved because of its colour','A push always makes things stop']],
-    ['surface',[['Smooth floor','car travels far'],['Rough mat','car stops sooner']],'The rough mat slows the car more',['The car changes material','The smooth floor makes the car heavier']],
-  ]},
-  {id:'sequence',type:'sequence',d:2,topic:'Working scientifically',variants:[
-    ['observe','Observe → Predict → Test → Record',['Record → Sleep → Guess → Test','Test → Forget → Guess → Stop']],
-    ['material','Choose material → Add water → Observe → Record',['Record → Add water → Choose material → Ignore','Add water → Throw away → Guess → Stop']],
-  ]},
-];
+const INCIDENTS = Object.freeze({
+  bian: Object.freeze([
+    { id: 'storm', emoji: '⛈️', title: 'Stormy Science Shift', brief: 'A storm shook the science lab. Keep every station running until backup power is stable.', callout: 'Scout says: “Stations are lighting up! Help me keep the lab calm.”' },
+    { id: 'discovery', emoji: '🚚', title: 'Discovery Day Rush', brief: 'New samples are arriving all at once. Test, sort, and care for them before the queue gets too long.', callout: 'Scout says: “Incoming samples! One station at a time—we can do this.”' },
+    { id: 'habitat', emoji: '🌍', title: 'Habitat Rescue Rush', brief: 'The habitat pods lost their settings. Restore the animals, materials, sensors, and greenhouse systems.', callout: 'Scout says: “The animals need the right homes. Let’s restore the lab!”' },
+  ]),
+  ubay: Object.freeze([
+    { id: 'cascade', emoji: '⚠️', title: 'Systems Cascade', brief: 'A power surge knocked four research stations out of calibration. Stabilise the lab before the shift ends.', callout: 'Lab AI: “Multiple systems are drifting. Prioritise, process, collect, repeat.”' },
+    { id: 'research-rush', emoji: '🧬', title: 'Research Rush', brief: 'Several investigations are running in parallel. Keep methods valid while new samples enter the queue.', callout: 'Lab AI: “Four benches are active. Watch the queue and protect Lab Stability.”' },
+    { id: 'backup', emoji: '🔋', title: 'Backup Power Protocol', brief: 'The main grid is offline. Complete science jobs efficiently while the emergency system carries the lab.', callout: 'Lab AI: “Backup power is limited. Accurate actions will keep the core stable.”' },
+  ]),
+});
 
-const UBAY = [
-  {id:'dissolve-var',type:'variable',d:1,topic:'Scientific enquiry',variants:[
-    ['temperature','water temperature','time taken for sugar to dissolve','volume of water',['colour of the beaker','student name']],
-    ['stirring','stirring speed','time taken for a tablet to dissolve','volume of water',['table colour','day of the week']],
-  ]},
-  {id:'plant-var',type:'variable',d:2,topic:'Scientific enquiry',variants:[
-    ['light','light intensity','plant growth','plant species',['final plant height','growth rate']],
-    ['water','amount of water','plant growth','type of soil',['height after two weeks','number of leaves measured']],
-  ]},
-  {id:'particles',type:'predict',d:1,topic:'Particles and states',variants:[
-    ['melt','A solid is heated until it melts.','Its particles can move past one another more freely',['Its particles disappear','Its particles stop moving completely']],
-    ['condense','A gas is cooled until it condenses.','Its particles become closer together',['Its particles grow much larger','All particles lose their mass']],
-  ]},
-  {id:'friction',type:'evidence',d:2,topic:'Forces',variants:[
-    ['surface',[['Smooth tile','2.8 m'],['Wood','2.0 m'],['Rough mat','0.9 m']],'The rougher surface produced more friction',['The rough mat removed gravity','The car gained mass on the mat']],
-    ['wet',[['Dry floor','short stopping distance'],['Wet floor','longer stopping distance']],'Reduced friction on the wet floor increased stopping distance',['Water removed gravity','Friction is always larger on wet surfaces']],
-  ]},
-  {id:'ecosystem',type:'diagnose',d:2,topic:'Ecosystems',variants:[
-    ['frog','grass → grasshopper → frog → snake','frog population falls sharply','Grasshopper numbers may increase',['Grass becomes a snake','All ecosystem energy disappears immediately']],
-    ['fish','algae → small fish → large fish','small fish population decreases','Large fish may have less food available',['Algae becomes a large fish','Large fish no longer need energy']],
-  ]},
-  {id:'cell',type:'fix',d:1,topic:'Cells',variants:[
-    ['nucleus','The control centre of the cell model is missing.','Add a nucleus',['Add a wheel','Add a metal battery'],'The nucleus contains genetic material and controls many cell activities.'],
-    ['chloroplast','A plant-cell model cannot show where photosynthesis happens.','Add chloroplasts',['Add a speaker','Remove the cell membrane'],'Chloroplasts contain chlorophyll and are a main site of photosynthesis in plant cells.'],
-  ]},
-  {id:'energy',type:'sequence',d:2,topic:'Energy',variants:[
-    ['torch','Chemical store → electrical transfer → light + thermal energy',['Light → battery → chemical store → nothing','Thermal energy → mass → gravity → battery']],
-    ['kettle','Electrical transfer → heating element → thermal energy of water',['Water → electrical energy → battery → sound','Chemical store → gravity → light → water']],
-  ]},
-  {id:'mixture',type:'fix',d:2,topic:'Mixtures',variants:[
-    ['sand','sand and water','Use filtration',['Use a magnet only','Use a thermometer only'],'Filtration separates an insoluble solid from a liquid.'],
-    ['salt','salt dissolved in water','Use evaporation or crystallisation',['Use a large-hole sieve','Use a magnet'],'Evaporation or crystallisation can recover a soluble solid from a solution.'],
-  ]},
-  {id:'data',type:'evidence',d:3,topic:'Data interpretation',variants:[
-    ['temp',[['20°C','95 s'],['40°C','61 s'],['60°C','34 s']],'Higher temperature was associated with shorter dissolving time',['Temperature had no relationship with dissolving time','All solids dissolve instantly at 60°C']],
-    ['stir',[['No stirring','120 s'],['Slow stirring','82 s'],['Fast stirring','47 s']],'Faster stirring was associated with shorter dissolving time',['Stirring always changes solute mass','Fast stirring makes dissolving impossible']],
-  ]},
-  {id:'method',type:'sequence',d:1,topic:'Working scientifically',variants:[
-    ['investigation','Question → Hypothesis → Method → Results → Conclusion',['Conclusion → Results → Question → Ignore data','Method → Guess → Stop → Conclusion']],
-    ['repeat','Measure → Repeat → Calculate a mean → Compare results',['Measure once → Delete result → Guess','Compare first → Change every variable → Stop']],
-  ]},
-  {id:'circuit',type:'diagnose',d:2,topic:'Electricity',variants:[
-    ['open','The lamp does not light because one wire is disconnected.','Close the gap in the circuit',['Remove the cell','Replace the wire with paper']],
-    ['cell','The circuit is complete but the cell has been removed.','Reconnect an energy source',['Add an open switch','Cut another wire']],
-  ]},
-];
+const STATIONS = Object.freeze({
+  bian: Object.freeze([
+    { id: 'greenhouse', icon: '🌱', name: 'Greenhouse', short: 'Plants', accent: 'green' },
+    { id: 'materials', icon: '🧪', name: 'Material Bay', short: 'Materials', accent: 'cyan' },
+    { id: 'habitat', icon: '🐾', name: 'Habitat Pod', short: 'Habitats', accent: 'violet' },
+    { id: 'sensors', icon: '🛰️', name: 'Sensor Desk', short: 'Senses', accent: 'orange' },
+  ]),
+  ubay: Object.freeze([
+    { id: 'bio', icon: '🔬', name: 'Bio Analyzer', short: 'Biology', accent: 'green' },
+    { id: 'separation', icon: '⚗️', name: 'Separation Bench', short: 'Mixtures', accent: 'cyan' },
+    { id: 'power', icon: '⚡', name: 'Power Bench', short: 'Circuits', accent: 'orange' },
+    { id: 'matter', icon: '⚛️', name: 'Matter Pod', short: 'Particles', accent: 'violet' },
+  ]),
+});
 
-function shuffle(items,rng=Math.random){const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function choicePack(correct,wrong,rng){const rows=shuffle([correct,...wrong],rng).map((text,i)=>({id:String.fromCharCode(65+i),text}));return {choices:rows,answer:rows.find(x=>x.text===correct).id};}
-function base(seed,v,key,title,scenario,question,correct,wrong,explanation,visual,rng){const [label,icon]=TYPE_META[seed.type];const c=choicePack(correct,wrong,rng);return {key:`${seed.id}:${key}`,type:seed.type,typeLabel:label,typeIcon:icon,topic:seed.topic,difficulty:seed.d,title,scenario,question,...c,explanation,visual};}
+const BIAN_JOBS = Object.freeze([
+  sliderJob('plant-light','greenhouse','Wake the sleepy plant','The growth lamp dropped too low. Tune the lamp until the plant is comfortable.','Lamp power',0,100,20,65,85,'%',3200,'Plants need enough light to grow well.','Try a brighter setting, but not the maximum.'),
+  sliderJob('plant-water','greenhouse','Help the dry plant','The soil sensor says the plant is too dry. Adjust the water flow.','Water flow',0,100,15,55,75,'%',3000,'Plants need enough water, but too much can also be harmful.','Aim for a healthy middle range.'),
+  sliderJob('plant-temp','greenhouse','Cool the greenhouse','The greenhouse became too warm. Set a comfortable temperature.','Temperature',10,40,36,20,28,'°C',3400,'A moderate temperature helps many classroom plants stay healthy.','Move the control away from the hot end.'),
+  toolJob('waterproof','materials','Prepare a rain cover','The lab bot needs a material that keeps water out. Fit the best sample into the tester','plastic','Water stays on plastic instead of soaking through easily.','Choose the sample that water does not soak through.',[
+    ['paper','📄','Paper'],['plastic','🧴','Plastic'],['cotton','🧵','Cotton cloth']
+  ],3000),
+  toolJob('absorbent','materials','Clean the spill','A small spill reached the bench. Load an absorbent material into the cleanup slot.','sponge','A sponge absorbs water into its tiny spaces.','Look for something made to soak up liquid.',[
+    ['metal','🥄','Metal spoon'],['sponge','🧽','Sponge'],['plastic','🧱','Plastic block']
+  ],2600),
+  toolJob('transparent','materials','Fix the light window','The light box needs a material that lets light pass through clearly.','glass','Clear glass is transparent, so light passes through it.','Choose the material you can see through clearly.',[
+    ['wood','🪵','Wood'],['glass','🪟','Clear glass'],['card','📦','Cardboard']
+  ],3200),
+  sortJob('animal-homes','habitat','Restore the animal pods','Place each animal into the habitat pod that fits it.',[
+    ['penguin','🐧','Penguin','polar'],['camel','🐪','Camel','desert'],['frog','🐸','Frog','pond']
+  ],[
+    ['polar','❄️','Polar'],['desert','🏜️','Desert'],['pond','💧','Pond']
+  ],4000,'Animals have features and needs that suit particular habitats.','Match each animal to the place where its needs can be met.'),
+  sortJob('living-places','habitat','Sort the living places','Move each animal card into its usual living place.',[
+    ['fish','🐟','Fish','water'],['bird','🐦','Bird','air'],['cat','🐈','Cat','land']
+  ],[
+    ['water','🌊','Water'],['air','☁️','Air / sky'],['land','🌿','Land']
+  ],3600,'Different animals are adapted to different places.','Think about how each animal moves and breathes.'),
+  toolJob('hearing','sensors','Trace the ringing signal','A hidden bell is ringing. Install the sensor module that detects the signal.','ear','Ears detect sound vibrations and help us hear.','Which body part receives sound?',[
+    ['skin','✋','Touch sensor'],['ear','👂','Hearing sensor'],['tongue','👅','Taste sensor']
+  ],2500),
+  toolJob('smell','sensors','Trace the flower signal','A flower is inside a vented box. Install the sensor used for smell.','nose','The nose detects smells in the air.','Think about the sense used for scents.',[
+    ['nose','👃','Smell sensor'],['eye','👁️','Sight sensor'],['ear','👂','Hearing sensor']
+  ],2500),
+  toolJob('touch','sensors','Check the cold sample','The bot must detect whether an ice pack feels cold. Install the correct body sensor.','skin','Skin contains receptors that help us sense touch and temperature.','Which body part feels the surface directly?',[
+    ['skin','✋','Skin sensor'],['nose','👃','Smell sensor'],['ear','👂','Hearing sensor']
+  ],2500),
+  sortJob('healthy-tray','materials','Pack the crew tray','Sort the items into “everyday fuel” and “treat”.',[
+    ['water','💧','Water','fuel'],['fruit','🍎','Fruit','fuel'],['candy','🍬','Candy','treat']
+  ],[
+    ['fuel','🥗','Everyday fuel'],['treat','⭐','Treat']
+  ],3000,'A balanced everyday meal includes nutritious foods and water; sweets are occasional treats.','Sort by what helps the crew every day.'),
+]);
 
-function makeBian(seed,v,rng){
-  if(seed.id==='habitat')return base(seed,v,v[0],'Build the right habitat',`${v[1]} The lab is preparing a home for a ${v[0]}. It needs a ${v[2]}.`,'Which habitat should the lab build?',v[3],v[4],`A ${v[0]} is suited to a ${v[3]}.`,{kind:'habitat',emoji:v[1],labels:['HOME','FOOD','WATER']},rng);
-  if(seed.id==='plant')return base(seed,v,v[0],'Save the plant',`🌱 ${v[1]}`,'What should the scientist do first?',v[2],v[3],v[4],{kind:'meters',items:v[0]==='dark'?[['Light',15],['Water',75]]:[['Light',80],['Water',15]]},rng);
-  if(seed.id==='material')return base(seed,v,v[0],'What happens next?',`${v[1]} ${v[2]}`,'What is the best prediction?',v[3],v[4],v[5],{kind:'specimen',emoji:v[1],badge:'MATERIAL TEST'},rng);
-  if(seed.id==='food')return base(seed,v,v[0],'Power the lunch station','🥗 The crew needs a balanced meal before the next experiment.','Which tray is the best choice?',v[1],v[2],'A balanced meal includes different food groups and water.',{kind:'stations',items:['ENERGY','GROWTH','HEALTH']},rng);
-  if(seed.id==='sense')return base(seed,v,v[0],'Choose the sense tool',`${v[1]} ${v[2]}`,`Which body part helps you use your sense of ${v[3]}?`,v[4],v[5],v[6],{kind:'scanner',emoji:v[1],badge:'SENSE SCAN'},rng);
-  if(seed.id==='shadow')return base(seed,v,v[0],'Predict the shadow',`🔦 ${v[1]}`,'What is most likely to happen?',v[2],v[3],'A shadow forms when an opaque object blocks light. Distance can change shadow size.',{kind:'beam',items:['TORCH','OBJECT','WALL']},rng);
-  if(seed.id==='force')return base(seed,v,v[0],'Read the evidence','🚗 A toy-car test produced these observations.','Which conclusion matches the evidence?',v[2],v[3],'Use the observations to choose the conclusion that is actually supported.',{kind:'table',rows:v[1]},rng);
-  return base(seed,v,v[0],'Repair the experiment order','🧪 The lab computer mixed up the steps.','Which sequence makes the most sense?',v[1],v[2],'Scientists use a clear sequence so observations and results can be recorded carefully.',{kind:'sequence',steps:['1','2','3','4']},rng);
+const UBAY_JOBS = Object.freeze([
+  sortJob('cell-parts','bio','Rebuild the cell model','Route each component to the function console it belongs to.',[
+    ['nucleus','🟣','Nucleus','control'],['membrane','⭕','Cell membrane','movement'],['chloroplast','🟢','Chloroplast','photo']
+  ],[
+    ['control','🎛️','Control / genetic material'],['movement','🚪','Controls movement in & out'],['photo','☀️','Photosynthesis']
+  ],4500,'Cell structures have specialised roles that help the cell function.','Use the function of each organelle, not its colour.'),
+  sortJob('food-web','bio','Stabilise the food web','Route each organism to its trophic role.',[
+    ['grass','🌱','Grass','producer'],['hopper','🦗','Grasshopper','primary'],['frog','🐸','Frog','secondary']
+  ],[
+    ['producer','☀️','Producer'],['primary','1️⃣','Primary consumer'],['secondary','2️⃣','Secondary consumer']
+  ],4300,'Energy enters the food chain through producers, then passes to consumers.','Start with the organism that makes its own food.'),
+  sortJob('cell-types','bio','Sort the specimen slides','Send each feature to the cell type where it belongs.',[
+    ['wall','🧱','Cell wall','plant'],['chloroplast2','🟢','Chloroplast','plant'],['no-wall','🫧','No cell wall','animal']
+  ],[
+    ['plant','🌿','Plant cell'],['animal','🐾','Animal cell']
+  ],4000,'Plant cells have a cell wall and chloroplasts; animal cells do not.','Look for plant-only structures.'),
+  toolJob('sand-water','separation','Separate sand from water','Fit the apparatus that traps an insoluble solid while liquid passes through.','filter','Filtration separates an insoluble solid from a liquid.','Think about particle size and a porous barrier.',[
+    ['filter','🧻','Filter funnel'],['magnet','🧲','Magnet'],['evaporator','🔥','Evaporating dish']
+  ],4200),
+  toolJob('iron-sand','separation','Recover iron filings','Fit the tool that removes the magnetic component from the mixture.','magnet','A magnet attracts iron and can separate it from non-magnetic sand.','Use a property that only one component has.',[
+    ['sieve','🕸️','Sieve'],['magnet','🧲','Magnet'],['filter','🧻','Filter funnel']
+  ],3600),
+  toolJob('salt-water','separation','Recover dissolved salt','Fit the apparatus that removes solvent so crystals can form.','evaporator','Evaporation removes water and can leave the dissolved salt behind.','The solute is dissolved, so filtration will not trap it.',[
+    ['magnet','🧲','Magnet'],['evaporator','🔥','Evaporating dish'],['sieve','🕸️','Large-hole sieve']
+  ],4600),
+  connectJob('simple-circuit','power','Reconnect the lamp circuit','Tap the components in a complete loop, starting from the cell.',[
+    ['cell','🔋','Cell'],['switch','🔘','Closed switch'],['lamp','💡','Lamp'],['return','↩️','Return wire']
+  ],['cell','switch','lamp','return'],3600,'A current needs a complete conducting loop and an energy source.','Follow one continuous path from the cell and back.'),
+  connectJob('motor-circuit','power','Route power to the motor','Build one continuous path through the switch and motor.',[
+    ['cell','🔋','Cell'],['wire','〰️','Wire'],['motor','⚙️','Motor'],['return','↩️','Return wire']
+  ],['cell','wire','motor','return'],3900,'A motor works when it is part of a complete circuit.','Keep the path continuous—no gaps.'),
+  connectJob('series-circuit','power','Restore the series test','Route current through both lamps before returning to the source.',[
+    ['cell','🔋','Cell'],['lamp1','💡','Lamp A'],['lamp2','💡','Lamp B'],['return','↩️','Return wire']
+  ],['cell','lamp1','lamp2','return'],4300,'In a simple series circuit, components share one continuous loop.','Both lamps need to sit on the same unbroken path.'),
+  sliderJob('melt-model','matter','Melt the model sample','Increase the thermal setting until the model reaches the liquid zone.','Thermal setting',0,100,15,58,72,'%',4000,'Heating can give particles more energy so they move more freely as a solid melts.','Move the control into the marked liquid zone.'),
+  sliderJob('condense-model','matter','Condense the vapour model','Cool the particle chamber until the model reaches the condensation zone.','Cooling level',0,100,18,62,78,'%',4100,'Cooling removes energy; gas particles slow and come closer together during condensation.','Increase cooling until the chamber enters the target zone.'),
+  controlsJob('fair-test','matter','Calibrate a fair dissolving test','Set the experiment so temperature changes while water volume stays controlled.',[
+    { id:'temp', label:'Temperature change', min:0, max:100, start:20, targetMin:65, targetMax:85, unit:'%' },
+    { id:'water', label:'Water volume control', min:0, max:100, start:80, targetMin:45, targetMax:55, unit:'%' }
+  ],4800,'A fair test changes the independent variable while keeping relevant control variables consistent.','Change temperature strongly, but keep the water-volume control near the centre.'),
+]);
+
+function sliderJob(id,stationId,title,alert,label,min,max,start,targetMin,targetMax,unit,processingMs,success,hint){
+  return Object.freeze({ key:id,stationId,title,alert,processingMs,mechanic:{kind:'slider',label,min,max,start,targetMin,targetMax,unit},success,hint });
+}
+function controlsJob(id,stationId,title,alert,fields,processingMs,success,hint){
+  return Object.freeze({ key:id,stationId,title,alert,processingMs,mechanic:{kind:'controls',fields},success,hint });
+}
+function toolJob(id,stationId,title,alert,correctToolId,success,hint,tools,processingMs){
+  return Object.freeze({ key:id,stationId,title,alert,processingMs,mechanic:{kind:'tools',correctToolId,tools:tools.map(([toolId,icon,label])=>({id:toolId,icon,label}))},success,hint });
+}
+function sortJob(id,stationId,title,alert,items,bins,processingMs,success,hint){
+  return Object.freeze({ key:id,stationId,title,alert,processingMs,mechanic:{kind:'sort',items:items.map(([itemId,icon,label,bin])=>({id:itemId,icon,label,bin})),bins:bins.map(([binId,icon,label])=>({id:binId,icon,label}))},success,hint });
+}
+function connectJob(id,stationId,title,alert,nodes,sequence,processingMs,success,hint){
+  return Object.freeze({ key:id,stationId,title,alert,processingMs,mechanic:{kind:'connect',nodes:nodes.map(([nodeId,icon,label])=>({id:nodeId,icon,label})),sequence:[...sequence]},success,hint });
 }
 
-function makeUbay(seed,v,rng){
-  if(seed.type==='variable')return base(seed,v,v[0],'Stabilise the fair test',`🎛️ A student investigates how ${v[1]} affects ${v[2]}.`,'Which variable should be kept the same?',v[3],v[4],`Keeping ${v[3]} constant helps isolate the effect of ${v[1]}.`,{kind:'variables',items:[['CHANGE',v[1]],['MEASURE',v[2]],['CONTROL','?']]},rng);
-  if(seed.id==='particles')return base(seed,v,v[0],'Predict the particle change',`⚛️ ${v[1]}`,'Which particle-model statement is best?',v[2],v[3],'Changes of state alter particle spacing and movement; particles do not disappear.',{kind:'particles',state:v[0]},rng);
-  if(seed.id==='friction'||seed.id==='data')return base(seed,v,v[0],seed.id==='data'?'Interpret the lab data':'Decode the force data','📊 The lab recorded these results.','Which conclusion is best supported?',v[2],v[3],'A scientific conclusion should match the measured pattern without claiming more than the evidence shows.',{kind:'table',rows:v[1]},rng);
-  if(seed.id==='ecosystem')return base(seed,v,v[0],'Repair the food-web forecast',`🌿 Food chain: ${v[1]}. The ${v[2]}.`,'Which effect is most likely?',v[3],v[4],'Changing one population can affect connected feeding relationships.',{kind:'chain',text:v[1]},rng);
-  if(seed.id==='cell')return base(seed,v,v[0],'Repair the cell model',`🔬 ${v[1]}`,'Which repair makes the model scientifically useful?',v[2],v[3],v[4],{kind:'specimen',emoji:'🔬',badge:'CELL MODEL'},rng);
-  if(seed.id==='energy'||seed.id==='method')return base(seed,v,v[0],seed.id==='energy'?'Reconnect the energy pathway':'Restore the investigation protocol','🧪 The sequence has been scrambled.','Which sequence is scientifically sensible?',v[1],v[2],seed.id==='energy'?'Energy is transferred between stores and pathways; it is not created from nothing.':'A clear method makes results easier to evaluate and repeat.',{kind:'sequence',steps:['1','2','3','4']},rng);
-  if(seed.id==='mixture')return base(seed,v,v[0],'Choose the separation tool',`⚗️ The lab needs to separate ${v[1]}.`,'Which method is most suitable?',v[2],v[3],v[4],{kind:'stations',items:['FILTER','HEAT','MAGNET']},rng);
-  return base(seed,v,v[0],'Diagnose the circuit',`💡 ${v[1]}`,'Which change should restore the circuit?',v[2],v[3],'A working simple circuit needs a complete conducting path and an energy source.',{kind:'circuit',state:v[0]},rng);
+function shuffle(items,rng=Math.random){
+  const out=[...items];
+  for(let i=out.length-1;i>0;i-=1){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
+  return out;
 }
 
-function tier(profile,best=0,acc=null){const a=Number(acc);if(profile==='bian')return best>=700||a>=.8?2:1;if(best>=760||a>=.8)return 3;if(best>=480||a>=.6)return 2;return 1;}
-function candidates(profile,maxTier,rng){const source=profile==='bian'?BIAN:UBAY;const out=[];for(const s of source.filter(x=>x.d<=maxTier))for(const v of s.variants)out.push(profile==='bian'?makeBian(s,v,rng):makeUbay(s,v,rng));return out;}
+function profileKey(profileId){return String(profileId||'').toLowerCase()==='bian'?'bian':'ubay';}
 
-export function createLabMissionRun(profileId,{recentKeys=[],bestScore=0,lastAccuracy=null,rng=Math.random}={}){
-  const difficultyTier=tier(profileId,bestScore,lastAccuracy);const all=candidates(profileId,difficultyTier,rng);const recent=new Set(recentKeys);let pool=all.filter(x=>!recent.has(x.key));if(pool.length<LAB_RUN_SIZE)pool=all;
-  const byType=new Map();for(const m of shuffle(pool,rng)){if(!byType.has(m.type))byType.set(m.type,[]);byType.get(m.type).push(m);}const chosen=[];for(const t of shuffle([...byType.keys()],rng)){chosen.push(byType.get(t)[0]);if(chosen.length===LAB_RUN_SIZE)break;}for(const m of shuffle(pool,rng)){if(chosen.length===LAB_RUN_SIZE)break;if(!chosen.some(x=>x.key===m.key))chosen.push(m);}return {missions:chosen,difficultyTier};
+export function labStationsForProfile(profileId){
+  return STATIONS[profileKey(profileId)].map((station)=>({...station}));
 }
 
-export function missionScore(correct,comboBefore=0){return correct?120+Math.max(0,Number(comboBefore)||0)*20:0;}
-export function finaliseRunScore(score,solved){return Math.min(LAB_MAX_SCORE,Math.max(0,Math.floor(Number(score)||0))+(Number(solved)===LAB_RUN_SIZE?100:0));}
-export function labRankForTotalScore(total){const n=Math.max(0,Number(total)||0);if(n>=15000)return{id:'master',label:'Master Scientist',icon:'🌟',nextAt:null};if(n>=7000)return{id:'lead',label:'Lead Researcher',icon:'🧬',nextAt:15000};if(n>=3000)return{id:'specialist',label:'Science Specialist',icon:'🔬',nextAt:7000};if(n>=1000)return{id:'explorer',label:'Lab Explorer',icon:'🧪',nextAt:3000};return{id:'junior',label:'Junior Researcher',icon:'🥼',nextAt:1000};}
-export function rankProgress(total){const rank=labRankForTotalScore(total);if(!rank.nextAt)return{rank,progress:100,remaining:0};const start={junior:0,explorer:1000,specialist:3000,lead:7000}[rank.id]||0;const n=Number(total)||0;return{rank,progress:Math.max(0,Math.min(100,(n-start)/(rank.nextAt-start)*100)),remaining:Math.max(0,rank.nextAt-n)};}
+export function labRankForTotalScore(total){
+  const n=Math.max(0,Number(total)||0);
+  if(n>=15000)return{id:'master',label:'Master Scientist',icon:'🌟',nextAt:null};
+  if(n>=7000)return{id:'lead',label:'Lead Researcher',icon:'🧬',nextAt:15000};
+  if(n>=3000)return{id:'specialist',label:'Science Specialist',icon:'🔬',nextAt:7000};
+  if(n>=1000)return{id:'explorer',label:'Lab Explorer',icon:'🧪',nextAt:3000};
+  return{id:'junior',label:'Junior Researcher',icon:'🥼',nextAt:1000};
+}
+
+export function rankProgress(total){
+  const rank=labRankForTotalScore(total);
+  if(!rank.nextAt)return{rank,progress:100,remaining:0};
+  const start={junior:0,explorer:1000,specialist:3000,lead:7000}[rank.id]||0;
+  const n=Math.max(0,Number(total)||0);
+  return{rank,progress:Math.max(0,Math.min(100,(n-start)/(rank.nextAt-start)*100)),remaining:Math.max(0,rank.nextAt-n)};
+}
+
+export function createLabShift(profileId,{recentKeys=[],bestScore=0,rng=Math.random}={}){
+  const key=profileKey(profileId);
+  const base=PROFILE_CONFIG[key];
+  const incidents=INCIDENTS[key];
+  const incident=incidents[Math.floor(rng()*incidents.length)%incidents.length];
+  const source=key==='bian'?BIAN_JOBS:UBAY_JOBS;
+  const recent=new Set(Array.isArray(recentKeys)?recentKeys:[]);
+  const fresh=source.filter((job)=>!recent.has(job.key));
+  const deck=shuffle(fresh.length>=7?fresh:source,rng).map((job)=>structuredCloneJob(job));
+  const bonus=Math.min(2,Math.floor(Math.max(0,Number(bestScore)||0)/350));
+  return{
+    profile:key,
+    incident:{...incident},
+    stations:labStationsForProfile(key),
+    jobs:deck,
+    config:{
+      ...base,
+      difficultyTier:base.difficultyTier+bonus,
+      spawnMinMs:Math.max(4800,base.spawnMinMs-(bonus*450)),
+      spawnMaxMs:Math.max(7000,base.spawnMaxMs-(bonus*550)),
+      patienceMs:Math.max(18000,base.patienceMs-(bonus*1200)),
+    },
+  };
+}
+
+function structuredCloneJob(job){
+  return JSON.parse(JSON.stringify(job));
+}
+
+export function evaluateLabAction(job,payload={}){
+  const mechanic=job?.mechanic||{};
+  if(mechanic.kind==='slider'){
+    const value=Number(payload.value);
+    return Number.isFinite(value)&&value>=mechanic.targetMin&&value<=mechanic.targetMax;
+  }
+  if(mechanic.kind==='controls'){
+    const values=payload.values||{};
+    return mechanic.fields.every((field)=>{
+      const value=Number(values[field.id]);
+      return Number.isFinite(value)&&value>=field.targetMin&&value<=field.targetMax;
+    });
+  }
+  if(mechanic.kind==='tools')return String(payload.toolId||'')===String(mechanic.correctToolId||'');
+  if(mechanic.kind==='sort'){
+    const placements=payload.placements||{};
+    return mechanic.items.every((item)=>String(placements[item.id]||'')===String(item.bin));
+  }
+  if(mechanic.kind==='connect'){
+    const sequence=Array.isArray(payload.sequence)?payload.sequence.map(String):[];
+    return sequence.length===mechanic.sequence.length&&sequence.every((id,index)=>id===String(mechanic.sequence[index]));
+  }
+  return false;
+}
+
+export function labJobScore({waitedMs=0,patienceMs=24000,comboBefore=0}={}){
+  const patience=Math.max(1,Number(patienceMs)||24000);
+  const wait=Math.max(0,Number(waitedMs)||0);
+  const speedRatio=Math.max(0,Math.min(1,1-(wait/patience)));
+  return Math.min(150,70+Math.round(speedRatio*40)+(Math.min(4,Math.max(0,Number(comboBefore)||0))*10));
+}
+
+export function finaliseShiftScore(scoreValue,stability=100){
+  const score=Math.max(0,Math.floor(Number(scoreValue)||0));
+  const stabilityBonus=Math.round(Math.max(0,Math.min(100,Number(stability)||0))*0.5);
+  return Math.min(LAB_MAX_SCORE,score+stabilityBonus);
+}
