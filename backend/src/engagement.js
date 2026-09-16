@@ -3,10 +3,19 @@ import { examRewardTotals } from './exam-rewards.js';
 import { randomToken } from './security.js';
 
 const GAME_DAILY_XP_CAP = 50;
-const GAME_LIMITS = Object.freeze({
-  'speed-math': 60,
-  'memory-grid': 5,
+const GAME_RULES = Object.freeze({
+  'speed-math': Object.freeze({ maxScore: 60, xpFromScore: (score) => score }),
+  'memory-grid': Object.freeze({ maxScore: 5, xpFromScore: (score) => score }),
+  'lab-rescue': Object.freeze({ maxScore: 900, xpFromScore: (score) => Math.min(10, Math.floor(score / 90)) }),
 });
+
+export function gameRewardForScore(gameId, scoreValue) {
+  const rule = GAME_RULES[gameId];
+  if (!rule) return null;
+  const score = Math.max(0, Math.min(rule.maxScore, Math.floor(Number(scoreValue) || 0)));
+  const rawXp = Math.max(0, Math.floor(Number(rule.xpFromScore(score)) || 0));
+  return { score, rawXp };
+}
 
 export const REWARDS = Object.freeze([
   { id: 'snack', name: 'Snack Spesial & Uang Rp 5.000', cost: 5000, desc: 'Boleh pilih 1 snack favorit di toko dan mendapat uang Rp 5.000.' },
@@ -95,19 +104,29 @@ export async function engagementTotals(env, familyId, profileId) {
 export async function gameStatus(env, familyId, profile) {
   await ensureEngagementSchema(env);
   const [rows, dailyXp] = await Promise.all([
-    env.DB.prepare(`SELECT game_id, MAX(score) AS best, COUNT(*) AS plays
+    env.DB.prepare(`SELECT game_id, MAX(score) AS best, COUNT(*) AS plays, COALESCE(SUM(score),0) AS totalScore
       FROM game_sessions WHERE family_id = ? AND profile_id = ? AND completed_at IS NOT NULL GROUP BY game_id`)
       .bind(familyId, profile.id).all(),
     gameXpToday(env, familyId, profile.id),
   ]);
-  const games = { 'speed-math': { best: 0, plays: 0 }, 'memory-grid': { best: 0, plays: 0 } };
-  for (const row of rows.results || []) games[row.game_id] = { best: Number(row.best || 0), plays: Number(row.plays || 0) };
+  const games = {
+    'speed-math': { best: 0, plays: 0, totalScore: 0 },
+    'memory-grid': { best: 0, plays: 0, totalScore: 0 },
+    'lab-rescue': { best: 0, plays: 0, totalScore: 0 },
+  };
+  for (const row of rows.results || []) {
+    games[row.game_id] = {
+      best: Number(row.best || 0),
+      plays: Number(row.plays || 0),
+      totalScore: Number(row.totalScore || 0),
+    };
+  }
   return { games, dailyXp, dailyXpCap: GAME_DAILY_XP_CAP, remainingDailyXp: Math.max(0, GAME_DAILY_XP_CAP - dailyXp) };
 }
 
 export async function startGame(env, familyId, profile, gameId) {
   await ensureEngagementSchema(env);
-  if (!(gameId in GAME_LIMITS)) throw new HttpError(422, 'GAME_INVALID', 'Game tidak tersedia.');
+  if (!(gameId in GAME_RULES)) throw new HttpError(422, 'GAME_INVALID', 'Game tidak tersedia.');
   const id = randomToken(24);
   const now = Date.now();
   await env.DB.prepare(`INSERT INTO game_sessions (id, family_id, profile_id, game_id, started_at)
@@ -122,11 +141,12 @@ export async function finishGame(env, familyId, profile, sessionId, scoreValue) 
     .bind(sessionId, familyId, profile.id).first();
   if (!row) throw new HttpError(404, 'GAME_SESSION_NOT_FOUND', 'Sesi game tidak ditemukan.');
   if (row.completed_at) return { gameId: row.game_id, score: Number(row.score), xpEarned: Number(row.xp_earned), alreadySaved: true };
-  const maxScore = GAME_LIMITS[row.game_id];
-  const score = Math.max(0, Math.min(maxScore, Math.floor(Number(scoreValue) || 0)));
+  const reward = gameRewardForScore(row.game_id, scoreValue);
+  if (!reward) throw new HttpError(422, 'GAME_INVALID', 'Game tidak tersedia.');
+  const { score, rawXp } = reward;
   const now = Date.now();
   const dailyXp = await gameXpToday(env, familyId, profile.id, now);
-  const xpEarned = Math.min(score, Math.max(0, GAME_DAILY_XP_CAP - dailyXp));
+  const xpEarned = Math.min(rawXp, Math.max(0, GAME_DAILY_XP_CAP - dailyXp));
   await env.DB.prepare(`UPDATE game_sessions SET completed_at = ?, score = ?, xp_earned = ? WHERE id = ? AND completed_at IS NULL`)
     .bind(now, score, xpEarned, sessionId).run();
   const status = await gameStatus(env, familyId, profile);
