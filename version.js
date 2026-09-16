@@ -3,7 +3,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.0';
+  const VERSION = '0.8.1';
   const CHANNEL = 'family';
   const LABEL = `v${VERSION} · ${CHANNEL}`;
 
@@ -15,7 +15,7 @@
   const appVersion = Object.freeze({
     version: VERSION,
     channel: CHANNEL,
-    label: LABEL,
+    label,
     asset
   });
 
