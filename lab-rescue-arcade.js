@@ -1,7 +1,93 @@
-/* Lab Rescue Arcade Presentation — deterministic decoration only. */
+/* Lab Rescue Arcade Presentation — deterministic decoration + guarded game transport. */
 (() => {
   'use strict';
   const SHELL = '.lab-rescue-shell';
+  const nativeFetch = globalThis.fetch.bind(globalThis);
+  const localSessions = new Set();
+  let transportPatched = false;
+
+  function urlString(input) {
+    if (typeof input === 'string') return input;
+    if (input instanceof URL) return input.href;
+    return input?.url || '';
+  }
+
+  function jsonResponse(payload, status = 200) {
+    return new Response(JSON.stringify(payload), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  async function withTimeout(promise, ms = 6000) {
+    let timer = 0;
+    try {
+      return await Promise.race([
+        promise,
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('LAB_RESCUE_API_TIMEOUT')), ms);
+        }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  function patchTransport() {
+    if (transportPatched) return;
+    transportPatched = true;
+
+    globalThis.fetch = async function labRescueFetch(input, init = {}) {
+      const url = urlString(input);
+      const method = String(init?.method || input?.method || 'GET').toUpperCase();
+      const isGameStart = method === 'POST' && /\/v1\/games\/[^/]+\/start(?:\?|$)/.test(url);
+      const isGameFinish = method === 'POST' && /\/v1\/games\/[^/]+\/finish(?:\?|$)/.test(url);
+
+      if (isGameStart) {
+        let body = null;
+        try { body = JSON.parse(String(init?.body || '{}')); } catch {}
+        if (body?.gameId === 'lab-rescue') {
+          try {
+            const response = await withTimeout(nativeFetch(input, init), 6000);
+            if (response.ok) return response;
+            console.warn('Lab Rescue backend start unavailable; switching to local play mode.', response.status);
+          } catch (error) {
+            console.warn('Lab Rescue backend start timed out; switching to local play mode.', error);
+          }
+
+          const sessionId = `local-lab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+          localSessions.add(sessionId);
+          return jsonResponse({
+            sessionId,
+            gameId: 'lab-rescue',
+            startedAt: Date.now(),
+            remainingDailyXp: 0,
+            localFallback: true,
+          });
+        }
+      }
+
+      if (isGameFinish) {
+        let body = null;
+        try { body = JSON.parse(String(init?.body || '{}')); } catch {}
+        if (body?.sessionId && localSessions.has(body.sessionId)) {
+          localSessions.delete(body.sessionId);
+          return jsonResponse({
+            gameId: 'lab-rescue',
+            score: Number(body.score || 0),
+            xpEarned: 0,
+            games: { 'lab-rescue': { best: 0, plays: 0, totalScore: 0 } },
+            dailyXp: 0,
+            dailyXpCap: 50,
+            remainingDailyXp: 50,
+            localFallback: true,
+          });
+        }
+      }
+
+      return nativeFetch(input, init);
+    };
+  }
 
   function img(src, cls) {
     const node = document.createElement('img');
@@ -51,6 +137,7 @@
   });
 
   function boot() {
+    patchTransport();
     scan();
     if (document.body) observer.observe(document.body, { childList: true, subtree: true });
   }
