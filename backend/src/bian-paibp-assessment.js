@@ -17,10 +17,13 @@ export const BIAN_PAIBP_BLUEPRINT = Object.freeze({
     text: 3,
     'open-response': 5,
   }),
+  // Final calibration against the supplied MHIS pointer + classroom modules:
+  // the first-verse writing task is the only hard item; conceptual explanations
+  // remain medium for Grade 2.
   difficultyTargets: Object.freeze({
     mudah: 9,
-    sedang: 6,
-    sulit: 2,
+    sedang: 7,
+    sulit: 1,
   }),
   topicTargets: Object.freeze({
     'bian-paibp-annas-verses': 1,
