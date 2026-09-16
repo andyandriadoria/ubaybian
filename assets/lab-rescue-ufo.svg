@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" role="img" aria-label="Science rescue ufo">
+<defs>
+ <linearGradient id="dome" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8ffff"/><stop offset=".45" stop-color="#9de9ef"/><stop offset="1" stop-color="#6bc7d6"/></linearGradient>
+ <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8fff1"/><stop offset=".34" stop-color="#99efc7"/><stop offset=".7" stop-color="#87d7ff"/><stop offset="1" stop-color="#cba4ff"/></linearGradient>
+ <filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="210" cy="176" rx="150" ry="30" fill="#63e9d2" opacity=".28" filter="url(#g)"/>
+<path d="M132 111c18-53 51-79 78-79s60 26 78 79" fill="url(#dome)" stroke="#ecffff" stroke-width="8"/>
+<path d="M67 121c27-21 78-32 143-32s116 11 143 32c17 13 24 29 18 42-10 22-73 39-161 39S59 185 49 163c-6-13 1-29 18-42Z" fill="url(#body)" stroke="#ecffff" stroke-width="8" filter="url(#g)"/>
+<ellipse cx="210" cy="128" rx="105" ry="27" fill="#4bb9b2" opacity=".35"/>
+<g fill="#ff8a76" stroke="#fff" stroke-width="4"><circle cx="122" cy="166" r="11"/><circle cx="298" cy="166" r="11"/></g>
+<g fill="#ffd869" stroke="#fff" stroke-width="4"><circle cx="170" cy="181" r="10"/><circle cx="250" cy="181" r="10"/></g>
+</svg>
