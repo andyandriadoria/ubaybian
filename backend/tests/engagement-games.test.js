@@ -7,8 +7,6 @@ test('existing game reward math stays unchanged', () => {
   assert.deepEqual(gameRewardForScore('memory-grid', 5), { score: 5, rawXp: 5 });
 });
 
-test('Lab Rescue caps score at 900 and XP at 10 per run', () => {
-  assert.deepEqual(gameRewardForScore('lab-rescue', 900), { score: 900, rawXp: 10 });
-  assert.deepEqual(gameRewardForScore('lab-rescue', 450), { score: 450, rawXp: 5 });
-  assert.deepEqual(gameRewardForScore('lab-rescue', 9999), { score: 900, rawXp: 10 });
+test('removed games are not eligible for rewards', () => {
+  assert.equal(gameRewardForScore('lab-rescue', 900), null);
 });
