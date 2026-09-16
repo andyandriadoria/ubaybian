@@ -1,4 +1,4 @@
-/* v0.5.18 — Adventure Report DOM polish
+/* Adventure Report DOM polish
    Uses only already-rendered report data. No fabricated metrics. */
 (function(){
   const main=document.querySelector('#main');
@@ -24,10 +24,52 @@
       : 'assets/ubay-cosmic-spider-bot.svg';
   }
 
+  function styleSessionBadge(badge){
+    if(!badge)return;
+    const assessment=badge.classList.contains('assessment')||/assessment/i.test(badge.textContent||'');
+    badge.classList.toggle('assessment',assessment);
+    Object.assign(badge.style,{
+      display:'inline-flex',
+      alignItems:'center',
+      justifyContent:'center',
+      flex:'0 0 auto',
+      marginLeft:'0',
+      padding:'4px 8px',
+      borderRadius:'999px',
+      fontSize:'9px',
+      lineHeight:'1',
+      fontWeight:'900',
+      letterSpacing:'.02em',
+      whiteSpace:'nowrap',
+      verticalAlign:'middle',
+      color:assessment?'#6849a6':'#236a9d',
+      background:assessment?'linear-gradient(180deg,#f6f2ff,#e9e0ff)':'linear-gradient(180deg,#eef9ff,#dcefff)',
+      border:assessment?'1px solid rgba(109,85,164,.22)':'1px solid rgba(47,137,195,.20)',
+      boxShadow:assessment?'0 3px 8px rgba(96,72,154,.10), inset 0 1px 0 rgba(255,255,255,.88)':'0 3px 8px rgba(38,111,158,.10), inset 0 1px 0 rgba(255,255,255,.86)'
+    });
+  }
+
+  function syncSessionBadges(card){
+    card.querySelectorAll('.report-table tbody tr').forEach((row)=>{
+      const subjectCell=row.querySelector('td:nth-child(2)');
+      if(!subjectCell)return;
+      const badge=subjectCell.querySelector('.report-session-type');
+      if(!badge)return;
+      const wrap=subjectCell.querySelector('.report-subject-cell');
+      if(wrap&&badge.parentElement!==wrap)wrap.append(badge);
+      styleSessionBadge(badge);
+    });
+  }
+
   function decorateReport(){
     const card=main.querySelector('.report-card');
     document.body.classList.toggle('report-adventure',Boolean(card));
-    if(!card||card.dataset.adventureReport==='1')return;
+    if(!card)return;
+
+    // learning-audit can add Practice / Assessment after this report card was
+    // initially decorated. Always resync those badges, even on an existing card.
+    syncSessionBadges(card);
+    if(card.dataset.adventureReport==='1')return;
 
     card.dataset.adventureReport='1';
 
@@ -59,7 +101,7 @@
 
     const tableWrap=card.querySelector('.report-table-wrap');
     const table=card.querySelector('.report-table');
-    if(tableWrap&&table){
+    if(tableWrap&&table&&!table.parentElement?.classList.contains('report-table-scroll')){
       const scroll=document.createElement('div');
       scroll.className='report-table-scroll';
       table.parentNode.insertBefore(scroll,table);
@@ -71,6 +113,8 @@
       if(cells.length<4)return;
 
       const subjectCell=cells[1];
+      const existingBadge=subjectCell.querySelector('.report-session-type');
+      if(existingBadge)existingBadge.remove();
       const subjectText=(subjectCell.textContent||'').trim();
       subjectCell.textContent='';
       const subjectWrap=document.createElement('span');
@@ -79,8 +123,10 @@
       icon.className='report-subject-icon';
       icon.textContent=subjectIcons[subjectText.toUpperCase()]||'📘';
       const label=document.createElement('span');
+      label.className='report-subject-label';
       label.textContent=subjectText;
       subjectWrap.append(icon,label);
+      if(existingBadge){subjectWrap.append(existingBadge);styleSessionBadge(existingBadge);}
       subjectCell.append(subjectWrap);
 
       const scoreCell=cells[2];
@@ -100,9 +146,18 @@
       correctPill.textContent=correctText;
       correctCell.append(correctPill);
     });
+
+    syncSessionBadges(card);
   }
 
-  const observer=new MutationObserver(()=>requestAnimationFrame(decorateReport));
+  let scheduled=false;
+  function schedule(){
+    if(scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(()=>{scheduled=false;decorateReport();});
+  }
+
+  const observer=new MutationObserver(schedule);
   observer.observe(main,{childList:true,subtree:true});
   window.addEventListener('hashchange',()=>setTimeout(decorateReport,0));
   decorateReport();
