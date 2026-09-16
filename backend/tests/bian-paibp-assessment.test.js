@@ -14,17 +14,17 @@ const slots = [
   ['Asmaul Husna — Al-Hafizh','Mudah','multiple-choice'],
   ['Akhlak Terpuji — Perilaku kepada teman','Mudah','multiple-choice'],
   ["Konsep Dasar PAIBP — An-Nās, Tauhid, Kejujuran, Adab Al-Qur'an & Huruf Hijaiyah",'Sedang','multiple-choice'],
-  ['Surah An-Nās — Pesan utama','Sulit','open-response'],
+  ['Surah An-Nās — Pesan utama','Sedang','open-response'],
   ['Konsep Dasar PAIBP — Makna dan contoh','Mudah','multiple-choice'],
   ['Adab, Tauhid, Akhlak, An-Nās & Huruf Hijaiyah — Benar/Salah','Sedang','multiple-choice'],
-  ['Konsep Dasar PAIBP — Fakta dasar','Mudah','multiple-choice'],
+  ['Konsep Dasar PAIBP — Fakta dasar','Sedang','multiple-choice'],
   ['Surah An-Nās, Huruf Hijaiyah, Tauhid & Kejujuran — Pilihan tepat','Sedang','multiple-choice'],
-  ['Surah An-Nās — Ayat pertama','Sedang','open-response'],
+  ['Surah An-Nās — Ayat pertama','Sulit','open-response'],
   ['Asmaul Husna — Arti Asmaul Husna','Mudah','text'],
   ['Akhlak Terpuji — Tiga contoh','Sedang','open-response'],
   ['Huruf Hijaiyah — Menulis tiga huruf','Mudah','open-response'],
-  ['Allah SWT — Penjelasan singkat','Sulit','open-response'],
-  ['Akhlak, Tauhid & Surah An-Nās — Benar/Salah','Sedang','multiple-choice'],
+  ['Allah SWT — Penjelasan singkat','Sedang','open-response'],
+  ['Akhlak, Tauhid & Surah An-Nās — Benar/Salah','Mudah','multiple-choice'],
 ];
 
 function makeBank() {
@@ -67,7 +67,7 @@ test('PAIBP Grade 2 Assessment blueprint is 17 questions and uses operational 60
   assert.equal(blueprint.targetQuestions, 17);
   assert.equal(blueprint.durationMinutes, 60);
   assert.deepEqual(blueprint.typeTargets, { 'multiple-choice': 9, text: 3, 'open-response': 5 });
-  assert.deepEqual(blueprint.difficultyTargets, { mudah: 9, sedang: 6, sulit: 2 });
+  assert.deepEqual(blueprint.difficultyTargets, { mudah: 9, sedang: 7, sulit: 1 });
   assert.equal(Object.values(blueprint.topicTargets).reduce((a, b) => a + b, 0), 17);
 });
 
@@ -82,7 +82,7 @@ test('51-question three-variant PAIBP bank returns one complete 17-question pape
   for (let run = 0; run < 80; run += 1) {
     const selected = selectBianPaibpQuestions(bank, BIAN_PAIBP_BLUEPRINT);
     assert.equal(selected.length, 17);
-    assert.deepEqual(countBy(selected, (q) => q.difficulty), { Mudah: 9, Sedang: 6, Sulit: 2 });
+    assert.deepEqual(countBy(selected, (q) => q.difficulty), { Mudah: 9, Sedang: 7, Sulit: 1 });
     assert.deepEqual(countBy(selected, (q) => q.type), { 'multiple-choice': 9, text: 3, 'open-response': 5 });
 
     const categories = countBy(selected, bianPaibpTopicCategory);
