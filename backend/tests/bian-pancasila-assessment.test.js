@@ -13,27 +13,27 @@ const slots = [
   ['Tanggung jawab barang pribadi','Sedang','multiple-choice','ST1'],
   ['Mengidentifikasi lambang sila Pancasila','Mudah','multiple-choice',''],
   ['Mengurutkan bunyi sila Pancasila','Sedang','multiple-choice',''],
-  ['Menyelesaikan tugas sebelum bermain','Sulit','open-response',''],
+  ['Menyelesaikan tugas sebelum bermain','Sedang','open-response',''],
   ['Identitas diri berdasarkan hobi','Mudah','multiple-choice','ST2'],
-  ['Melaksanakan kewajiban sebelum bermain','Sedang','multiple-choice','ST1'],
+  ['Melaksanakan kewajiban sebelum bermain','Mudah','multiple-choice','ST1'],
   ['Contoh pengamalan sila pertama','Mudah','multiple-choice',''],
   ['Contoh pengamalan sila ketiga','Sedang','multiple-choice',''],
   ['Mengidentifikasi aturan dalam teks','Sedang','multiple-choice','ST1'],
   ['Mengidentifikasi simbol dan sila Pancasila','Sedang','multiple-choice',''],
   ['Mengidentifikasi informasi identitas diri','Mudah','multiple-choice','ST2'],
   ['Jumlah sila Pancasila','Mudah','text',''],
-  ['Simbol sila kelima','Mudah','text',''],
-  ['Tokoh perumus Pancasila','Sedang','multiple-choice',''],
-  ['Tokoh anggota BPUPKI dan perumus dasar negara','Sedang','multiple-choice',''],
+  ['Simbol sila ketiga','Mudah','text',''],
+  ['Tokoh perumus Pancasila','Mudah','multiple-choice',''],
+  ['Mengenal tokoh Pancasila','Mudah','multiple-choice',''],
   ['Aturan dan kewajiban di rumah','Mudah','multiple-choice',''],
   ['Identitas diri','Mudah','multiple-choice','ST2'],
   ['Perilaku sesuai dengan sila Pancasila','Sedang','multiple-choice',''],
   ['Informasi identitas diri dan hobi','Mudah','multiple-choice','ST2'],
   ['Menyebutkan contoh aturan di rumah','Sedang','open-response',''],
-  ['Alasan melaksanakan tugas sebelum bermain','Sulit','open-response',''],
+  ['Alasan melaksanakan tugas sebelum bermain','Sedang','open-response',''],
   ['Menuliskan identitas diri berdasarkan teks','Mudah','text','ST2'],
   ['Menyebutkan tokoh perumus Pancasila','Mudah','text',''],
-  ['Sikap menghargai perbedaan dan persatuan','Sulit','open-response',''],
+  ['Sikap menghargai perbedaan dan persatuan','Sedang','open-response',''],
 ];
 
 function makeBank(){
@@ -66,6 +66,26 @@ function makeBank(){
   return bank;
 }
 
+function makeLegacyBank(){
+  const legacyDifficultyByTopic=new Map([
+    ['Melaksanakan kewajiban sebelum bermain','Sedang'],
+    ['Tokoh perumus Pancasila','Sedang'],
+    ['Mengenal tokoh Pancasila','Sedang'],
+    ['Menyelesaikan tugas sebelum bermain','Sulit'],
+    ['Alasan melaksanakan tugas sebelum bermain','Sulit'],
+    ['Sikap menghargai perbedaan dan persatuan','Sulit'],
+  ]);
+  return makeBank().map((question)=>({
+    ...question,
+    topic:question.topic==='Simbol sila ketiga'
+      ? 'Simbol sila kelima'
+      : question.topic==='Mengenal tokoh Pancasila'
+        ? 'Tokoh anggota BPUPKI dan perumus dasar negara'
+        : question.topic,
+    difficulty:legacyDifficultyByTopic.get(question.topic)||question.difficulty,
+  }));
+}
+
 function countBy(items,keyFn){
   const counts={};
   for(const item of items){
@@ -81,22 +101,34 @@ test('Pancasila Grade 2 Assessment blueprint is 26 questions and 90 minutes',()=
   assert.equal(blueprint.targetQuestions,26);
   assert.equal(blueprint.durationMinutes,90);
   assert.deepEqual(blueprint.typeTargets,{'multiple-choice':18,text:4,'open-response':4});
-  assert.deepEqual(blueprint.difficultyTargets,{mudah:13,sedang:10,sulit:3});
+  assert.deepEqual(blueprint.difficultyTargets,{mudah:16,sedang:10});
+  assert.deepEqual(blueprint.legacyDifficultyTargets,{mudah:13,sedang:10,sulit:3});
   assert.equal(Object.values(blueprint.topicTargets).reduce((a,b)=>a+b,0),26);
 });
 
-test('all 26 MHIS pointer topic labels map to distinct assessment categories',()=>{
+test('all 26 recalibrated MHIS topic labels map to distinct assessment categories',()=>{
   const categories=slots.map(([topic])=>bianPancasilaTopicCategory({topic}));
   assert.equal(categories.filter(Boolean).length,26);
   assert.equal(new Set(categories).size,26);
 });
 
-test('78-question three-variant bank returns one complete 26-question paper with intact stimulus blocks',()=>{
+test('legacy topic labels remain compatible during the bank transition',()=>{
+  assert.equal(
+    bianPancasilaTopicCategory({topic:'Simbol sila kelima'}),
+    bianPancasilaTopicCategory({topic:'Simbol sila ketiga'}),
+  );
+  assert.equal(
+    bianPancasilaTopicCategory({topic:'Tokoh anggota BPUPKI dan perumus dasar negara'}),
+    bianPancasilaTopicCategory({topic:'Mengenal tokoh Pancasila'}),
+  );
+});
+
+test('78-question three-variant recalibrated bank returns one complete 26-question paper',()=>{
   const bank=makeBank();
   for(let run=0;run<80;run+=1){
     const selected=selectBianPancasilaQuestions(bank,BIAN_PANCASILA_BLUEPRINT);
     assert.equal(selected.length,26);
-    assert.deepEqual(countBy(selected,(q)=>q.difficulty),{Mudah:13,Sedang:10,Sulit:3});
+    assert.deepEqual(countBy(selected,(q)=>q.difficulty),{Mudah:16,Sedang:10});
     assert.deepEqual(countBy(selected,(q)=>q.type),{'multiple-choice':18,'open-response':4,text:4});
     const categories=countBy(selected,bianPancasilaTopicCategory);
     assert.equal(Object.keys(categories).length,26);
@@ -113,6 +145,12 @@ test('78-question three-variant bank returns one complete 26-question paper with
       assert.deepEqual(group.map((q)=>q.stimulusOrder),Array.from({length:group.length},(_,i)=>i+1));
     }
   }
+});
+
+test('selector still accepts the legacy 13/10/3 difficulty profile during transition',()=>{
+  const selected=selectBianPancasilaQuestions(makeLegacyBank(),BIAN_PANCASILA_BLUEPRINT);
+  assert.equal(selected.length,26);
+  assert.deepEqual(countBy(selected,(q)=>q.difficulty),{Mudah:13,Sedang:10,Sulit:3});
 });
 
 test('selector rejects a broken 26-question variant',()=>{

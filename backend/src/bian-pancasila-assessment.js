@@ -16,6 +16,10 @@ export const BIAN_PANCASILA_BLUEPRINT = Object.freeze({
     'open-response': 4,
   }),
   difficultyTargets: Object.freeze({
+    mudah: 16,
+    sedang: 10,
+  }),
+  legacyDifficultyTargets: Object.freeze({
     mudah: 13,
     sedang: 10,
     sulit: 3,
@@ -35,9 +39,9 @@ export const BIAN_PANCASILA_BLUEPRINT = Object.freeze({
     'bian-pan-symbol-principle': 1,
     'bian-pan-identity-info': 1,
     'bian-pan-number-principles': 1,
-    'bian-pan-fifth-symbol': 1,
+    'bian-pan-symbol-recall': 1,
     'bian-pan-founders': 1,
-    'bian-pan-bpupki-founder': 1,
+    'bian-pan-pancasila-figure': 1,
     'bian-pan-home-rules-duties': 1,
     'bian-pan-self-identity': 1,
     'bian-pan-principle-behaviour': 1,
@@ -65,9 +69,9 @@ const TOPIC_ALIASES = Object.freeze({
   'bian-pan-symbol-principle': 'Mengidentifikasi simbol dan sila Pancasila',
   'bian-pan-identity-info': 'Mengidentifikasi informasi identitas diri',
   'bian-pan-number-principles': 'Jumlah sila Pancasila',
-  'bian-pan-fifth-symbol': 'Simbol sila kelima',
+  'bian-pan-symbol-recall': Object.freeze(['Simbol sila ketiga', 'Simbol sila kelima']),
   'bian-pan-founders': 'Tokoh perumus Pancasila',
-  'bian-pan-bpupki-founder': 'Tokoh anggota BPUPKI dan perumus dasar negara',
+  'bian-pan-pancasila-figure': Object.freeze(['Mengenal tokoh Pancasila', 'Tokoh anggota BPUPKI dan perumus dasar negara']),
   'bian-pan-home-rules-duties': 'Aturan dan kewajiban di rumah',
   'bian-pan-self-identity': 'Identitas diri',
   'bian-pan-principle-behaviour': 'Perilaku sesuai dengan sila Pancasila',
@@ -90,8 +94,9 @@ function normalize(value) {
 
 export function bianPancasilaTopicCategory(question) {
   const topic = normalize(question?.topic);
-  for (const [category, alias] of Object.entries(TOPIC_ALIASES)) {
-    if (topic === normalize(alias)) return category;
+  for (const [category, aliases] of Object.entries(TOPIC_ALIASES)) {
+    const values = Array.isArray(aliases) ? aliases : [aliases];
+    if (values.some((alias) => topic === normalize(alias))) return category;
   }
   return '';
 }
@@ -137,6 +142,13 @@ function countBy(items, keyFn) {
   return counts;
 }
 
+function matchesCountProfile(counts, profile, total) {
+  if (!profile) return false;
+  const expectedTotal = Object.values(profile).reduce((sum, value) => sum + value, 0);
+  if (expectedTotal !== total) return false;
+  return Object.entries(profile).every(([key, target]) => (counts[key] || 0) === target);
+}
+
 function validateVariant(questions, blueprint) {
   if (questions.length !== blueprint.targetQuestions) return false;
 
@@ -147,9 +159,8 @@ function validateVariant(questions, blueprint) {
   if (Object.keys(topicCounts).length !== Object.keys(blueprint.topicTargets).length) return false;
 
   const difficultyCounts = countBy(questions, difficultyKey);
-  for (const [difficulty, target] of Object.entries(blueprint.difficultyTargets)) {
-    if ((difficultyCounts[difficulty] || 0) !== target) return false;
-  }
+  const difficultyProfiles = [blueprint.difficultyTargets, blueprint.legacyDifficultyTargets].filter(Boolean);
+  if (!difficultyProfiles.some((profile) => matchesCountProfile(difficultyCounts, profile, questions.length))) return false;
 
   const typeCounts = countBy(questions, typeKey);
   for (const [questionType, target] of Object.entries(blueprint.typeTargets)) {
