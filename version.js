@@ -15,7 +15,7 @@
   const appVersion = Object.freeze({
     version: VERSION,
     channel: CHANNEL,
-    label,
+    label: LABEL,
     asset
   });
 
