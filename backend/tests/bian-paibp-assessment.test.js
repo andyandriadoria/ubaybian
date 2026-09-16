@@ -4,6 +4,8 @@ import {
   BIAN_PAIBP_BLUEPRINT,
   bianPaibpTopicCategory,
   getBianPaibpBlueprint,
+  isBianPaibpAssessmentQuestion,
+  isBianPaibpPracticeQuestion,
   selectBianPaibpQuestions,
 } from '../src/bian-paibp-assessment.js';
 
@@ -52,6 +54,20 @@ function makeBank() {
   return bank;
 }
 
+function makePracticeBank(count = 30) {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `BIAN-G2-PAIBP-S1-P${String(index + 1).padStart(3, '0')}`,
+    topic: index % 2 === 0 ? 'Surah Al-‘Asr — Arti nama' : 'Asmaul Husna — Al-Wali',
+    semester: '1',
+    difficulty: index % 10 === 0 ? 'Sedang' : 'Mudah',
+    type: 'multiple-choice',
+    stimulusId: '',
+    stimulusOrder: 0,
+    answerKey: 'A',
+    choices: [{ id: 'A', text: 'benar' }, { id: 'B', text: 'salah' }],
+  }));
+}
+
 function countBy(items, keyFn) {
   const counts = {};
   for (const item of items) {
@@ -77,6 +93,16 @@ test('all 17 MHIS pointer topic labels map to distinct PAIBP categories', () => 
   assert.equal(new Set(categories).size, 17);
 });
 
+test('PAIBP question IDs keep Assessment and Practice namespaces separate', () => {
+  const assessment = { id: 'BIAN-G2-PAIBP-S1-001' };
+  const practice = { id: 'BIAN-G2-PAIBP-S1-P001' };
+
+  assert.equal(isBianPaibpAssessmentQuestion(assessment), true);
+  assert.equal(isBianPaibpPracticeQuestion(assessment), false);
+  assert.equal(isBianPaibpAssessmentQuestion(practice), false);
+  assert.equal(isBianPaibpPracticeQuestion(practice), true);
+});
+
 test('51-question three-variant PAIBP bank returns one complete 17-question paper', () => {
   const bank = makeBank();
   for (let run = 0; run < 80; run += 1) {
@@ -91,6 +117,16 @@ test('51-question three-variant PAIBP bank returns one complete 17-question pape
 
     const variantPrefixes = new Set(selected.map((q) => Math.floor((Number(q.id.slice(-3)) - 1) / 17)));
     assert.equal(variantPrefixes.size, 1);
+  }
+});
+
+test('practice-only PAIBP rows never enter the strict 17-question Assessment', () => {
+  const bank = [...makeBank(), ...makePracticeBank()];
+  for (let run = 0; run < 40; run += 1) {
+    const selected = selectBianPaibpQuestions(bank, BIAN_PAIBP_BLUEPRINT);
+    assert.equal(selected.length, 17);
+    assert.ok(selected.every((question) => isBianPaibpAssessmentQuestion(question)));
+    assert.ok(selected.every((question) => !isBianPaibpPracticeQuestion(question)));
   }
 });
 
