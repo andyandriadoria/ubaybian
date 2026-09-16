@@ -89,6 +89,14 @@
     };
   }
 
+  function ensureHiddenContract() {
+    if (document.getElementById('lab-rescue-hidden-contract')) return;
+    const style = document.createElement('style');
+    style.id = 'lab-rescue-hidden-contract';
+    style.textContent = '.lab-rescue-shell.lab-arcade-v2 [hidden]{display:none!important}';
+    document.head.append(style);
+  }
+
   function img(src, cls) {
     const node = document.createElement('img');
     node.src = src;
@@ -138,6 +146,7 @@
 
   function boot() {
     patchTransport();
+    ensureHiddenContract();
     scan();
     if (document.body) observer.observe(document.body, { childList: true, subtree: true });
   }
