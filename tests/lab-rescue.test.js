@@ -1,42 +1,62 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  LAB_RUN_SIZE,
   LAB_MAX_SCORE,
-  createLabMissionRun,
-  missionScore,
-  finaliseRunScore,
+  createLabShift,
+  evaluateLabAction,
+  finaliseShiftScore,
+  labJobScore,
   labRankForTotalScore,
 } from '../lab-rescue-engine.js';
 
-test('Bian run contains five grade-appropriate procedural missions', () => {
-  const run = createLabMissionRun('bian', { bestScore: 0, rng: () => 0.42 });
-  assert.equal(run.missions.length, LAB_RUN_SIZE);
-  assert.ok(run.missions.every((mission) => mission.choices.length >= 3));
-  assert.ok(run.missions.every((mission) => mission.answer));
-  assert.ok(run.missions.every((mission) => mission.difficulty <= 1));
+test('Bian shift is station-based and contains direct-interaction jobs', () => {
+  const shift = createLabShift('bian', { rng: () => 0.42 });
+  assert.equal(shift.stations.length, 4);
+  assert.ok(shift.config.shiftSeconds >= 60);
+  assert.ok(shift.jobs.length >= 7);
+  assert.ok(shift.jobs.every((job) => job.stationId));
+  assert.ok(shift.jobs.every((job) => ['slider','tools','sort','connect','controls'].includes(job.mechanic.kind)));
+  assert.ok(shift.jobs.every((job) => !('choices' in job)));
+  assert.ok(shift.jobs.every((job) => !('answer' in job)));
 });
 
-test('Ubay adapts to higher difficulty after stronger performance', () => {
-  const run = createLabMissionRun('ubay', { bestScore: 850, lastAccuracy: 1, rng: () => 0.73 });
-  assert.equal(run.difficultyTier, 3);
-  assert.equal(run.missions.length, LAB_RUN_SIZE);
-  assert.ok(run.missions.some((mission) => mission.difficulty >= 2));
+test('Ubay shift uses deeper science stations and direct mechanics', () => {
+  const shift = createLabShift('ubay', { bestScore: 850, rng: () => 0.73 });
+  const ids = new Set(shift.stations.map((station) => station.id));
+  assert.deepEqual(ids, new Set(['bio','separation','power','matter']));
+  assert.ok(shift.jobs.some((job) => job.mechanic.kind === 'connect'));
+  assert.ok(shift.jobs.some((job) => job.mechanic.kind === 'sort'));
+  assert.ok(shift.jobs.some((job) => job.mechanic.kind === 'controls'));
 });
 
-test('recent mission keys are avoided when enough alternatives exist', () => {
-  const first = createLabMissionRun('ubay', { bestScore: 850, rng: () => 0.31 });
-  const recent = first.missions.map((mission) => mission.key);
-  const second = createLabMissionRun('ubay', { bestScore: 850, recentKeys: recent, rng: () => 0.61 });
-  assert.equal(second.missions.length, LAB_RUN_SIZE);
-  assert.ok(second.missions.every((mission) => !recent.includes(mission.key)));
+test('slider action succeeds only inside its target zone', () => {
+  const shift = createLabShift('bian', { rng: () => 0.1 });
+  const job = shift.jobs.find((item) => item.mechanic.kind === 'slider');
+  assert.ok(job);
+  assert.equal(evaluateLabAction(job, { value: job.mechanic.targetMin }), true);
+  assert.equal(evaluateLabAction(job, { value: job.mechanic.min }), false);
 });
 
-test('perfect five-mission run caps at 900 Lab Energy', () => {
-  let score = 0;
-  for (let combo = 0; combo < 5; combo += 1) score += missionScore(true, combo);
-  assert.equal(score, 800);
-  assert.equal(finaliseRunScore(score, 5), LAB_MAX_SCORE);
+test('tool, sort, and connect actions validate the physical task state', () => {
+  const bian = createLabShift('bian', { rng: () => 0.2 });
+  const tool = bian.jobs.find((item) => item.mechanic.kind === 'tools');
+  assert.equal(evaluateLabAction(tool, { toolId: tool.mechanic.correctToolId }), true);
+
+  const sort = bian.jobs.find((item) => item.mechanic.kind === 'sort');
+  const placements = Object.fromEntries(sort.mechanic.items.map((item) => [item.id, item.bin]));
+  assert.equal(evaluateLabAction(sort, { placements }), true);
+
+  const ubay = createLabShift('ubay', { rng: () => 0.3 });
+  const connect = ubay.jobs.find((item) => item.mechanic.kind === 'connect');
+  assert.equal(evaluateLabAction(connect, { sequence: connect.mechanic.sequence }), true);
+  assert.equal(evaluateLabAction(connect, { sequence: [...connect.mechanic.sequence].reverse() }), false);
+});
+
+test('fast chained jobs score more but final shift remains capped', () => {
+  const slow = labJobScore({ waitedMs: 22000, patienceMs: 24000, comboBefore: 0 });
+  const fast = labJobScore({ waitedMs: 1000, patienceMs: 24000, comboBefore: 3 });
+  assert.ok(fast > slow);
+  assert.equal(finaliseShiftScore(1000, 100), LAB_MAX_SCORE);
 });
 
 test('lab rank is derived from lifetime Lab Energy', () => {
