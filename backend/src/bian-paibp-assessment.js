@@ -46,6 +46,9 @@ export const BIAN_PAIBP_BLUEPRINT = Object.freeze({
   }),
 });
 
+const ASSESSMENT_ID_PATTERN = /^BIAN-G2-PAIBP-S1-(\d{3})$/i;
+const PRACTICE_ID_PATTERN = /^BIAN-G2-PAIBP-S1-P(\d{3})$/i;
+
 const TOPIC_ALIASES = Object.freeze({
   'bian-paibp-annas-verses': 'Surah An-Nās — Jumlah ayat',
   'bian-paibp-annas-meaning': 'Surah An-Nās — Arti An-Nās',
@@ -83,6 +86,14 @@ export function bianPaibpTopicCategory(question) {
   return '';
 }
 
+export function isBianPaibpAssessmentQuestion(question) {
+  return ASSESSMENT_ID_PATTERN.test(String(question?.id || '').trim());
+}
+
+export function isBianPaibpPracticeQuestion(question) {
+  return PRACTICE_ID_PATTERN.test(String(question?.id || '').trim());
+}
+
 function difficultyKey(question) {
   return String(question?.difficulty || '').trim().toLowerCase();
 }
@@ -92,7 +103,7 @@ function typeKey(question) {
 }
 
 function variantKey(question) {
-  const match = /^BIAN-G2-PAIBP-S1-(\d{3})$/i.exec(String(question?.id || '').trim());
+  const match = ASSESSMENT_ID_PATTERN.exec(String(question?.id || '').trim());
   if (!match) return '';
   const number = Number(match[1]);
   if (!Number.isInteger(number) || number < 1) return '';
@@ -168,7 +179,13 @@ export function getBianPaibpBlueprint(requestedId = '') {
 }
 
 export function selectBianPaibpQuestions(questions, blueprint = BIAN_PAIBP_BLUEPRINT) {
-  const eligible = questions.filter((question) => String(question.semester) === String(blueprint.semester));
+  // Practice-only rows use Pxxx IDs and remain available to Quick Practice/Practice
+  // through the generic quiz service. Assessment selection only sees the strict
+  // 001-051 variant namespace tied to the supplied 17-slot MHIS Mid Exam pointer.
+  const eligible = questions.filter((question) => (
+    String(question.semester) === String(blueprint.semester)
+    && isBianPaibpAssessmentQuestion(question)
+  ));
   if (eligible.length < blueprint.targetQuestions) {
     throw new HttpError(
       422,
