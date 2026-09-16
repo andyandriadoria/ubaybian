@@ -1,4 +1,4 @@
-/* Lab Rescue Arcade Presentation — visual decoration only. */
+/* Lab Rescue Arcade Presentation — deterministic decoration only. */
 (() => {
   'use strict';
   const SHELL = '.lab-rescue-shell';
@@ -12,41 +12,38 @@
     return node;
   }
 
-  function decorate(shell) {
-    if (!shell || shell.dataset.arcadeDecorated === '1') return;
-    shell.dataset.arcadeDecorated = '1';
+  function ensureDecorations(shell) {
+    if (!shell) return;
     shell.classList.add('lab-arcade-v2');
 
-    const bubbles = document.createElement('div');
-    bubbles.className = 'lab-arcade-bubbles';
-    bubbles.setAttribute('aria-hidden', 'true');
-    for (let i = 0; i < 14; i += 1) bubbles.append(document.createElement('span'));
-    shell.prepend(bubbles);
+    if (!shell.querySelector(':scope > .lab-arcade-bubbles')) {
+      const bubbles = document.createElement('div');
+      bubbles.className = 'lab-arcade-bubbles';
+      bubbles.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < 12; i += 1) bubbles.append(document.createElement('span'));
+      shell.prepend(bubbles);
+    }
 
     const ready = shell.querySelector('.lab-rescue-ready');
-    if (ready) {
-      ready.append(
-        img('assets/lab-rescue-tube.svg', 'lab-ready-tube-art'),
-        img('assets/lab-rescue-ufo.svg', 'lab-ready-ufo-art'),
-      );
+    if (ready && !ready.querySelector('.lab-ready-tube-art')) {
+      ready.append(img('assets/lab-rescue-tube.svg', 'lab-ready-tube-art'));
     }
 
     const play = shell.querySelector('.lab-rescue-play');
-    if (play) {
+    if (play && !play.querySelector('.lab-play-tube-art')) {
       play.append(img('assets/lab-rescue-tube.svg', 'lab-play-tube-art'));
     }
-
-    const result = shell.querySelector('.lab-rescue-result');
-    if (result) result.append(img('assets/lab-rescue-ufo.svg', 'lab-result-ufo-art'));
   }
 
   function scan(root = document) {
-    if (root.matches?.(SHELL)) decorate(root);
-    root.querySelectorAll?.(SHELL).forEach(decorate);
+    if (root.matches?.(SHELL)) ensureDecorations(root);
+    root.querySelectorAll?.(SHELL).forEach(ensureDecorations);
   }
 
   const observer = new MutationObserver((records) => {
     for (const record of records) {
+      const shell = record.target?.closest?.(SHELL);
+      if (shell) ensureDecorations(shell);
       for (const node of record.addedNodes) {
         if (node.nodeType === 1) scan(node);
       }
