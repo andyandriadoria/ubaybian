@@ -6,7 +6,6 @@ const GAME_DAILY_XP_CAP = 50;
 const GAME_RULES = Object.freeze({
   'speed-math': Object.freeze({ maxScore: 60, xpFromScore: (score) => score }),
   'memory-grid': Object.freeze({ maxScore: 5, xpFromScore: (score) => score }),
-  'lab-rescue': Object.freeze({ maxScore: 900, xpFromScore: (score) => Math.min(10, Math.floor(score / 90)) }),
 });
 
 export function gameRewardForScore(gameId, scoreValue) {
@@ -112,9 +111,9 @@ export async function gameStatus(env, familyId, profile) {
   const games = {
     'speed-math': { best: 0, plays: 0, totalScore: 0 },
     'memory-grid': { best: 0, plays: 0, totalScore: 0 },
-    'lab-rescue': { best: 0, plays: 0, totalScore: 0 },
   };
   for (const row of rows.results || []) {
+    if (!(row.game_id in GAME_RULES)) continue;
     games[row.game_id] = {
       best: Number(row.best || 0),
       plays: Number(row.plays || 0),
