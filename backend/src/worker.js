@@ -2,7 +2,7 @@ import app from './index.js';
 import { corsHeaders, json, withCors } from './http.js';
 import { ensureProductionLaunchBaseline } from './launch-baseline.js';
 
-const VERSION = '0.6.2';
+const VERSION = '0.6.3';
 let baselineSnapshot = null;
 let baselineInflight = null;
 
