@@ -1,25 +1,37 @@
-/* UbayBian v0.5.82 — Practice + Assessment analytics polish */
-.report-subject-cell + .report-session-type,
-.report-table td .report-session-type{
-  display:inline-flex;
+/* Practice + Assessment analytics polish */
+.report-subject-cell .report-session-type,
+.report-table td > .report-session-type{
+  display:inline-flex !important;
   align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
   margin-left:8px;
-  padding:3px 8px;
+  padding:4px 9px;
   border-radius:999px;
   font-size:10px;
   line-height:1;
-  font-weight:800;
-  letter-spacing:.04em;
-  text-transform:uppercase;
-  color:#57758f;
-  background:#edf5fb;
-  border:1px solid rgba(74,137,183,.14);
+  font-weight:900;
+  letter-spacing:.025em;
+  text-transform:none;
+  white-space:nowrap !important;
+  color:#236a9d;
+  background:linear-gradient(180deg,#eef9ff,#dcefff);
+  border:1px solid rgba(47,137,195,.20);
+  box-shadow:0 3px 8px rgba(38,111,158,.10),inset 0 1px 0 rgba(255,255,255,.86);
   vertical-align:middle;
 }
-.report-table td .report-session-type.assessment{
-  color:#6d55a4;
-  background:#f3efff;
-  border-color:rgba(109,85,164,.16);
+.report-subject-cell .report-session-type.assessment,
+.report-table td > .report-session-type.assessment{
+  color:#6849a6;
+  background:linear-gradient(180deg,#f6f2ff,#e9e0ff);
+  border-color:rgba(109,85,164,.22);
+  box-shadow:0 3px 8px rgba(96,72,154,.10),inset 0 1px 0 rgba(255,255,255,.88);
+}
+.report-card .report-subject-cell{
+  gap:7px;
+}
+.report-card .report-subject-cell .report-session-type{
+  margin-left:0;
 }
 .report-score-pill.is-provisional{
   border-style:dashed;
@@ -40,14 +52,27 @@
   line-height:1.5;
   text-align:center;
 }
+
+/* Assessment reward pills sit directly on the adventure background.
+   The individual pills carry the visual treatment; the strip itself must not
+   become a large white card. */
+body.adventure-home .rules-strip[data-reward-mode="assessment"],
 .rules-strip[data-reward-mode="assessment"]{
-  border-color:rgba(121,94,185,.14);
-  background:linear-gradient(180deg,rgba(249,247,255,.96),rgba(243,239,255,.9));
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
 }
+
 @media (max-width:760px){
-  .report-table td .report-session-type{
-    margin-left:4px;
-    padding:3px 6px;
+  .report-subject-cell .report-session-type,
+  .report-table td > .report-session-type{
+    margin-left:0;
+    padding:4px 7px;
     font-size:9px;
+  }
+  .report-card .report-subject-cell{
+    gap:6px;
   }
 }
