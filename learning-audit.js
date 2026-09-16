@@ -1,6 +1,6 @@
-// UbayBian v0.5.82 — consistency layer for Practice + Assessment analytics
+// Practice + Assessment consistency layer
 import { apiBase, backendEnabled } from './config.js';
-import { createApiClient } from './api.js?v=0.5.82';
+import { createApiClient } from './api.js?v=0.6.3';
 import { findProfile } from './profiles.js';
 
 const main = document.querySelector('#main');
@@ -18,10 +18,10 @@ function setRules(panel) {
   if (strip) {
     const items = isAssessment
       ? [
-          '✅ Benar +5 XP',
-          '🪙 Benar +20 coins',
-          '🏁 ≥80% terjawab +50 XP',
-          '🔒 Reward 1x per Assessment',
+          '🧠 Effort · s.d. +50 XP · +100 coins',
+          '✅ Completion · +25–50 XP · +50–100 coins',
+          '🎯 Auto Accuracy · s.d. +100 XP · +400 coins',
+          '🔒 Reward 1× per Assessment',
         ]
       : [
           '✅ Benar +10 XP',
@@ -38,7 +38,9 @@ function setRules(panel) {
   }
 
   if (summary) {
-    summary.textContent = 'Practice dan Assessment sama-sama memberi XP/coins dengan aturan berbeda. Soal auto-scored yang salah atau dilewati masuk Review. Level tidak pernah turun.';
+    summary.textContent = isAssessment
+      ? 'Assessment menghargai effort, completion, dan auto accuracy. Open response ikut dihitung pada effort dan completion; reward hanya sekali untuk first qualifying attempt.'
+      : 'Practice memberi XP/coins per jawaban benar, bonus selesai, dan bonus perfect. Soal yang salah atau dilewati otomatis masuk Review.';
   }
 
   if (session.dataset.auditRewardBound !== '1') {
@@ -174,12 +176,13 @@ function applyReportData(card, dashboard, profile) {
     if (cells.length < 4) return;
 
     const subjectCell = cells[1];
+    const subjectWrap = subjectCell.querySelector('.report-subject-cell') || subjectCell;
     let badge = subjectCell.querySelector('.report-session-type');
     if (!badge) {
       badge = document.createElement('span');
       badge.className = 'report-session-type';
-      subjectCell.append(badge);
     }
+    if (badge.parentElement !== subjectWrap) subjectWrap.append(badge);
     badge.textContent = item.kind === 'assessment' ? 'Assessment' : 'Practice';
     badge.classList.toggle('assessment', item.kind === 'assessment');
 
